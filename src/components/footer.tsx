@@ -2,6 +2,7 @@ import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Paragraph } from "./paragraph";
 import styled from "styled-components";
+import Image from "next/image";
 
 const OuterWrapper = styled(Box)`
   margin-top: auto;
@@ -31,7 +32,7 @@ const Footer = () => {
             Do you like this website and want to support it?
           </Paragraph>
           <a href="https://www.buymeacoffee.com/fordvspurrari" target="_blank">
-            <img
+            <Image
               src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
               alt="Buy Me A Coffee"
             />

@@ -34,7 +34,7 @@ export default function Admin({
     if (!selectedYear) {
       setSelectedYear(yearsList[0]?.value);
     }
-  }, [yearsList]);
+  }, [yearsList, selectedYear]);
 
   if (!isAdmin) {
     return <NotFound />;

@@ -81,12 +81,6 @@ export default function Home({
   const { predictions, moviesBeingAdded } = useContext(SiteInfoContext);
 
   useEffect(() => {
-    if (!selectedYear && latestYear) {
-      setSelectedYear(latestYear.value);
-    }
-  }, [latestYear]);
-
-  useEffect(() => {
     if (localStorage.getItem("hideSeen")) {
       setHideSeen(localStorage.getItem("hideSeen") === "true");
     }
@@ -105,6 +99,10 @@ export default function Home({
   });
 
   useEffect(() => {
+    if (!selectedYear && latestYear) {
+      setSelectedYear(latestYear.value);
+    }
+
     if (!yearHasWinners) {
       setOnlyShowWinners(false);
     }
@@ -112,7 +110,7 @@ export default function Home({
     if (isLatestYear && predictions) {
       setSelectedCategory(undefined);
     }
-  }, [selectedYear]);
+  }, [selectedYear, latestYear, predictions, yearHasWinners, isLatestYear]);
 
   const seenMoviesList = seenMovies
     .find((list) => list.year === selectedYear)

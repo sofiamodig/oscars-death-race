@@ -37,13 +37,12 @@ interface SiteInfoProviderProps {
 export const SiteInfoProvider: React.FC<SiteInfoProviderProps> = ({
   children,
 }) => {
-  const { userId } = useAuth();
   const [predictions, setPredictions] = useState(false);
   const [moviesBeingAdded, setMoviesBeingAdded] = useState(false);
   const [construction, setConstruction] = useState(false);
   const { showSnackbar } = useSnackbarContext();
 
-  const fetchSiteInfo = async () => {
+  useEffect(() => {
     const docRef = doc(db, "site-status", "info");
     getDoc(docRef)
       .then((doc: any) => {
@@ -61,11 +60,7 @@ export const SiteInfoProvider: React.FC<SiteInfoProviderProps> = ({
       .catch(() => {
         showSnackbar("An error occurred", "error");
       });
-  };
-
-  useEffect(() => {
-    fetchSiteInfo();
-  }, []);
+  }, [showSnackbar]);
 
   const togglePredictions = () => {
     setPredictions(!predictions);

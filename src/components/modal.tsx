@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef } from "react";
+import React, { ReactNode, useCallback, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 
@@ -44,11 +44,14 @@ export const Modal: React.FC<Props> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const closeModal = (e: MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
+  const closeModal = useCallback(
+    (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   useEffect(() => {
     document.body.classList.toggle("scroll-lock", isOpen);
@@ -63,7 +66,7 @@ export const Modal: React.FC<Props> = ({
     return () => {
       document.removeEventListener("click", closeModal);
     };
-  }, []);
+  }, [closeModal]);
 
   if (!isOpen) return null;
 

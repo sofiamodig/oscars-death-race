@@ -288,8 +288,8 @@ export const MovieCard: FC<Props> = ({
           You need to log in
         </Heading>
         <Paragraph textAlign="center">
-          You need to sign in to add movies to your seen list. If you don't have
-          an account you can create one for.
+          You need to sign in to add movies to your seen list. If you don&apos;t
+          have an account you can create one for.
         </Paragraph>
         <Box $marginTop="md">
           <Flex $gap="sm" $justifyContent="center">

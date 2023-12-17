@@ -58,21 +58,6 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
   const { predictions } = useContext(SiteInfoContext);
   const { showSnackbar } = useSnackbarContext();
 
-  const fetchSeenData = async () => {
-    if (!userId) return;
-    setLoading(true);
-
-    fetchSeenMovies(userId)
-      .then((data) => {
-        setSeenMovies(data.years);
-        setUserSettings(data.settings);
-        setLoading(false);
-      })
-      .catch((error) => {
-        showSnackbar("Error fetching seen movies", "error");
-      });
-  };
-
   useEffect(() => {
     if (!userId) {
       setSeenMovies([]);
@@ -80,9 +65,19 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       setLoading(false);
       return;
     } else {
-      fetchSeenData();
+      setLoading(true);
+
+      fetchSeenMovies(userId)
+        .then((data) => {
+          setSeenMovies(data.years);
+          setUserSettings(data.settings);
+          setLoading(false);
+        })
+        .catch((error) => {
+          showSnackbar("Error fetching seen movies", "error");
+        });
     }
-  }, [userId]);
+  }, [userId, showSnackbar]);
 
   const addMovieToSeen = async (
     imdbId: string,

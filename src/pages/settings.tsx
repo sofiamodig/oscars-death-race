@@ -47,7 +47,7 @@ const Settings = () => {
     if (!username) {
       setUsername(userSettings?.username);
     }
-  }, [userSettings]);
+  }, [userSettings, username]);
 
   const updateUsername = async () => {
     setLoading("username");

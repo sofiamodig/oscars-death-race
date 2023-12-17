@@ -49,6 +49,7 @@ const Footer = () => {
                 alt="Buy Me A Coffee"
                 width={545}
                 height={153}
+                priority
               />
             </ImageWrapper>
           </a>

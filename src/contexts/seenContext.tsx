@@ -82,7 +82,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
           setLoading(false);
         })
         .catch((error) => {
-          showSnackbar("Error fetching seen movies", "error");
+          setLoading(false);
         });
     }
   }, [userId, showSnackbar]);

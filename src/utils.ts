@@ -142,7 +142,7 @@ export const getYearsList = (movies: MoviesYearsListType) => {
 
 export const emailRegex = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-export const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/;
+export const passwordRegex = /(?=.*[A-Z])(?=.*[a-z])(?=.*\d).*/;
 
 export const validatePassword = (password: string) => {
   if (!password) {
@@ -162,7 +162,7 @@ export const validateEmail = (email: string) => {
   }
 };
 
-export const validateUsername = (username: string, usernamesList: string[]) => {
+export const validateUsername = (username: string) => {
   if (!username) {
     return "Username is required";
   } else if (username.length < 3) {
@@ -173,7 +173,5 @@ export const validateUsername = (username: string, usernamesList: string[]) => {
     return "Username can not contain space";
   } else if (emailRegex.test(username)) {
     return "Username can not be an email";
-  } else if (usernamesList.includes(username)) {
-    return "Username is already taken";
   }
 };

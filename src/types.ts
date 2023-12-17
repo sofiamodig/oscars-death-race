@@ -24,6 +24,7 @@ export type SeenMoviesType = {
 export type UserSettingsType = {
   username: string;
   showInLeaderboard?: boolean;
+  hideSeenDates?: boolean;
 };
 
 export type SiteInfoType = {

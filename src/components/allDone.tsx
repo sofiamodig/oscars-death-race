@@ -19,7 +19,7 @@ export const AllDone: FC<Props> = ({ inCategory, isPredictions }) => {
       $marginTop="xxl"
       $marginBottom="xxl"
     >
-      <Image src={oscarsStatue} height={150} alt="" />
+      <Image src={oscarsStatue} height={150} alt="Oscar statue" priority />
       <Heading size="lg" as="h2" marginTop="sm" marginBottom="xs">
         All done!
       </Heading>

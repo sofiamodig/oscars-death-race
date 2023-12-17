@@ -27,7 +27,6 @@ export const addMovieToSeenFunc = async ({
   seenMovies,
   predictions,
 }: Props) => {
-  console.log("MOVIES", movies);
   const docRef = doc(db, "users", userId);
   const currentDate = DateTime.now().toUTC().toISO();
   const latestYear = movies && movies[movies.length - 1].year;
@@ -59,7 +58,7 @@ export const addMovieToSeenFunc = async ({
         entry.year === year
           ? {
               ...entry,
-              seenMovies: [...entry.seenMovies, movieObj],
+              seenMovies: [...entry?.seenMovies, movieObj],
               completed: isCompletedRace ? currentDate : null,
             }
           : entry

@@ -11,14 +11,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { fetchSeenMovies } from "@/functions/fetchSeenMovies";
 import { addMovieToSeenFunc } from "@/functions/addMovieToSeen";
 import { SiteInfoContext } from "./siteInfoContext";
-import { arrayUnion, doc, updateDoc } from "@firebase/firestore";
+import { arrayUnion, doc, getDoc, updateDoc } from "@firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { removeMovieFromSeenFunc } from "@/functions/removeMovieFromSeen";
 
 type SeenContextType = {
   seenMovies: SeenMoviesType[];
   userSettings: UserSettingsType;
-  showInLeaderboard: boolean;
   addMovieToSeen: (
     imdbId: string,
     year: string,
@@ -28,18 +27,19 @@ type SeenContextType = {
   changeSeenDate: (imdbId: string, date: string, year: string) => void;
   changeUserName: (name: string) => void;
   changeShowInLeaderboard: () => void;
+  toggleShowSeenDates: () => void;
   loading: boolean;
 };
 
 export const SeenContext = createContext<SeenContextType>({
   seenMovies: [],
   userSettings: {} as UserSettingsType,
-  showInLeaderboard: true,
   addMovieToSeen: () => {},
   removeMovieFromSeen: () => {},
   changeSeenDate: () => {},
   changeUserName: () => {},
   changeShowInLeaderboard: () => {},
+  toggleShowSeenDates: () => {},
   loading: true,
 });
 
@@ -62,7 +62,9 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
     if (!userId) {
       setSeenMovies([]);
       setUserSettings({} as UserSettingsType);
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 400);
       return;
     } else {
       setLoading(true);
@@ -70,7 +72,13 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       fetchSeenMovies(userId)
         .then((data) => {
           setSeenMovies(data.years);
-          setUserSettings(data.settings);
+          setUserSettings((prev) => {
+            return {
+              username: data.settings.username,
+              showInLeaderboard: data.settings.showInLeaderboard,
+              hideSeenDates: prev.hideSeenDates,
+            };
+          });
           setLoading(false);
         })
         .catch((error) => {
@@ -99,7 +107,6 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
         setLoading(false);
       })
       .catch((error) => {
-        console.log("ERROR", error);
         showSnackbar("Error adding movie", "error");
       });
   };
@@ -123,19 +130,45 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
     setSeenMovies((prev) =>
       prev.map((entry) => ({
         ...entry,
-        seenMovies: entry.seenMovies.map((movie) =>
+        seenMovies: entry.seenMovies?.map((movie) =>
           movie.imdbId === imdbId ? { ...movie, date } : movie
         ),
       }))
     );
 
     const docRef = doc(db, "users", userId);
-    updateDoc(docRef, {
-      [`${year}.seenMovies`]: arrayUnion({ imdbId, date }),
-      [`${year}.completed`]: null, // Reset completed date in the document
-    }).catch((error) => {
-      showSnackbar("An error occurred", "error");
-    });
+
+    getDoc(docRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          // Copy the seenMovies array and make modifications
+          const userData = docSnap.data();
+          const userSeenMovies = userData[year].seenMovies;
+          const movieIndex = [...userSeenMovies].findIndex(
+            (m: any) => m.imdbId === imdbId
+          );
+
+          if (movieIndex !== -1) {
+            // Update the date of the specific movie
+            userSeenMovies[movieIndex].date = date;
+
+            // Update the document with the new seenMovies array
+            return updateDoc(docRef, {
+              [`${year}.seenMovies`]: userSeenMovies,
+            });
+          } else {
+            console.log("Movie not found");
+          }
+        } else {
+          console.log("Document does not exist");
+        }
+      })
+      .then(() => {
+        console.log("Document successfully updated");
+      })
+      .catch((error) => {
+        showSnackbar("An error occurred", "error");
+      });
   };
 
   const changeUserName = (name: string) => {
@@ -155,6 +188,27 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       });
   };
 
+  useEffect(() => {
+    if (localStorage.getItem("hideSeenDates")) {
+      setUserSettings((prev) => ({
+        ...prev,
+        hideSeenDates: localStorage.getItem("hideSeenDates") === "true",
+      }));
+    }
+  }, []);
+
+  const toggleShowSeenDates = () => {
+    setUserSettings((prev) => ({
+      ...prev,
+      hideSeenDates: !prev.hideSeenDates,
+    }));
+
+    localStorage.setItem(
+      "hideSeenDates",
+      JSON.stringify(!userSettings.hideSeenDates)
+    );
+  };
+
   return (
     <SeenContext.Provider
       value={{
@@ -164,8 +218,8 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
         changeSeenDate,
         changeUserName,
         changeShowInLeaderboard,
+        toggleShowSeenDates,
         userSettings,
-        showInLeaderboard,
         loading,
       }}
     >

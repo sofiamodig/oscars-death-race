@@ -22,21 +22,18 @@ type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
 const Settings = () => {
   const { userId, isAdmin } = useAuth();
-  const { userSettings, changeUserName, changeShowInLeaderboard } =
-    useSeenContext();
+  const {
+    userSettings,
+    changeUserName,
+    changeShowInLeaderboard,
+    toggleShowSeenDates,
+  } = useSeenContext();
   const router = useRouter();
   const [username, setUsername] = useState<string>();
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
-  const [hideSeenDates, setHideSeenDates] = useState<boolean>(false);
   const { showSnackbar } = useSnackbarContext();
-
-  useEffect(() => {
-    if (localStorage.getItem("hideSeenDates") === "true") {
-      setHideSeenDates(true);
-    }
-  }, []);
 
   const handleSignOut = () => {
     signOut(auth);
@@ -117,13 +114,6 @@ const Settings = () => {
       });
   };
 
-  const toggleHideSeenDates = () => {
-    localStorage.setItem("hideSeenDates", (!hideSeenDates).toString());
-    if (window) {
-      window.location.reload();
-    }
-  };
-
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
       <Heading size="lg" marginBottom="md">
@@ -165,8 +155,8 @@ const Settings = () => {
           >
             <Toggle
               label="Hide seen dates in the movie list"
-              value={hideSeenDates ?? false}
-              onToggle={toggleHideSeenDates}
+              value={userSettings.hideSeenDates ?? false}
+              onToggle={toggleShowSeenDates}
             />
             <Toggle
               label="Show your user in the leaderboard"

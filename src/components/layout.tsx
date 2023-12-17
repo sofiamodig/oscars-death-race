@@ -1,4 +1,4 @@
-import { FC, ReactNode, useContext } from "react";
+import { FC, ReactNode, useContext, useEffect } from "react";
 import styled from "styled-components";
 import { SiteInfoContext } from "@/contexts/siteInfoContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,16 @@ interface Props {
 export const Layout: FC<Props> = ({ children }) => {
   const { isAdmin } = useAuth();
   const { construction } = useContext(SiteInfoContext);
+
+  useEffect(() => {
+    window.onload = () => {
+      document.body.style.visibility = "visible";
+    };
+
+    return () => {
+      document.body.style.visibility = "visible";
+    };
+  }, []);
 
   if (construction == undefined) return <></>;
 

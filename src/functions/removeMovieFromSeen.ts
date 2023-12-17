@@ -45,7 +45,7 @@ export const removeMovieFromSeenFunc = async ({
         // Update the document in Firestore
         updateDoc(docRef, {
           [`${year}.seenMovies`]: updatedSeenMovies,
-          completed: null, // Reset completed date in the document
+          [`${year}.completed`]: null, // Reset completed date in the document
         });
       }
     } else {

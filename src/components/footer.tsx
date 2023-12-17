@@ -19,6 +19,17 @@ const Coffee = styled(Flex)`
   }
 `;
 
+const ImageWrapper = styled.div`
+  max-width: 234px;
+  aspect-ratio: 545/120;
+  width: 100%;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
 const Footer = () => {
   return (
     <OuterWrapper $marginLeft="xl" $marginRight="xl" $marginBottom="xl">
@@ -32,10 +43,14 @@ const Footer = () => {
             Do you like this website and want to support it?
           </Paragraph>
           <a href="https://www.buymeacoffee.com/fordvspurrari" target="_blank">
-            <Image
-              src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-              alt="Buy Me A Coffee"
-            />
+            <ImageWrapper>
+              <Image
+                src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+                alt="Buy Me A Coffee"
+                width={545}
+                height={153}
+              />
+            </ImageWrapper>
           </a>
         </Coffee>
       </Box>

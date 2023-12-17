@@ -182,12 +182,11 @@ export const MovieCard: FC<Props> = ({
 }) => {
   const { isSignedIn } = useAuth();
   const [signInModalOpen, setSignInModalOpen] = useState(false);
-  const { addMovieToSeen, removeMovieFromSeen, changeSeenDate } =
+  const { userSettings, addMovieToSeen, removeMovieFromSeen, changeSeenDate } =
     useContext(SeenContext);
 
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const hideSeenDates = localStorage.getItem("hideSeenDates") === "true";
   const seen = seenList.find((movie) => movie.imdbId === data.imdbId);
   const seenDate = seen?.date ? DateTime.fromISO(seen.date) : null;
 
@@ -206,7 +205,7 @@ export const MovieCard: FC<Props> = ({
       return;
     }
 
-    if (seen && !hideSeenDates) {
+    if (seen && !userSettings.hideSeenDates) {
       setShowCalendar(true);
     } else if (seen) {
       removeMovieFromSeen(data.imdbId, selectedYear);
@@ -231,7 +230,7 @@ export const MovieCard: FC<Props> = ({
         }}
       >
         <CheckIcon />
-        {seenDate && !hideSeenDates && (
+        {seenDate && !userSettings.hideSeenDates && (
           <span>{seenDate.toFormat("dd/MM-yy")}</span>
         )}
       </CheckButton>

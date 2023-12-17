@@ -121,6 +121,7 @@ export const emailChange = async (newEmail: string) => {
   if (auth.currentUser) {
     try {
       await verifyBeforeUpdateEmail(auth.currentUser, newEmail);
+      await signOut(auth);
     } catch (error: any) {
       let errorMessage = "Something went wrong";
       const json: any = JSON.parse(JSON.stringify(error));

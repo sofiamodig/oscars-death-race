@@ -75,7 +75,11 @@ const Settings = () => {
       await emailChange(newEmail)
         .then(() => {
           setLoading(undefined);
-          showSnackbar("Email was successfully changed", "success");
+          showSnackbar(
+            "A verification email has been sent to your new email",
+            "success"
+          );
+          router.push("/login");
         })
         .catch((error) => {
           setLoading(undefined);

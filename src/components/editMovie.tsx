@@ -4,7 +4,7 @@ import { db } from "@/firebaseConfig";
 import { Box } from "@/styles/Box";
 import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
-import { doc, updateDoc } from "@firebase/firestore";
+import { deleteDoc, doc, updateDoc } from "@firebase/firestore";
 import { Button } from "./button";
 import { Heading } from "./heading";
 import { TextInput } from "./textInput";
@@ -109,6 +109,22 @@ const EditMovie: FC<Props> = ({
       });
   };
 
+  const handleRemove = async () => {
+    setIsSubmitting(true);
+
+    const movieDoc = doc(db, "movie-collection", selectedYear, "movies", id);
+
+    deleteDoc(movieDoc)
+      .then(() => {
+        setIsSubmitting(false);
+        showSnackbar("Movie removed successfully", "success");
+      })
+      .catch((error) => {
+        setIsSubmitting(false);
+        showSnackbar(error.message, "error");
+      });
+  };
+
   return (
     <Wrapper>
       <Heading size="sm" as="h2">
@@ -133,6 +149,20 @@ const EditMovie: FC<Props> = ({
               value={posterUrl}
               setValue={(value) => setPosterUrl(value)}
               placeholder="Poster URL"
+            />
+          </Box>
+        )}
+
+        {showEdit && (
+          <Box $marginTop="sm">
+            <Button
+              type="button"
+              label="Remove"
+              onClick={handleRemove}
+              disabled={isSubmitting}
+              variant="primary"
+              size="md"
+              isLoading={isSubmitting}
             />
           </Box>
         )}

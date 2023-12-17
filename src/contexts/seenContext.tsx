@@ -64,7 +64,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       setUserSettings({} as UserSettingsType);
       setTimeout(() => {
         setLoading(false);
-      }, 400);
+      }, 600);
       return;
     } else {
       setLoading(true);

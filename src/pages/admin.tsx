@@ -11,6 +11,8 @@ import { MoviesYearsListType } from "@/types";
 import { getYearsList } from "@/utils";
 import Dropdown from "react-dropdown";
 import NotFound from "./404";
+import { Button } from "@/components/button";
+import { Paragraph } from "@/components/paragraph";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
@@ -29,6 +31,7 @@ export default function Admin({
     () => movies.find((movie) => movie.year === selectedYear)?.movies,
     [movies, selectedYear]
   );
+  const [status, setStatus] = useState<string>();
 
   useEffect(() => {
     if (!selectedYear) {
@@ -40,8 +43,39 @@ export default function Admin({
     return <NotFound />;
   }
 
+  const triggerDeploy = async () => {
+    const link = process.env.NEXT_PUBLIC_VERCEL_DEPLOY_HOOK;
+    if (!link) {
+      return;
+    }
+    setStatus("Started deploy");
+
+    const res = await fetch(link, {
+      method: "GET",
+    });
+    const json = await res.json();
+    if (json.job.state === "PENDING") {
+      setStatus("Deploying");
+      setTimeout(() => {
+        setStatus(undefined);
+      }, 90000);
+    }
+  };
+
   return (
     <div>
+      <Box $marginBottom="xl">
+        <Button
+          type="button"
+          label="Trigger deploy"
+          onClick={triggerDeploy}
+          disabled={Boolean(status)}
+          variant="secondary"
+          size="md"
+          isLoading={Boolean(status)}
+        />
+        {<Paragraph>{status}</Paragraph>}
+      </Box>
       <AddMovie />
 
       <Flex

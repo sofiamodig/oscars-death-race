@@ -72,7 +72,6 @@ export default function Admin({
           disabled={Boolean(status)}
           variant="secondary"
           size="md"
-          isLoading={Boolean(status)}
         />
         {<Paragraph>{status}</Paragraph>}
       </Box>

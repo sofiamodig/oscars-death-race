@@ -59,7 +59,6 @@ body {
   background-color: var(--color-neutral-100);
   color: var(--color-text-secondary);
   height: 100%;
-  visibility: hidden;
 }
 
 * {

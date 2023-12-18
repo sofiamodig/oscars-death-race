@@ -73,21 +73,23 @@ export const ProgressBar: FC<Props> = ({
   const { userId } = useAuth();
   const { updateOwnUser } = useLeaderboardContext();
 
+  useEffect(() => {
+    if (!userId || !nrOfMovies) {
+      return;
+    }
+
+    const percent = Math.floor((seenNr / nrOfMovies) * 100);
+
+    if (percent) {
+      updateOwnUser(userId, percent, completed);
+    }
+  }, [userId, seenNr, completed]);
+
   if (!nrOfMovies) {
     return null;
   }
 
   const percentage = Math.floor((seenNr / nrOfMovies) * 100);
-
-  useEffect(() => {
-    if (!userId) {
-      return;
-    }
-
-    if (percentage) {
-      updateOwnUser(userId, percentage, completed);
-    }
-  }, [userId, percentage, completed]);
 
   return (
     <Wrapper>

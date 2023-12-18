@@ -183,13 +183,9 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
 
     updateDoc(docRef, {
       showInLeaderboard: !showInLeaderboard,
-    })
-      .then((data) => {
-        console.log("data", data);
-      })
-      .catch((error) => {
-        showSnackbar(error.message, "error");
-      });
+    }).catch((error) => {
+      showSnackbar(error.message, "error");
+    });
   };
 
   useEffect(() => {

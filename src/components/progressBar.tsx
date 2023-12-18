@@ -12,7 +12,7 @@ const Wrapper = styled.div`
   box-shadow: 0 0 20px rgb(44 44 44 / 34%);
 
   @media all and (display-mode: standalone) {
-    height: 48px;
+    height: 40px;
   }
 `;
 

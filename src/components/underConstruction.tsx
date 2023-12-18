@@ -13,6 +13,12 @@ const Wrapper = styled.div<{ $autoHeight?: boolean }>`
   justify-content: center;
   align-items: center;
   padding: 32px;
+
+  img {
+    width: 150px;
+    aspect-ratio: 351 / 397;
+    height: auto;
+  }
 `;
 
 interface Props {

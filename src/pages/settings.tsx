@@ -29,6 +29,7 @@ const Settings = () => {
     toggleShowSeenDates,
   } = useSeenContext();
   const router = useRouter();
+  const [showInLeaderboard, setShowInLeaderboard] = useState<boolean>();
   const [username, setUsername] = useState<string>();
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
@@ -43,6 +44,14 @@ const Settings = () => {
   useEffect(() => {
     if (!username) {
       setUsername(userSettings?.username);
+    }
+
+    if (!showInLeaderboard) {
+      setShowInLeaderboard(
+        userSettings.showInLeaderboard !== undefined
+          ? userSettings.showInLeaderboard
+          : true
+      );
     }
   }, [userSettings, username]);
 
@@ -164,8 +173,11 @@ const Settings = () => {
             />
             <Toggle
               label="Show your user in the leaderboard"
-              value={userSettings.showInLeaderboard ?? true}
-              onToggle={changeShowInLeaderboard}
+              value={showInLeaderboard ?? true}
+              onToggle={() => {
+                setShowInLeaderboard((prev) => !prev);
+                changeShowInLeaderboard();
+              }}
             />
           </Flex>
           <Box $marginTop="md" $marginBottom="md">

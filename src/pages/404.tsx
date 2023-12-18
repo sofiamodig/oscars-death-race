@@ -7,7 +7,7 @@ import styled from "styled-components";
 
 const GifWrapper = styled.div`
   width: 95%;
-  max-width: 400px;
+  max-width: 600px;
 
   img {
     width: 100%;

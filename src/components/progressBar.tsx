@@ -37,14 +37,15 @@ const Progress = styled.div<{ width: number }>`
 
   @media all and (display-mode: standalone) {
     height: 48px;
+    padding: 0;
   }
 `;
 
 const Percentage = styled.div`
-  padding: 4px 0 24px;
+  padding: 4px 8px;
 
   @media all and (display-mode: standalone) {
-    padding: 0 24px;
+    padding: 0 20px;
   }
 `;
 

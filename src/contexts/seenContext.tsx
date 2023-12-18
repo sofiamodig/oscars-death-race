@@ -177,11 +177,15 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
 
   const changeShowInLeaderboard = () => {
     if (!userId) return;
-    updateDoc(doc(db, "users", userId), {
+    setShowInLeaderboard((prev) => !prev);
+
+    const docRef = doc(db, "users", userId);
+
+    updateDoc(docRef, {
       showInLeaderboard: !showInLeaderboard,
     })
-      .then(() => {
-        setShowInLeaderboard(!showInLeaderboard);
+      .then((data) => {
+        console.log("data", data);
       })
       .catch((error) => {
         showSnackbar(error.message, "error");

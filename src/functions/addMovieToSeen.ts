@@ -41,7 +41,7 @@ export const addMovieToSeenFunc = async ({
     (isLatestYear &&
       !predictions &&
       moviesList?.length === seenMoviesList?.length + 1) ||
-    (!isLatestYear && latestYear?.length === seenMoviesList?.length + 1);
+    (!isLatestYear && moviesList?.length === seenMoviesList?.length + 1);
 
   const movieObj: SeenType = {
     imdbId,

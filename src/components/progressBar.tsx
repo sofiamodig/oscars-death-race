@@ -10,13 +10,15 @@ const Wrapper = styled.div`
   left: 0;
   right: 0;
   box-shadow: 0 0 20px rgb(44 44 44 / 34%);
+
+  @media all and (display-mode: standalone) {
+    height: 48px;
+  }
 `;
 
 const Progress = styled.div<{ width: number }>`
-  position: absolute;
   height: 100%;
-  left: 0;
-  top: 0;
+  width: 100%;
   background: linear-gradient(
     to right,
     rgb(156 200 156 / 33%) 0%,
@@ -32,10 +34,18 @@ const Progress = styled.div<{ width: number }>`
   color: #fff;
   font-size: 14px;
   transition: width 0.2s ease-in-out;
+
+  @media all and (display-mode: standalone) {
+    height: 48px;
+  }
 `;
 
 const Percentage = styled.div`
-  padding: 0 10px;
+  padding: 4px 0 24px;
+
+  @media all and (display-mode: standalone) {
+    padding: 0 24px;
+  }
 `;
 
 const Numbers = styled.div`

@@ -24,7 +24,9 @@ export const UnderConstruction: FC<Props> = ({ autoHeight }) => {
     <Wrapper $autoHeight={autoHeight}>
       <Flex $justifyContent="center" $direction="column" $gap="sm">
         <Image src={logo} alt="logo" priority />
-        <Heading size="xxl">Under construction</Heading>
+        <Heading size="xxl" textAlign="center">
+          Under construction
+        </Heading>
         <Paragraph size="lg" textAlign="center">
           This page is currently under construction. Please check back later.
         </Paragraph>

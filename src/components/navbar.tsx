@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import logo from "@/assets/images/oscarlogo.png";
+import logo from "@/assets/images/oscarslogo.svg";
 import { AccountCircleIcon } from "@/assets/icons/AccountCircleIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./button";
@@ -12,7 +12,7 @@ const NavbarContainer = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 4px 16px 4px 8px;
   background-color: var(--color-neutral-0);
   margin-bottom: 16px;
 
@@ -27,6 +27,7 @@ const Logo = styled(Link)`
   color: var(--color-primary-500);
   display: flex;
   align-items: center;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 
   &:hover {
     color: var(--color-primary-500);
@@ -36,13 +37,19 @@ const Logo = styled(Link)`
     @media (max-width: 768px) {
       display: none;
     }
+
     margin-top: 3px;
     letter-spacing: 0.5px;
   }
 
   img {
-    height: 40px;
-    margin-right: 8px;
+    height: 48px;
+    width: 48px;
+
+    @media (min-width: 768px) {
+      height: 64px;
+      width: 64px;
+    }
   }
 `;
 
@@ -50,6 +57,7 @@ const NavLinks = styled.div`
   display: flex;
   align-items: center;
   gap: 24px;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 
   svg {
     margin-top: 3px;
@@ -57,6 +65,7 @@ const NavLinks = styled.div`
     width: 32px;
     fill: var(--color-primary-500);
     transition: fill 0.2s ease-in-out;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 
     &:hover {
       fill: var(--color-primary-700);

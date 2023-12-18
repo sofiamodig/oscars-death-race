@@ -20,8 +20,8 @@ const Coffee = styled(Flex)`
 `;
 
 const ImageWrapper = styled.div`
-  max-width: 234px;
-  aspect-ratio: 545/120;
+  max-width: 200px;
+  aspect-ratio: 545 / 153;
   width: 100%;
 
   img {
@@ -32,7 +32,7 @@ const ImageWrapper = styled.div`
 
 const Footer = () => {
   return (
-    <OuterWrapper $marginLeft="xl" $marginRight="xl" $marginBottom="xl">
+    <OuterWrapper $marginLeft="xl" $marginRight="xl" $marginBottom="xxl">
       <Box $marginTop="xxxl" $marginBottom="md">
         <Coffee
           $justifyContent="center"
@@ -60,6 +60,7 @@ const Footer = () => {
         $justifyContent="center"
         $alignItems="center"
         $gap="xs"
+        $marginBottom="md"
       >
         <Paragraph textAlign="center" size="sm">
           Questions or ideas? Contact{" "}

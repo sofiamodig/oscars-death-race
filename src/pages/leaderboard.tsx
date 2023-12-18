@@ -15,8 +15,9 @@ import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { getYearsList } from "@/utils";
+import { useLeaderboardContext } from "@/contexts/leaderboardContext";
 
-type User = {
+export type LeaderboardUser = {
   id: string;
   username: string;
   seen: number;
@@ -36,10 +37,11 @@ export default function Home({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { isSignedIn } = useAuth();
   const { userSettings } = useSeenContext();
-  const [usersList, setUsersList] = useState<User[]>([]);
+  const [usersList, setUsersList] = useState<LeaderboardUser[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>();
   const [loading, setLoading] = useState(true);
   const { yearsList, latestYear } = getYearsList(movies);
+  const { leaderboardData, setLeaderboardData } = useLeaderboardContext();
   const yearMovies = useMemo(
     () => movies.find((movie) => movie.year === selectedYear)?.movies,
     [movies, selectedYear]
@@ -93,6 +95,7 @@ export default function Home({
     }
 
     setLoading(false);
+    setLeaderboardData(usersArray);
     setUsersList(usersArray);
   };
 
@@ -105,7 +108,12 @@ export default function Home({
   }, [userSettings, selectedYear, querySnapshot, yearMovies]);
 
   useEffect(() => {
-    fetchUsers();
+    if (!leaderboardData) {
+      fetchUsers();
+    } else {
+      setUsersList(leaderboardData);
+      setLoading(false);
+    }
   }, []);
 
   if (!isSignedIn) {

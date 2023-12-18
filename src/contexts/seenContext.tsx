@@ -65,10 +65,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       setTimeout(() => {
         setLoading(false);
       }, 600);
-      return;
     } else {
-      setLoading(true);
-
       fetchSeenMovies(userId)
         .then((data) => {
           setSeenMovies(data.years);

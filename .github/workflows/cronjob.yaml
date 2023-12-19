@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Hello world action
-        run: echo "Hello World"
+
+      - name: Trigger Webhook
+        shell: bash
         env:
           WEBHOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK }}
-      - name: Trigger Webhook
         run: |
           curl -X GET "$WEBHOOK_URL"

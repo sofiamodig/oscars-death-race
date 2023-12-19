@@ -1,4 +1,3 @@
-import { useLeaderboardContext } from "@/contexts/leaderboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { FC, useEffect } from "react";
 import styled from "styled-components";
@@ -62,29 +61,9 @@ const Numbers = styled.div`
 interface Props {
   nrOfMovies?: number;
   seenNr?: number;
-  completed?: string | null;
 }
 
-export const ProgressBar: FC<Props> = ({
-  nrOfMovies,
-  seenNr = 0,
-  completed,
-}) => {
-  const { userId } = useAuth();
-  const { updateOwnUser } = useLeaderboardContext();
-
-  useEffect(() => {
-    if (!userId || !nrOfMovies) {
-      return;
-    }
-
-    const percent = Math.floor((seenNr / nrOfMovies) * 100);
-
-    if (percent) {
-      updateOwnUser(userId, percent, completed);
-    }
-  }, [userId, seenNr, completed]);
-
+export const ProgressBar: FC<Props> = ({ nrOfMovies, seenNr = 0 }) => {
   if (!nrOfMovies) {
     return null;
   }

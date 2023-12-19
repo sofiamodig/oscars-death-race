@@ -23,8 +23,8 @@ const TableItem = styled.div<{ $isCurrentUser: boolean }>`
   ${({ $isCurrentUser }) =>
     $isCurrentUser &&
     `
-    background-color: var(--color-ui-blue-lighter);
-    color: var(--color-neutral-1000);
+    background-color: var(--color-ui-blue-lighter) !important;
+    color: var(--color-neutral-1000) !important;
   `}
 
   &:first-child {

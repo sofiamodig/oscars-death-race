@@ -1,131 +1,95 @@
 import { useEffect, useMemo, useState } from "react";
 import Dropdown from "react-dropdown";
-import { collection, getDocs } from "@firebase/firestore";
 import { DateTime } from "luxon";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
-import { MovieType, MoviesYearsListType, SeenType } from "@/types";
+import { MoviesYearsListType } from "@/types";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { useSeenContext } from "@/contexts/seenContext";
 import { Heading } from "@/components/heading";
 import { LeaderboardItem } from "@/components/leaderboardItem";
-import { Paragraph } from "@/components/paragraph";
-import { db } from "@/firebaseConfig";
-import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { getYearsList } from "@/utils";
-import { useLeaderboardContext } from "@/contexts/leaderboardContext";
-
-export type LeaderboardUser = {
-  id: string;
-  username: string;
-  seen: number;
-  percentage: number;
-  completed: string | null;
-};
+import {
+  LeaderboardType,
+  LeaderboardUser,
+  fetchUsers,
+} from "@/functions/fetchUsers";
+import { Paragraph } from "@/components/paragraph";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
-  return { props: { movies } };
+  const leaderboard = await fetchUsers(movies);
+
+  return { props: { movies, leaderboard } };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
+  leaderboard: LeaderboardType;
 }>;
 
-export default function Home({
+export default function Leaderboard({
   movies,
+  leaderboard,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
-  const { isSignedIn } = useAuth();
-  const { userSettings } = useSeenContext();
-  const [usersList, setUsersList] = useState<LeaderboardUser[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>();
-  const [loading, setLoading] = useState(true);
-  const { yearsList, latestYear } = getYearsList(movies);
-  const { leaderboardData, setLeaderboardData } = useLeaderboardContext();
+  const yearLeaderboard = selectedYear ? leaderboard[selectedYear] : null;
+  const { seenMovies, userSettings, loading } = useSeenContext();
+  const [usersList, setUsersList] = useState<LeaderboardUser[]>([]);
+  const { yearsList } = getYearsList(movies);
+
   const yearMovies = useMemo(
     () => movies.find((movie) => movie.year === selectedYear)?.movies,
     [movies, selectedYear]
   );
-  const [querySnapshot, setQuerySnapshot] = useState<any>();
 
   useEffect(() => {
-    if (!selectedYear && latestYear) {
-      setSelectedYear(latestYear.value);
+    if (!selectedYear) {
+      setSelectedYear(yearsList[0].value);
     }
-  }, [latestYear]);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    const usersRef = collection(db, "users");
-
-    const querySnapshot = await getDocs(usersRef);
-    setQuerySnapshot(querySnapshot);
-  };
-
-  const formatUsersList = (selectedYear: string, yearMovies: MovieType[]) => {
-    const usersArray = [];
-
-    for (const doc of querySnapshot.docs) {
-      const userData = doc.data();
-      const username = userData.username;
-      const seenMovies = userData[selectedYear]?.seenMovies || [];
-      if (!seenMovies.length) {
-        continue;
-      }
-
-      if (userData.showInLeaderboard === false) {
-        continue;
-      }
-
-      const filteredMovies = seenMovies.filter((movie: SeenType) => {
-        return yearMovies.some(
-          (yearMovie) => yearMovie.imdbId === movie.imdbId
-        );
-      });
-
-      usersArray.push({
-        id: doc.id,
-        username,
-        seen: filteredMovies.length,
-        percentage: Math.round(
-          (filteredMovies.length / yearMovies?.length) * 100
-        ),
-        completed: userData[selectedYear].completed ?? null,
-      });
-    }
-
-    setLoading(false);
-    setLeaderboardData(usersArray);
-    setUsersList(usersArray);
-  };
+  }, [yearsList]);
 
   useEffect(() => {
-    if (!querySnapshot || !selectedYear || !userSettings || !yearMovies) {
+    if (yearLeaderboard) {
+      setUsersList(yearLeaderboard);
+    }
+  }, [yearLeaderboard]);
+
+  useEffect(() => {
+    if (!yearMovies || !seenMovies) {
       return;
     }
 
-    formatUsersList(selectedYear, yearMovies);
-  }, [userSettings, selectedYear, querySnapshot, yearMovies]);
-
-  useEffect(() => {
-    if (!leaderboardData) {
-      fetchUsers();
-    } else {
-      setUsersList(leaderboardData);
-      setLoading(false);
-    }
-  }, []);
-
-  if (!isSignedIn) {
-    return (
-      <Flex $direction="column" $alignItems="center" $marginTop="xl">
-        <Heading as="h1" size="xl" marginBottom="sm">
-          Leaderboard
-        </Heading>
-        <Paragraph>You need to be signed in to view the leaderboard</Paragraph>
-      </Flex>
+    // Update userslist for the current user to their updated data
+    const userIndex = usersList.findIndex(
+      (user) => user.username === userSettings?.username
     );
-  }
+
+    if (userIndex == -1) {
+      return;
+    }
+
+    const userYearMovies = seenMovies.find(
+      (list) => list.year === selectedYear
+    )?.seenMovies;
+
+    if (!userYearMovies) {
+      return;
+    }
+
+    setUsersList((prev) => {
+      const newUsersList = [...prev];
+      newUsersList[userIndex] = {
+        ...newUsersList[userIndex],
+        seen: userYearMovies.length,
+        percentage: Math.round(
+          (userYearMovies.length / yearMovies?.length) * 100
+        ),
+      };
+
+      return newUsersList;
+    });
+  }, [seenMovies, selectedYear]);
 
   const sortedUsersList = usersList.sort((a, b) => {
     if (a.seen > b.seen) {
@@ -146,9 +110,15 @@ export default function Home({
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
       <Flex $marginBottom="sm">
-        <Heading as="h1" size="xl">
-          Leaderboard
-        </Heading>
+        <div>
+          <Heading as="h1" size="xl" marginBottom="xs">
+            Leaderboard
+          </Heading>
+          <Paragraph size="sm">
+            The leaderboard is updated once each day. The interval will be
+            shortened closer to the oscars.
+          </Paragraph>
+        </div>
         <Dropdown
           options={yearsList}
           onChange={(option) => {

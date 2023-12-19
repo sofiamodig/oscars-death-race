@@ -2,7 +2,6 @@ import type { AppProps } from "next/app";
 import { SeenProvider } from "@/contexts/seenContext";
 import { SnackbarProvider } from "@/contexts/snackbarContext";
 import { SiteInfoProvider } from "@/contexts/siteInfoContext";
-import { LeaderboardProvider } from "@/contexts/leaderboardContext";
 import { Layout } from "@/components/layout";
 import "../assets/fonts/notoSans/fonts.css";
 import "@/styles/globals.css";
@@ -13,11 +12,9 @@ export default function App({ Component, pageProps }: AppProps) {
     <SnackbarProvider>
       <SiteInfoProvider>
         <SeenProvider>
-          <LeaderboardProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </LeaderboardProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </SeenProvider>
       </SiteInfoProvider>
     </SnackbarProvider>

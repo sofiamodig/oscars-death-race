@@ -317,10 +317,6 @@ export default function Home({
             <ProgressBar
               seenNr={seenMoviesList?.length}
               nrOfMovies={moviesList?.length}
-              completed={
-                seenMovies?.find((list) => list.year === selectedYear)
-                  ?.completed
-              }
             />
           )}
         </>

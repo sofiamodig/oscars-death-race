@@ -50,7 +50,7 @@ export default function Leaderboard({
   }, [yearsList]);
 
   useEffect(() => {
-    if (yearLeaderboard) {
+    if (yearLeaderboard && !usersList.length) {
       setUsersList(yearLeaderboard);
     }
   }, [yearLeaderboard]);

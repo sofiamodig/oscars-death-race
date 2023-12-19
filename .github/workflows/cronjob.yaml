@@ -11,6 +11,9 @@ jobs:
   trigger-webhook:
     runs-on: ubuntu-latest
     steps:
+      - name: Hello world action
+        with: # Set the secret as an input
+          WEBHOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK   }}
       - name: Trigger Webhook
         run: |
-          curl -X GET '${{ secrets.VERCEL_DEPLOY_HOOK }}'
+          curl -X GET "$WEBHOOK_URL"

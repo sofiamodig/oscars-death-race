@@ -35,7 +35,6 @@ export default function Leaderboard({
   const [selectedYear, setSelectedYear] = useState<string>();
   const yearLeaderboard = selectedYear ? leaderboard[selectedYear] : null;
   const { seenMovies, userSettings, loading } = useSeenContext();
-  const [usersList, setUsersList] = useState<LeaderboardUser[]>([]);
   const { yearsList } = getYearsList(movies);
 
   const yearMovies = useMemo(
@@ -49,49 +48,30 @@ export default function Leaderboard({
     }
   }, [yearsList]);
 
-  useEffect(() => {
-    if (yearLeaderboard && !usersList.length) {
-      setUsersList(yearLeaderboard);
-    }
-  }, [yearLeaderboard]);
+  const updatedUsersList = yearLeaderboard?.map((user) => {
+    if (user.username === userSettings?.username) {
+      const userYearMovies = seenMovies
+        ?.find((list) => list.year === selectedYear)
+        ?.seenMovies.filter((movie) =>
+          yearMovies?.some((m) => m.imdbId === movie.imdbId)
+        );
 
-  useEffect(() => {
-    if (!yearMovies || !seenMovies) {
-      return;
-    }
+      const seenCount = userYearMovies?.length ?? 0;
+      const totalMovies = yearMovies?.length ?? 0;
+      const percentage =
+        totalMovies > 0 ? Math.round((seenCount / totalMovies) * 100) : 0;
 
-    // Update userslist for the current user to their updated data
-    const userIndex = usersList.findIndex(
-      (user) => user.username === userSettings?.username
-    );
-
-    if (userIndex == -1) {
-      return;
-    }
-
-    const userYearMovies = seenMovies.find(
-      (list) => list.year === selectedYear
-    )?.seenMovies;
-
-    if (!userYearMovies) {
-      return;
-    }
-
-    setUsersList((prev) => {
-      const newUsersList = [...prev];
-      newUsersList[userIndex] = {
-        ...newUsersList[userIndex],
-        seen: userYearMovies.length,
-        percentage: Math.round(
-          (userYearMovies.length / yearMovies?.length) * 100
-        ),
+      return {
+        ...user,
+        seen: seenCount,
+        percentage: percentage,
       };
+    } else {
+      return user;
+    }
+  });
 
-      return newUsersList;
-    });
-  }, [seenMovies, selectedYear]);
-
-  const sortedUsersList = usersList.sort((a, b) => {
+  const sortedUsersList = updatedUsersList?.sort((a, b) => {
     if (a.seen > b.seen) {
       return -1;
     } else if (a.seen < b.seen) {
@@ -134,7 +114,7 @@ export default function Leaderboard({
         </Flex>
       ) : (
         <div>
-          {sortedUsersList.map((user, i) => {
+          {sortedUsersList?.map((user, i) => {
             if (!user.username) return null;
 
             return (

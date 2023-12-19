@@ -68,7 +68,7 @@ export const ProgressBar: FC<Props> = ({ nrOfMovies, seenNr = 0 }) => {
     return null;
   }
 
-  const percentage = Math.floor((seenNr / nrOfMovies) * 100);
+  const percentage = Math.round((seenNr / nrOfMovies) * 100);
 
   return (
     <Wrapper>

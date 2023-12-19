@@ -1,0 +1,13 @@
+name: Rebuild site (cron)
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+
+jobs:
+  trigger-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Webhook
+        run: |
+          curl -X GET '${{ secrets.VERCEL_DEPLOY_HOOK }}'

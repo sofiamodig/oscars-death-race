@@ -29,19 +29,22 @@ export const addMovieToSeenFunc = async ({
 }: Props) => {
   const docRef = doc(db, "users", userId);
   const currentDate = DateTime.now().toUTC().toISO();
-  const latestYear = movies && movies[movies.length - 1].year;
   const movieYearObj = movies.find((movie) => movie.year === year);
   const moviesList = movieYearObj ? movieYearObj.movies : [];
   const seenMoviesList =
     seenMovies.find((list) => list.year === year)?.seenMovies ?? [];
+
+  const filteredSeenMovies = seenMoviesList.filter((movie) => {
+    return moviesList.some((yearMovie) => yearMovie.imdbId === movie.imdbId);
+  });
 
   const isLatestYear = checkLatestYear(year, movies);
 
   const isCompletedRace =
     (isLatestYear &&
       !predictions &&
-      moviesList?.length === seenMoviesList?.length + 1) ||
-    (!isLatestYear && moviesList?.length === seenMoviesList?.length + 1);
+      moviesList?.length === filteredSeenMovies?.length + 1) ||
+    (!isLatestYear && moviesList?.length === filteredSeenMovies?.length + 1);
 
   const movieObj: SeenType = {
     imdbId,

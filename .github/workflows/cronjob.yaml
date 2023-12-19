@@ -1,8 +1,11 @@
 name: Rebuild site (cron)
 
 on:
-  schedule:
-    - cron: "26 18 * * *"
+  # schedule:
+  #   - cron: "26 18 * * *"
+  push:
+    branches:
+      - main
 
 jobs:
   trigger-webhook:

@@ -95,7 +95,7 @@ export default function Leaderboard({
             Leaderboard
           </Heading>
           <Paragraph size="sm">
-            The leaderboard is updated once each day. The interval will be
+            The leaderboard is updated every 2 hours. The interval will be
             shortened closer to the oscars.
           </Paragraph>
         </div>

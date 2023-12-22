@@ -112,11 +112,13 @@ export default function Home({
     }
   }, [selectedYear, latestYear, predictions, yearHasWinners, isLatestYear]);
 
-  const seenMoviesList = seenMovies
+  const seenMoviesImdbIds = seenMovies
     .find((list) => list.year === selectedYear)
-    ?.seenMovies?.filter((movie) =>
-      moviesList?.some((m) => m.imdbId === movie.imdbId)
-    );
+    ?.seenMovies?.map((movie) => movie.imdbId);
+
+  const seenMoviesList = yearObj?.movies.filter((movie) => {
+    return seenMoviesImdbIds?.includes(movie.imdbId);
+  });
 
   const filteredMovies = useMemo(() => {
     if (selectedCategory) {
@@ -150,7 +152,7 @@ export default function Home({
     if (hideSeen) {
       return filteredMovies?.filter((movie) => {
         return !seenMoviesList?.some(
-          (seenMovie: any) => seenMovie.imdbId === movie.imdbId
+          (seenMovie) => seenMovie.imdbId === movie.imdbId
         );
       });
     } else {
@@ -189,7 +191,7 @@ export default function Home({
       return `${moviesToDisplay?.length ?? "-"} movies`;
     }
 
-    const seenMoviesInCategory = seenMoviesList?.filter((movie: any) => {
+    const seenMoviesInCategory = seenMoviesList?.filter((movie) => {
       return filteredMovies?.some((filteredMovie) => {
         return filteredMovie.imdbId === movie.imdbId;
       });

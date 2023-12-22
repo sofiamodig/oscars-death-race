@@ -11,11 +11,7 @@ import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { getYearsList } from "@/utils";
-import {
-  LeaderboardType,
-  LeaderboardUser,
-  fetchUsers,
-} from "@/functions/fetchUsers";
+import { LeaderboardType, fetchUsers } from "@/functions/fetchUsers";
 import { Paragraph } from "@/components/paragraph";
 
 export const getStaticProps = (async () => {
@@ -52,9 +48,19 @@ export default function Leaderboard({
     if (user.username === userSettings?.username) {
       const userYearMovies = seenMovies
         ?.find((list) => list.year === selectedYear)
-        ?.seenMovies.filter((movie) =>
-          yearMovies?.some((m) => m.imdbId === movie.imdbId)
-        );
+        ?.seenMovies.filter((movie) => {
+          const uniqueImdbIds = new Set();
+          return yearMovies?.some((yearMovie) => {
+            if (
+              yearMovie.imdbId === movie.imdbId &&
+              !uniqueImdbIds.has(movie.imdbId)
+            ) {
+              uniqueImdbIds.add(movie.imdbId);
+              return true;
+            }
+            return false;
+          });
+        });
 
       const seenCount = userYearMovies?.length ?? 0;
       const totalMovies = yearMovies?.length ?? 0;

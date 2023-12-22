@@ -53,10 +53,12 @@ export const fetchUsers = async (movies: MoviesYearsListType) => {
           continue;
         }
 
-        const filteredSeenMovies = seenMovies.filter((movie: SeenType) => {
-          return yearMovies.some(
-            (yearMovie) => yearMovie.imdbId === movie.imdbId
-          );
+        const seenMoviesImdbIds = Array.from(
+          new Set(seenMovies.map((movie: SeenType) => movie.imdbId))
+        );
+
+        const filteredSeenMovies = yearMovies.filter((movie: MovieType) => {
+          return seenMoviesImdbIds.includes(movie.imdbId);
         });
 
         usersArray[year].push({

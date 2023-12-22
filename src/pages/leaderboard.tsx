@@ -46,23 +46,13 @@ export default function Leaderboard({
 
   const updatedUsersList = yearLeaderboard?.map((user) => {
     if (user.username === userSettings?.username) {
-      const userYearMovies = seenMovies
+      const seenMoviesImdbIds = seenMovies
         ?.find((list) => list.year === selectedYear)
-        ?.seenMovies.filter((movie) => {
-          const uniqueImdbIds = new Set();
-          return yearMovies?.some((yearMovie) => {
-            if (
-              yearMovie.imdbId === movie.imdbId &&
-              !uniqueImdbIds.has(movie.imdbId)
-            ) {
-              uniqueImdbIds.add(movie.imdbId);
-              return true;
-            }
-            return false;
-          });
-        });
+        ?.seenMovies.map((movie) => movie.imdbId);
 
-      const seenCount = userYearMovies?.length ?? 0;
+      const seenCount =
+        yearMovies?.filter((movie) => seenMoviesImdbIds?.includes(movie.imdbId))
+          .length ?? 0;
       const totalMovies = yearMovies?.length ?? 0;
       const percentage =
         totalMovies > 0 ? Math.round((seenCount / totalMovies) * 100) : 0;

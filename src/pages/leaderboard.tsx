@@ -11,7 +11,11 @@ import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { getYearsList } from "@/utils";
-import { LeaderboardType, fetchUsers } from "@/functions/fetchUsers";
+import {
+  LeaderboardType,
+  LeaderboardUser,
+  fetchUsers,
+} from "@/functions/fetchUsers";
 import { Paragraph } from "@/components/paragraph";
 
 export const getStaticProps = (async () => {
@@ -29,59 +33,70 @@ export default function Leaderboard({
   leaderboard,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const [selectedYear, setSelectedYear] = useState<string>();
-  const yearLeaderboard = selectedYear ? leaderboard[selectedYear] : null;
+  const [yearLeaderboard, setYearLeaderboard] = useState<LeaderboardUser[]>();
+  const [usersList, setUsersList] = useState<LeaderboardUser[]>();
   const { seenMovies, userSettings, loading } = useSeenContext();
   const { yearsList } = getYearsList(movies);
 
-  const yearMovies = useMemo(
-    () => movies.find((movie) => movie.year === selectedYear)?.movies,
-    [movies, selectedYear]
-  );
+  useEffect(() => {
+    if (selectedYear) {
+      setUsersList(undefined);
+      setYearLeaderboard(leaderboard[selectedYear]);
+    }
+  }, [selectedYear]);
+
+  const yearMovies =
+    movies.find((movie) => movie.year === selectedYear)?.movies ?? [];
 
   useEffect(() => {
     if (!selectedYear) {
       setSelectedYear(yearsList[0].value);
     }
-  }, [yearsList]);
+  }, [yearsList, selectedYear]);
 
-  const updatedUsersList = yearLeaderboard?.map((user) => {
-    if (user.username === userSettings?.username) {
-      const seenMoviesImdbIds = seenMovies
-        ?.find((list) => list.year === selectedYear)
-        ?.seenMovies.map((movie) => movie.imdbId);
+  useEffect(() => {
+    const updatedUsersList = yearLeaderboard?.map((user) => {
+      if (user.username === userSettings?.username) {
+        const seenMoviesImdbIds = seenMovies
+          ?.find((list) => list.year === selectedYear)
+          ?.seenMovies.map((movie) => movie.imdbId);
 
-      const seenCount =
-        yearMovies?.filter((movie) => seenMoviesImdbIds?.includes(movie.imdbId))
-          .length ?? 0;
-      const totalMovies = yearMovies?.length ?? 0;
-      const percentage =
-        totalMovies > 0 ? Math.round((seenCount / totalMovies) * 100) : 0;
+        const seenCount =
+          yearMovies?.filter((movie) =>
+            seenMoviesImdbIds?.includes(movie.imdbId)
+          ).length ?? 0;
+        const totalMovies = yearMovies?.length ?? 0;
+        const percentage =
+          totalMovies > 0 ? Math.round((seenCount / totalMovies) * 100) : 0;
 
-      return {
-        ...user,
-        seen: seenCount,
-        percentage: percentage,
-      };
-    } else {
-      return user;
-    }
-  });
+        return {
+          ...user,
+          seen: seenCount,
+          percentage: percentage,
+        };
+      } else {
+        return user;
+      }
+    });
 
-  const sortedUsersList = updatedUsersList?.sort((a, b) => {
-    if (a.seen > b.seen) {
-      return -1;
-    } else if (a.seen < b.seen) {
-      return 1;
-    } else {
-      const dateA = a.completed
-        ? DateTime.fromISO(a.completed)
-        : DateTime.now();
-      const dateB = b.completed
-        ? DateTime.fromISO(b.completed)
-        : DateTime.now();
-      return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
-    }
-  });
+    const sortedUsersList = updatedUsersList?.sort((a, b) => {
+      if (a.seen > b.seen) {
+        return -1;
+      } else if (a.seen < b.seen) {
+        return 1;
+      } else {
+        const dateA = a.completed
+          ? DateTime.fromISO(a.completed)
+          : DateTime.now();
+        const dateB = b.completed
+          ? DateTime.fromISO(b.completed)
+          : DateTime.now();
+        return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
+      }
+    });
+
+    setUsersList(sortedUsersList);
+  }, [selectedYear, yearLeaderboard]);
 
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
@@ -110,12 +125,12 @@ export default function Leaderboard({
         </Flex>
       ) : (
         <div>
-          {sortedUsersList?.map((user, i) => {
+          {usersList?.map((user, i) => {
             if (!user.username) return null;
 
             return (
               <LeaderboardItem
-                key={user.username}
+                key={selectedYear + user.username + Math.random()}
                 username={user.username}
                 percentage={user.percentage}
                 completed={

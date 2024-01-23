@@ -103,32 +103,6 @@ export const spacingToPixels = (size?: SpacingSize) => {
   }
 };
 
-export const OSCARS_CATEGORIES = [
-  "Best Picture",
-  "Best Director",
-  "Best Actor",
-  "Best Actress",
-  "Best Supporting Actor",
-  "Best Supporting Actress",
-  "Best Animated Feature",
-  "Best Animated Short",
-  "Best Cinematography",
-  "Best Costume Design",
-  "Best Documentary Feature",
-  "Best Documentary Short",
-  "Best Film Editing",
-  "Best International Feature",
-  "Best Live Action Short",
-  "Best Makeup and Hairstyling",
-  "Best Original Score",
-  "Best Original Song",
-  "Best Production Design",
-  "Best Sound",
-  "Best Visual Effects",
-  "Best Adapted Screenplay",
-  "Best Original Screenplay",
-];
-
 export const getYearsList = (movies: MoviesYearsListType) => {
   const list = Object.values(movies)
     .map((doc) => {

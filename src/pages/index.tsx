@@ -4,7 +4,7 @@ import { fetchMovies } from "@/functions/fetchMovies";
 import { MoviesYearsListType } from "@/types";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
-  OSCARS_CATEGORIES,
+  CATEGORIES,
   checkLatestYear,
   cleanupCategory,
   formatCategory,
@@ -181,7 +181,7 @@ export default function Home({
     localStorage.setItem("hideSeen", (!hideSeen).toString());
   };
 
-  const categoriesList = OSCARS_CATEGORIES.map((category) => ({
+  const categoriesList = CATEGORIES.map((category) => ({
     value: cleanupCategory(category),
     label: formatCategory(category),
   }));

@@ -55,15 +55,17 @@ export default function Leaderboard({
   }, [yearsList, selectedYear]);
 
   useEffect(() => {
-    const updatedUsersList = yearLeaderboard?.map((user) => {
+    const updatedUsersList = yearLeaderboard?.map((user, i) => {
       if (user.username === userSettings?.username) {
         const seenMoviesImdbIds = seenMovies
           ?.find((list) => list.year === selectedYear)
           ?.seenMovies.map((movie) => movie.imdbId);
 
+        const uniqueSeenMoviesImdbIds = Array.from(new Set(seenMoviesImdbIds));
+
         const seenCount =
           yearMovies?.filter((movie) =>
-            seenMoviesImdbIds?.includes(movie.imdbId)
+            uniqueSeenMoviesImdbIds?.includes(movie.imdbId)
           ).length ?? 0;
         const totalMovies = yearMovies?.length ?? 0;
         const percentage =

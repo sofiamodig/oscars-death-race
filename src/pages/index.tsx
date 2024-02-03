@@ -116,8 +116,10 @@ export default function Home({
     .find((list) => list.year === selectedYear)
     ?.seenMovies?.map((movie) => movie.imdbId);
 
+  const uniqueSeenMoviesImdbIds = Array.from(new Set(seenMoviesImdbIds));
+
   const seenMoviesList = yearObj?.movies.filter((movie) => {
-    return seenMoviesImdbIds?.includes(movie.imdbId);
+    return uniqueSeenMoviesImdbIds?.includes(movie.imdbId);
   });
 
   const filteredMovies = useMemo(() => {

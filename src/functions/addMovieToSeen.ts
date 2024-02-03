@@ -38,13 +38,17 @@ export const addMovieToSeenFunc = async ({
     return moviesList.some((yearMovie) => yearMovie.imdbId === movie.imdbId);
   });
 
+  const seenMoviesImdbIds = Array.from(
+    new Set(filteredSeenMovies.map((movie) => movie.imdbId))
+  );
+
   const isLatestYear = checkLatestYear(year, movies);
 
   const isCompletedRace =
     (isLatestYear &&
       !predictions &&
-      moviesList?.length === filteredSeenMovies?.length + 1) ||
-    (!isLatestYear && moviesList?.length === filteredSeenMovies?.length + 1);
+      moviesList?.length === seenMoviesImdbIds?.length + 1) ||
+    (!isLatestYear && moviesList?.length === seenMoviesImdbIds?.length + 1);
 
   const movieObj: SeenType = {
     imdbId,

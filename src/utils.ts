@@ -42,8 +42,24 @@ export const sortCategories = (categories: string[]) => {
   });
 };
 
+const normalizeCategory = (category: string): string => {
+  const categoryMap: { [key: string]: string } = {
+    "Best Animated Feature Film": "Best Animated Feature",
+    "Best Animated Short Film": "Best Animated Short",
+    "Best Live Action Short Film": "Best Live Action Short",
+    "Best International Feature Film": "Best International Feature",
+    "Best Documentary Short Subject": "Best Documentary Short",
+  };
+
+  if (categoryMap[category]) {
+    console.log("categoryMap[category]", categoryMap[category]);
+  }
+  return categoryMap[category] ?? category;
+};
+
 export const cleanupCategory = (category: string) => {
-  return category.toLowerCase().replace(/ /g, "-");
+  const normalizedCategory = normalizeCategory(category);
+  return normalizedCategory.toLowerCase().replace(/ /g, "-");
 };
 
 export const formatCategory = (category: string) => {

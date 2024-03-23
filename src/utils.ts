@@ -51,9 +51,6 @@ const normalizeCategory = (category: string): string => {
     "Best Documentary Short Subject": "Best Documentary Short",
   };
 
-  if (categoryMap[category]) {
-    console.log("categoryMap[category]", categoryMap[category]);
-  }
   return categoryMap[category] ?? category;
 };
 
@@ -126,7 +123,13 @@ export const getYearsList = (movies: MoviesYearsListType) => {
     })
     .reverse();
 
-  return { yearsList: list, latestYear: list[0] };
+  const yearsToShow = [
+    "2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014",
+  ];
+
+  const filteredList = list.filter((year) => yearsToShow.includes(year.value));
+
+  return { yearsList: filteredList, latestYear: filteredList[0] };
 };
 
 export const emailRegex = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;

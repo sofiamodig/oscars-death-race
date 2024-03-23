@@ -437,7 +437,7 @@ export default function Statistics({
           <tbody>
             {movies.map((obj) => {
               return (
-                <TableRow key={obj.year}>
+                <TableRow key={"statistics-" + obj.year}>
                   <td>{obj.year}</td>
                   <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
                   <td>{getRaceLength(obj.movies)}</td>

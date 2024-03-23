@@ -4,9 +4,12 @@ import { fetchMovies } from "@/functions/fetchMovies";
 import { MovieType, MoviesYearsListType } from "@/types";
 import styled from "styled-components";
 import { minutesToHours } from "@/utils";
+import { useEffect } from "react";
 
 const Wrapper = styled.div`
-  padding: 24px;
+  padding: 24px 24px 0;
+  max-width: 1400px;
+  margin: 0 auto;
 `;
 
 const PageTitle = styled.h1`
@@ -19,9 +22,18 @@ const PageTitle = styled.h1`
   }
 `;
 
+const TableWrapper = styled.div`
+  overflow-x: auto;
+  padding: 10px 24px 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 8px;
 
   thead {
     tr {
@@ -72,6 +84,14 @@ export const getStaticProps = (async () => {
 export default function Statistics({
   movies,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  useEffect(() => {
+    document.body.classList.add("main-full-width");
+
+    return () => {
+      document.body.classList.remove("main-full-width");
+    };
+  });
+
   const getRaceLength = (yearMovies: MovieType[]) => {
     const totalMinutes = yearMovies.reduce((acc, movie) => {
       if (movie.duration) {
@@ -324,6 +344,30 @@ export default function Statistics({
       .join(", ");
   };
 
+  const getMedianAndAverageMovieLength = (yearMovies: MovieType[]) => {
+    const durations = yearMovies
+      .filter((movie) => movie.duration && movie.duration > 60)
+      .map((movie) => movie.duration ?? 0)
+      .sort((a, b) => a - b);
+
+    if (durations.length === 0) {
+      return {
+        median: "No data",
+        average: "No data",
+      };
+    }
+
+    const half = Math.floor(durations.length / 2);
+
+    return {
+      median: minutesToHours((durations[half - 1] + durations[half]) / 2),
+      average: minutesToHours(
+        durations.reduce((acc, duration) => acc + duration, 0) /
+          durations.length
+      ),
+    };
+  };
+
   const reversedList = movies.reverse();
 
   return (
@@ -354,59 +398,62 @@ export default function Statistics({
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff"></meta>
       </Head>
-      <main>
-        <Wrapper>
-          <PageTitle>
-            Statistics <span>(since 2014)</span>
-          </PageTitle>
-          <AllTime>
-            <p>
-              <strong>Most wins:</strong> {getMostWinsAllTime()}
-            </p>
-            <p>
-              <strong>Most nominations:</strong> {getMostNominationsAllTime()}
-            </p>
-            <p>
-              <strong>Longest race:</strong> {getLongestRace()}
-            </p>
-            <p>
-              <strong>Longest movie:</strong> {getLongestMovieAllTime()}
-            </p>
-            <p>
-              <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
-            </p>
-          </AllTime>
+      <Wrapper>
+        <PageTitle>
+          Statistics <span>(since 2007)</span>
+        </PageTitle>
+        <AllTime>
+          <p>
+            <strong>Most wins:</strong> {getMostWinsAllTime()}
+          </p>
+          <p>
+            <strong>Most nominations:</strong> {getMostNominationsAllTime()}
+          </p>
+          <p>
+            <strong>Longest race:</strong> {getLongestRace()}
+          </p>
+          <p>
+            <strong>Longest movie:</strong> {getLongestMovieAllTime()}
+          </p>
+          <p>
+            <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
+          </p>
+        </AllTime>
+      </Wrapper>
 
-          <Table>
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>Nr of Movies</th>
-                <th>Race length</th>
-                <th>Best Picture Winner</th>
-                <th>Most wins</th>
-                <th>Most nominations</th>
-                <th>Longest movie</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reversedList.map((obj) => {
-                return (
-                  <TableRow key={obj.year}>
-                    <td>{obj.year}</td>
-                    <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
-                    <td>{getRaceLength(obj.movies)}</td>
-                    <td>{getBestPictureWinner(obj.movies)}</td>
-                    <td>{getMostWins(obj.movies)}</td>
-                    <td>{getMostNominations(obj.movies)}</td>
-                    <td>{getLongestMovie(obj.movies)}</td>
-                  </TableRow>
-                );
-              })}
-            </tbody>
-          </Table>
-        </Wrapper>
-      </main>
+      <TableWrapper>
+        <Table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Nr of Movies</th>
+              <th>Race length</th>
+              <th>Best Picture Winner</th>
+              <th>Most wins</th>
+              <th>Most nominations</th>
+              <th>Average length*</th>
+              <th>Longest movie</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reversedList.map((obj) => {
+              return (
+                <TableRow key={obj.year}>
+                  <td>{obj.year}</td>
+                  <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
+                  <td>{getRaceLength(obj.movies)}</td>
+                  <td>{getBestPictureWinner(obj.movies)}</td>
+                  <td>{getMostWins(obj.movies)}</td>
+                  <td>{getMostNominations(obj.movies)}</td>
+                  <td>{getMedianAndAverageMovieLength(obj.movies).average}</td>
+                  <td>{getLongestMovie(obj.movies)}</td>
+                </TableRow>
+              );
+            })}
+          </tbody>
+        </Table>
+        <p>* Average movie length excludes short films</p>
+      </TableWrapper>
     </>
   );
 }

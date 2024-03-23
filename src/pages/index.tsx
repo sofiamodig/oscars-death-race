@@ -1,7 +1,7 @@
 import Head from "next/head";
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { fetchMovies } from "@/functions/fetchMovies";
-import { MoviesYearsListType } from "@/types";
+import { MovieType, MoviesYearsListType } from "@/types";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   CATEGORIES,
@@ -9,6 +9,7 @@ import {
   cleanupCategory,
   formatCategory,
   getYearsList,
+  sortCategories,
 } from "@/utils";
 import { MovieCard } from "@/components/movieCard";
 import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
@@ -183,7 +184,29 @@ export default function Home({
     localStorage.setItem("hideSeen", (!hideSeen).toString());
   };
 
-  const categoriesList = CATEGORIES.map((category) => ({
+  function extractUniqueCategories(moviesList?: MovieType[]) {
+    if (!moviesList) {
+      return [];
+    }
+
+    const categorySet: Set<string> = new Set();
+
+    moviesList.forEach((movie: MovieType) => {
+      if (movie.categories) {
+        movie.categories.forEach((category) => categorySet.add(category));
+      }
+      if (movie.wonCategories) {
+        movie.wonCategories.forEach((category) => categorySet.add(category));
+      }
+    });
+
+    // Convert the Set of unique strings back to an array before returning
+    return Array.from(categorySet);
+  }
+
+  const allCategories = sortCategories(extractUniqueCategories(moviesList));
+
+  const categoriesList = allCategories.map((category) => ({
     value: cleanupCategory(category),
     label: formatCategory(category),
   }));

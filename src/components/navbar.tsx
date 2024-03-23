@@ -94,6 +94,7 @@ const Navbar: React.FC = () => {
       </Logo>
       <NavLinks>
         {isAdmin && <NavLink href="/admin">Admin</NavLink>}
+        {isSignedIn && <NavLink href="/statistics">Statistics</NavLink>}
         {isSignedIn && <NavLink href="/leaderboard">Leaderboard</NavLink>}
         {!isSignedIn && (
           <NavLink type="link" href="/login">

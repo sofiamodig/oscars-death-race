@@ -162,3 +162,7 @@ abbr[title] {
   background-color: #fff !important;
   opacity: 0.6 !important;
 }
+
+.main-full-width main {
+  width: 100%;
+}

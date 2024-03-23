@@ -35,3 +35,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# script stuff
+/public/data/
+/public/formattedData/
+/src/pages/script.tsx
+/src/pages/scriptAddYear.tsx
+/src/groupedByCermony.json
+/src/oscars.json

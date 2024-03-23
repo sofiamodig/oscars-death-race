@@ -140,7 +140,7 @@ export default function Statistics({
             <tbody>
               {reversedList.map((obj) => {
                 return (
-                  <tr>
+                  <tr key={obj.year}>
                     <td>{obj.year}</td>
                     <td>{obj.movies.length}</td>
                     <td>{getRaceLength(obj.movies)}</td>

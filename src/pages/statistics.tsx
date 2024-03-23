@@ -24,7 +24,7 @@ const PageTitle = styled.h1`
 
 const TableWrapper = styled.div`
   overflow-x: auto;
-  padding: 10px 24px 24px;
+  padding: 24px;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
@@ -64,9 +64,13 @@ const TableRow = styled.tr`
 const AllTime = styled.div`
   background-color: var(--color-primary-300);
   padding: 16px;
-  margin-bottom: 40px;
+  margin-bottom: 8px;
   border-radius: 8px;
   max-width: 600px;
+`;
+
+const Name = styled.span`
+  text-transform: capitalize;
 `;
 
 type WonCategoriesType = {
@@ -369,6 +373,80 @@ export default function Statistics({
     };
   };
 
+  const getMostNominatedDirector = () => {
+    const directorCount: { [key: string]: number } = {};
+    const directorMovies: { [key: string]: string[] } = {};
+
+    movies.forEach((yearData) => {
+      yearData.movies.forEach((movie) => {
+        const categories = JSON.stringify(movie.categories).toLowerCase();
+
+        if (!categories.includes("director")) return;
+
+        const director = movie.director.toLowerCase();
+        if (directorCount[director]) {
+          directorCount[director] += 1;
+          directorMovies[director].push(movie.title);
+        } else {
+          directorCount[director] = 1;
+          directorMovies[director] = [movie.title];
+        }
+      });
+    });
+
+    let maxNominations = 0;
+    let mostNominatedDirector = "";
+
+    for (const director in directorCount) {
+      if (directorCount[director] > maxNominations) {
+        maxNominations = directorCount[director];
+        mostNominatedDirector = director;
+      }
+    }
+
+    return {
+      name: mostNominatedDirector,
+      movies: directorMovies[mostNominatedDirector] || [],
+    };
+  };
+
+  const mostAppearedActor = () => {
+    const actorCount: { [key: string]: number } = {};
+    const actorMovies: { [key: string]: string[] } = {};
+
+    movies.forEach((yearData) => {
+      yearData.movies.forEach((movie) => {
+        const cast = movie.cast.split(", ");
+        cast.forEach((actor) => {
+          if (actor === "N/A") return;
+          const actorLower = actor.toLowerCase();
+          if (actorCount[actorLower]) {
+            actorCount[actorLower] += 1;
+            actorMovies[actorLower].push(movie.title);
+          } else {
+            actorCount[actorLower] = 1;
+            actorMovies[actorLower] = [movie.title];
+          }
+        });
+      });
+    });
+
+    let maxAppearances = 0;
+    let mostAppearedActor = "";
+
+    for (const actor in actorCount) {
+      if (actorCount[actor] > maxAppearances) {
+        maxAppearances = actorCount[actor];
+        mostAppearedActor = actor;
+      }
+    }
+
+    return {
+      name: mostAppearedActor,
+      movies: actorMovies[mostAppearedActor] || [],
+    };
+  };
+
   return (
     <>
       <Head>
@@ -417,7 +495,22 @@ export default function Statistics({
           <p>
             <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
           </p>
+          <p>
+            <strong>Most nominated director: </strong>{" "}
+            <Name>{getMostNominatedDirector().name}</Name> (
+            {getMostNominatedDirector().movies.join(", ")})
+          </p>
+          <p>
+            <strong style={{ display: "block" }}>
+              Appeared most times*:{" "}
+              <span style={{ textTransform: "capitalize" }}>
+                {mostAppearedActor().name}
+              </span>
+            </strong>
+            {mostAppearedActor().movies.join(", ")}
+          </p>
         </AllTime>
+        <p style={{ fontSize: "12px" }}>* Listed in "Stars" on IMDB</p>
       </Wrapper>
 
       <TableWrapper>
@@ -451,7 +544,9 @@ export default function Statistics({
             })}
           </tbody>
         </Table>
-        <p>* Average movie length excludes short films</p>
+        <p style={{ fontSize: "12px" }}>
+          * Average movie length excludes short films
+        </p>
       </TableWrapper>
     </>
   );

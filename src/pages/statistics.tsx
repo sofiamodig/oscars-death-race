@@ -76,7 +76,8 @@ type WonCategoriesType = {
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
-  return { props: { movies } };
+  const reversedList = movies.reverse();
+  return { props: { movies: reversedList } };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
 }>;
@@ -345,7 +346,7 @@ export default function Statistics({
   };
 
   const getMedianAndAverageMovieLength = (yearMovies: MovieType[]) => {
-    const durations = yearMovies
+    const durations = [...yearMovies]
       .filter((movie) => movie.duration && movie.duration > 60)
       .map((movie) => movie.duration ?? 0)
       .sort((a, b) => a - b);
@@ -367,8 +368,6 @@ export default function Statistics({
       ),
     };
   };
-
-  const reversedList = movies.reverse();
 
   return (
     <>
@@ -436,7 +435,7 @@ export default function Statistics({
             </tr>
           </thead>
           <tbody>
-            {reversedList.map((obj) => {
+            {movies.map((obj) => {
               return (
                 <TableRow key={obj.year}>
                   <td>{obj.year}</td>

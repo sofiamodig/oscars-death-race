@@ -510,7 +510,9 @@ export default function Statistics({
             {mostAppearedActor().movies.join(", ")}
           </p>
         </AllTime>
-        <p style={{ fontSize: "12px" }}>* Listed in "Stars" on IMDB</p>
+        <p style={{ fontSize: "12px" }}>
+          * Listed in &quot;Stars&quot; on IMDB
+        </p>
       </Wrapper>
 
       <TableWrapper>

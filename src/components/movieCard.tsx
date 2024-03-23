@@ -1,6 +1,6 @@
 import { FC, useContext, useState } from "react";
 
-import { formatCategory, sortCategories } from "../utils";
+import { formatCategory, minutesToHours, sortCategories } from "../utils";
 
 import { Calendar } from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -248,7 +248,7 @@ export const MovieCard: FC<Props> = ({
             ))}
             {data.title}
           </Title>
-          {data.duration && <Time>{data.duration} min</Time>}
+          {data.duration && <Time>{minutesToHours(data.duration)}</Time>}
         </TitleWrapper>
         <p>
           <strong>Director:</strong> {data.director}

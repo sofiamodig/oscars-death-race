@@ -3,9 +3,58 @@ import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { MovieType, MoviesYearsListType } from "@/types";
 import styled from "styled-components";
+import { minutesToHours } from "@/utils";
 
 const Wrapper = styled.div`
   padding: 24px;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 40px;
+  margin-bottom: 16px;
+
+  span {
+    font-size: 24px;
+    font-weight: 400;
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    tr {
+      background-color: var(--color-neutral-700);
+      color: var(--color-neutral-0);
+    }
+  }
+
+  th {
+    padding: 8px;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  td {
+    padding: 8px;
+  }
+`;
+
+const TableRow = styled.tr`
+  background-color: var(--color-neutral-200);
+
+  &:nth-child(2n + 1) {
+    background-color: var(--color-neutral-300);
+  }
+`;
+
+const AllTime = styled.div`
+  background-color: var(--color-primary-300);
+  padding: 16px;
+  margin-bottom: 40px;
+  border-radius: 8px;
+  max-width: 600px;
 `;
 
 type WonCategoriesType = {
@@ -38,6 +87,25 @@ export default function Statistics({
       return "No data";
     }
     return `${hours}h ${remainingMinutes}min`;
+  };
+
+  const getLongestMovie = (yearMovies: MovieType[]) => {
+    const longestMovie = yearMovies.reduce(
+      (acc, movie) => {
+        if (movie.duration && movie.duration > acc.duration) {
+          acc.duration = movie.duration;
+          acc.title = movie.title;
+        }
+        return acc;
+      },
+      { duration: 0, title: "" }
+    );
+
+    if (longestMovie.duration === 0) {
+      return "No data";
+    }
+
+    return `${longestMovie.title} (${minutesToHours(longestMovie.duration)})`;
   };
 
   const getMostWins = (yearMovies: MovieType[]) => {
@@ -94,6 +162,168 @@ export default function Statistics({
     return bestPictureWinner?.title ?? "Waiting for the Oscars";
   };
 
+  const getLongestRace = () => {
+    const longestRace = movies.reduce(
+      (acc, year) => {
+        const totalMinutes = year.movies.reduce((acc, movie) => {
+          if (movie.duration) {
+            return acc + movie.duration;
+          }
+          return acc;
+        }, 0);
+
+        if (totalMinutes > acc.duration) {
+          acc.duration = totalMinutes;
+          acc.year = year.year;
+        }
+        return acc;
+      },
+      { duration: 0, year: "" }
+    );
+
+    return `${longestRace.year} (${minutesToHours(longestRace.duration)})`;
+  };
+
+  const getLongestMovieAllTime = () => {
+    const longestMovie = movies.reduce(
+      (acc, year) => {
+        const movie = year.movies.reduce(
+          (acc, movie) => {
+            if (movie.duration && movie.duration > acc.duration) {
+              acc.duration = movie.duration;
+              acc.title = movie.title;
+            }
+            return acc;
+          },
+          { duration: 0, title: "", year: "" }
+        );
+
+        if (movie.duration > acc.duration) {
+          acc.duration = movie.duration;
+          acc.title = movie.title;
+          acc.year = year.year;
+        }
+
+        return acc;
+      },
+      { duration: 0, title: "", year: "" }
+    );
+
+    return `${longestMovie.title}, ${longestMovie.year} - (${minutesToHours(
+      longestMovie.duration
+    )})`;
+  };
+
+  const getShortestMovieAllTime = () => {
+    const shortestMovie = movies.reduce(
+      (acc, year) => {
+        const movie = year.movies.reduce(
+          (acc, movie) => {
+            if (movie.duration && movie.duration < acc.duration) {
+              acc.duration = movie.duration;
+              acc.title = movie.title;
+            }
+            return acc;
+          },
+          { duration: Infinity, title: "", year: "" }
+        );
+
+        if (movie.duration < acc.duration) {
+          acc.duration = movie.duration;
+          acc.title = movie.title;
+          acc.year = year.year;
+        }
+
+        return acc;
+      },
+      { duration: Infinity, title: "", year: "" }
+    );
+
+    return `${shortestMovie.title}, ${shortestMovie.year} - (${minutesToHours(
+      shortestMovie.duration
+    )})`;
+  };
+
+  const getMostWinsAllTime = () => {
+    const result = movies.reduce(
+      (
+        acc: {
+          nrOfWins: number;
+          movies: string[];
+        },
+        year
+      ) => {
+        const yearResult = year.movies.reduce(
+          (acc: WonCategoriesType, movie) => {
+            const categoryCount = movie.wonCategories?.length ?? 0;
+            if (categoryCount > acc.maxCategories) {
+              acc.maxCategories = categoryCount;
+              acc.movies = [movie.title];
+            } else if (categoryCount === acc.maxCategories) {
+              acc.movies.push(movie.title);
+            }
+            return acc;
+          },
+          { maxCategories: 0, movies: [] }
+        );
+
+        if (yearResult.maxCategories > acc.nrOfWins) {
+          acc.nrOfWins = yearResult.maxCategories;
+          acc.movies = yearResult.movies;
+        } else if (yearResult.maxCategories === acc.nrOfWins) {
+          acc.movies.push(...yearResult.movies);
+        }
+
+        return acc;
+      },
+      { nrOfWins: 0, movies: [] }
+    );
+
+    return result.movies
+      .map((title) => `${title} (${result.nrOfWins})`)
+      .join(", ");
+  };
+
+  const getMostNominationsAllTime = () => {
+    const result = movies.reduce(
+      (
+        acc: {
+          nrOfNominations: number;
+          movies: string[];
+        },
+        year
+      ) => {
+        const yearResult = year.movies.reduce(
+          (acc: WonCategoriesType, movie) => {
+            const categoryCount = movie.categories?.length ?? 0;
+            if (categoryCount > acc.maxCategories) {
+              acc.maxCategories = categoryCount;
+              acc.movies = [movie.title];
+            } else if (categoryCount === acc.maxCategories) {
+              acc.movies.push(movie.title);
+            }
+            return acc;
+          },
+          { maxCategories: 0, movies: [] }
+        );
+
+        if (yearResult.maxCategories > acc.nrOfNominations) {
+          acc.nrOfNominations = yearResult.maxCategories;
+          acc.movies = yearResult.movies;
+        } else if (yearResult.maxCategories === acc.nrOfNominations) {
+          acc.movies.push(...yearResult.movies);
+        }
+
+        return acc;
+      },
+      { nrOfNominations: 0, movies: [] }
+    );
+
+    return result.movies
+      .map((title) => `${title} (${result.nrOfNominations})`)
+      .join(", ");
+  };
+
   const reversedList = movies.reverse();
 
   return (
@@ -126,7 +356,28 @@ export default function Statistics({
       </Head>
       <main>
         <Wrapper>
-          <table>
+          <PageTitle>
+            Statistics <span>(since 2014)</span>
+          </PageTitle>
+          <AllTime>
+            <p>
+              <strong>Most wins:</strong> {getMostWinsAllTime()}
+            </p>
+            <p>
+              <strong>Most nominations:</strong> {getMostNominationsAllTime()}
+            </p>
+            <p>
+              <strong>Longest race:</strong> {getLongestRace()}
+            </p>
+            <p>
+              <strong>Longest movie:</strong> {getLongestMovieAllTime()}
+            </p>
+            <p>
+              <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
+            </p>
+          </AllTime>
+
+          <Table>
             <thead>
               <tr>
                 <th>Year</th>
@@ -135,23 +386,25 @@ export default function Statistics({
                 <th>Best Picture Winner</th>
                 <th>Most wins</th>
                 <th>Most nominations</th>
+                <th>Longest movie</th>
               </tr>
             </thead>
             <tbody>
               {reversedList.map((obj) => {
                 return (
-                  <tr key={obj.year}>
+                  <TableRow key={obj.year}>
                     <td>{obj.year}</td>
-                    <td>{obj.movies.length}</td>
+                    <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
                     <td>{getRaceLength(obj.movies)}</td>
                     <td>{getBestPictureWinner(obj.movies)}</td>
                     <td>{getMostWins(obj.movies)}</td>
                     <td>{getMostNominations(obj.movies)}</td>
-                  </tr>
+                    <td>{getLongestMovie(obj.movies)}</td>
+                  </TableRow>
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         </Wrapper>
       </main>
     </>

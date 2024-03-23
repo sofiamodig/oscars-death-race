@@ -164,3 +164,12 @@ export const validateUsername = (username: string) => {
     return "Username can not be an email";
   }
 };
+
+export const minutesToHours = (minutes: number) => {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours < 1) return `${remainingMinutes}min`;
+
+  return `${hours}h ${remainingMinutes}min`;
+};

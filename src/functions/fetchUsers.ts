@@ -31,7 +31,7 @@ export const fetchUsers = async (movies: MoviesYearsListType) => {
     for (const key in obj) {
       const year = parseInt(key, 10);
 
-      if (!isNaN(year) && year >= 1990) {
+      if (!isNaN(year) && year >= 1890) {
         const yearString = year.toString();
         if (!usersArray[yearString]) {
           usersArray[yearString] = [] as LeaderboardUser[];

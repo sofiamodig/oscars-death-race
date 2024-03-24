@@ -218,6 +218,9 @@ export const MovieCard: FC<Props> = ({
     ? sortCategories(data.categories)
     : [];
 
+  const posterUrl =
+    data.posterUrl && data.posterUrl !== "N/A" ? data.posterUrl : "";
+
   return (
     <Wrapper>
       <CheckButton
@@ -234,7 +237,7 @@ export const MovieCard: FC<Props> = ({
           <span>{seenDate.toFormat("dd/MM-yy")}</span>
         )}
       </CheckButton>
-      <ImageWrapper style={{ backgroundImage: `url(${data.posterUrl})` }} />
+      <ImageWrapper style={{ backgroundImage: `url(${posterUrl})` }} />
       <Content>
         <TitleWrapper>
           <Title>

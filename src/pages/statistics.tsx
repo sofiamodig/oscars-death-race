@@ -477,7 +477,7 @@ export default function Statistics({
       </Head>
       <Wrapper>
         <PageTitle>
-          Statistics <span>(since 2007)</span>
+          Statistics <span>(since 1988)</span>
         </PageTitle>
         <AllTime>
           <p>
@@ -496,15 +496,20 @@ export default function Statistics({
             <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
           </p>
           <p>
-            <strong>Most nominated director: </strong>{" "}
-            <Name>{getMostNominatedDirector().name}</Name> (
-            {getMostNominatedDirector().movies.join(", ")})
+            <strong style={{ display: "block" }}>
+              Most nominated director:{" "}
+              <span style={{ textTransform: "capitalize" }}>
+                {getMostNominatedDirector().name} (
+                {getMostNominatedDirector().movies.length})
+              </span>
+            </strong>
+            {getMostNominatedDirector().movies.join(", ")}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Appeared most times*:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {mostAppearedActor().name}
+                {mostAppearedActor().name} ({mostAppearedActor().movies.length})
               </span>
             </strong>
             {mostAppearedActor().movies.join(", ")}

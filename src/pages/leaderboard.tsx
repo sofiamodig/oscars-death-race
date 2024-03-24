@@ -112,14 +112,15 @@ export default function Leaderboard({
             closer to the oscars.
           </Paragraph>
         </div>
-        <Dropdown
-          options={yearsList}
-          onChange={(option) => {
-            setSelectedYear(option.value);
-          }}
-          value={selectedYear}
-          placeholder="Year"
-        />
+        <div className="custom-select-wrapper" style={{ width: "90px" }}>
+          <select onChange={(e) => setSelectedYear(e.target.value)}>
+            {yearsList.map((year) => (
+              <option key={year.value} value={year.value}>
+                {year.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </Flex>
       {loading || !yearMovies?.length ? (
         <Flex $justifyContent="center" $marginTop="lg">

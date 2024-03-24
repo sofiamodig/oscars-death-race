@@ -166,3 +166,53 @@ abbr[title] {
 .main-full-width main {
   width: 100%;
 }
+
+/* Base styling for the select element */
+select {
+  appearance: none; /* Removes default styling provided by the browser */
+  background-color: #fff; /* Light grey background */
+  border: 1px solid #ddd; /* Light grey border */
+  padding: 10px 32px 10px 12px; /* Padding for text */
+  border-radius: 5px; /* Rounded corners */
+  font-size: 16px; /* Text size */
+  cursor: pointer; /* Changes the cursor to a pointer */
+  outline: none; /* Removes the outline */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  width: 100%;
+}
+
+/* Styling for the select element on hover */
+select:hover {
+  background-color: #f9f9f9; /* Slightly darker background on hover */
+  border-color: #ccc; /* Slightly darker border on hover */
+}
+
+/* Styling for the select element on focus */
+select:focus {
+  border-color: #aaa; /* Even darker border on focus */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow around the select */
+}
+
+/* Since we can't style the dropdown arrow of select directly with CSS,
+   we need to create a wrapper and use a background image or a pseudo-element
+   for custom arrow styling. */
+.custom-select-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-select-wrapper::after {
+  content: "▼"; /* Custom arrow */
+  position: absolute;
+  right: 12px;
+  font-size: 12px;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0.7);
+  pointer-events: none; /* Ensures the pseudo-element doesn't interfere with click events */
+  transition: transform 0.3s ease; /* Smooth transition for arrow rotation */
+}
+
+/* Rotate the custom arrow on select open - requires JavaScript to toggle a class */
+.custom-select.open::after {
+  transform: translateY(-50%) rotate(180deg);
+}

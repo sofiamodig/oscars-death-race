@@ -282,27 +282,26 @@ export default function Home({
             </Box>
           )}
           <BarWrapper>
-            <Dropdown
-              options={yearsList}
-              onChange={(option) => {
-                setSelectedYear(option.value);
-              }}
-              value={selectedYear}
-              placeholder="Year"
-            />
+            <div className="custom-select-wrapper" style={{ width: "90px" }}>
+              <select onChange={(e) => setSelectedYear(e.target.value)}>
+                {yearsList.map((year) => (
+                  <option key={year.value} value={year.value}>
+                    {year.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {(!isLatestYear || (isLatestYear && !predictions)) && (
-              <Dropdown
-                className="cat-dropdown"
-                options={[
-                  { value: "", label: "All categories" },
-                  ...categoriesList,
-                ]}
-                onChange={(option) => {
-                  setSelectedCategory(option.value);
-                }}
-                value={selectedCategory ?? undefined}
-                placeholder="All categories"
-              />
+              <div className="custom-select-wrapper" style={{ width: "230px" }}>
+                <select onChange={(e) => setSelectedCategory(e.target.value)}>
+                  <option value="">All categories</option>
+                  {categoriesList.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
             {yearHasWinners && (
               <Toggle

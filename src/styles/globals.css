@@ -171,6 +171,7 @@ abbr[title] {
 select {
   appearance: none; /* Removes default styling provided by the browser */
   background-color: #fff; /* Light grey background */
+  color: #000;
   border: 1px solid #ddd; /* Light grey border */
   padding: 10px 32px 10px 12px; /* Padding for text */
   border-radius: 5px; /* Rounded corners */

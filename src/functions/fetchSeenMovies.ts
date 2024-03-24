@@ -30,7 +30,7 @@ export const fetchSeenMovies = async (userId: string) => {
         for (const key in obj) {
           const year = parseInt(key, 10);
 
-          if (!isNaN(year) && year >= 1990 && year <= currentYear) {
+          if (!isNaN(year) && year >= 1890 && year <= currentYear) {
             years.push({ year: key, seenMovies: obj[key].seenMovies });
           } else {
             assignIfValidKey(settings, key, obj[key]);

@@ -4,7 +4,6 @@ import { fetchMovies } from "@/functions/fetchMovies";
 import { MovieType, MoviesYearsListType } from "@/types";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
-  CATEGORIES,
   checkLatestYear,
   cleanupCategory,
   formatCategory,
@@ -21,7 +20,6 @@ import { InfoMessage } from "@/styles/Message";
 import styled from "styled-components";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
-import Dropdown from "react-dropdown";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { AllDone } from "@/components/allDone";
 import { SiteInfoContext } from "@/contexts/siteInfoContext";

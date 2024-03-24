@@ -12,10 +12,12 @@
     "@firebase/app": "^0.9.25",
     "@firebase/auth": "^1.5.1",
     "@firebase/firestore": "^4.4.0",
+    "chart.js": "^4.4.2",
     "luxon": "^3.4.4",
     "next": "14.0.4",
     "react": "^18",
     "react-calendar": "^4.7.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "react-dropdown": "^1.11.0",
     "styled-components": "^6.1.1"

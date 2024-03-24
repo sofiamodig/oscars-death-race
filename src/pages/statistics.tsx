@@ -4,7 +4,10 @@ import { fetchMovies } from "@/functions/fetchMovies";
 import { MovieType, MoviesYearsListType } from "@/types";
 import styled from "styled-components";
 import { minutesToHours } from "@/utils";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { SeenContext } from "@/contexts/seenContext";
+import SeenLineChart from "@/components/seenLineChart";
+import { useAuth } from "@/hooks/useAuth";
 
 const Wrapper = styled.div`
   padding: 24px 24px 0;
@@ -20,6 +23,14 @@ const PageTitle = styled.h1`
     font-size: 24px;
     font-weight: 400;
   }
+`;
+
+const ChartWrapper = styled.div`
+  overflow-x: auto;
+  padding: 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 `;
 
 const TableWrapper = styled.div`
@@ -89,6 +100,7 @@ export const getStaticProps = (async () => {
 export default function Statistics({
   movies,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const { isSignedIn } = useAuth();
   useEffect(() => {
     document.body.classList.add("main-full-width");
 
@@ -519,6 +531,12 @@ export default function Statistics({
           * Listed in &quot;Stars&quot; on IMDB
         </p>
       </Wrapper>
+
+      {isSignedIn && (
+        <ChartWrapper>
+          <SeenLineChart movies={[...movies].reverse()} />
+        </ChartWrapper>
+      )}
 
       <TableWrapper>
         <Table>

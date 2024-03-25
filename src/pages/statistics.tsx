@@ -161,7 +161,7 @@ export default function Statistics({
     );
 
     if (result.maxCategories == 0) {
-      return "Waiting for the Oscars";
+      return "No data";
     }
 
     return result.movies
@@ -195,6 +195,10 @@ export default function Statistics({
         return category === "Best Picture";
       });
     });
+
+    if (!yearMovies.length) {
+      return "No data";
+    }
 
     return bestPictureWinner?.title ?? "Waiting for the Oscars";
   };
@@ -422,6 +426,45 @@ export default function Statistics({
     };
   };
 
+  const getMostDirectorWins = () => {
+    const directorCount: { [key: string]: number } = {};
+    const directorMovies: { [key: string]: string[] } = {};
+
+    movies.forEach((yearData) => {
+      yearData.movies.forEach((movie) => {
+        const wonCategories = JSON.stringify(
+          movie.wonCategories
+        )?.toLowerCase();
+
+        if (!wonCategories?.includes("director")) return;
+
+        const director = movie.director.toLowerCase();
+        if (directorCount[director]) {
+          directorCount[director] += 1;
+          directorMovies[director].push(movie.title);
+        } else {
+          directorCount[director] = 1;
+          directorMovies[director] = [movie.title];
+        }
+      });
+    });
+
+    let maxNominations = 0;
+    let mostNominatedDirector = "";
+
+    for (const director in directorCount) {
+      if (directorCount[director] > maxNominations) {
+        maxNominations = directorCount[director];
+        mostNominatedDirector = director;
+      }
+    }
+
+    return {
+      name: mostNominatedDirector,
+      movies: directorMovies[mostNominatedDirector] || [],
+    };
+  };
+
   const mostAppearedActor = () => {
     const actorCount: { [key: string]: number } = {};
     const actorMovies: { [key: string]: string[] } = {};
@@ -489,8 +532,9 @@ export default function Statistics({
       </Head>
       <Wrapper>
         <PageTitle>
-          Statistics <span>(since 1988)</span>
+          Statistics <span>(since 1968)</span>
         </PageTitle>
+        <p>More years to be added in the next days..</p>
         <AllTime>
           <p>
             <strong>Most wins:</strong> {getMostWinsAllTime()}
@@ -506,6 +550,16 @@ export default function Statistics({
           </p>
           <p>
             <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
+          </p>
+          <p>
+            <strong style={{ display: "block" }}>
+              Most director wins:{" "}
+              <span style={{ textTransform: "capitalize" }}>
+                {getMostDirectorWins().name} (
+                {getMostDirectorWins().movies.length})
+              </span>
+            </strong>
+            {getMostDirectorWins().movies.join(", ")}
           </p>
           <p>
             <strong style={{ display: "block" }}>
@@ -561,7 +615,11 @@ export default function Statistics({
                   <td>{getRaceLength(obj.movies)}</td>
                   <td>{getBestPictureWinner(obj.movies)}</td>
                   <td>{getMostWins(obj.movies)}</td>
-                  <td>{getMostNominations(obj.movies)}</td>
+                  <td>
+                    {obj.movies.length
+                      ? getMostNominations(obj.movies)
+                      : "No data"}
+                  </td>
                   <td>{getMedianAndAverageMovieLength(obj.movies).average}</td>
                   <td>{getLongestMovie(obj.movies)}</td>
                 </TableRow>

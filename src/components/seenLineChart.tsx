@@ -18,7 +18,7 @@ interface Props {
 const SeenLineChart: FC<Props> = ({ movies }) => {
   const { seenMovies } = useContext(SeenContext);
   const flattenedSeenMoviesImdbIds = seenMovies.flatMap((seenYear) =>
-    seenYear.seenMovies.map((movie) => movie.imdbId)
+    seenYear.seenMovies?.map((movie) => movie.imdbId)
   );
 
   const calculateSeenPercentage = () => {

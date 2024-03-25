@@ -102,7 +102,7 @@ export default function Leaderboard({
 
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
-      <Flex $marginBottom="sm">
+      <Flex $marginBottom="sm" $alignItems="flex-start">
         <div>
           <Heading as="h1" size="xl" marginBottom="xs">
             Leaderboard
@@ -112,7 +112,10 @@ export default function Leaderboard({
             closer to the oscars.
           </Paragraph>
         </div>
-        <div className="custom-select-wrapper" style={{ width: "90px" }}>
+        <div
+          className="custom-select-wrapper"
+          style={{ width: "90px", flexShrink: "0" }}
+        >
           <select onChange={(e) => setSelectedYear(e.target.value)}>
             {yearsList.map((year) => (
               <option key={year.value} value={year.value}>

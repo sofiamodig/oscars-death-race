@@ -8,6 +8,24 @@ import { useContext, useEffect } from "react";
 import { SeenContext } from "@/contexts/seenContext";
 import SeenLineChart from "@/components/seenLineChart";
 import { useAuth } from "@/hooks/useAuth";
+import { fetchUsers } from "@/functions/fetchUsers";
+import {
+  findUserWithMostSeenMovies,
+  getBestPictureWinner,
+  getLongestMovie,
+  getLongestMovieAllTime,
+  getLongestRace,
+  getMedianAndAverageMovieLength,
+  getMostAppearedActor,
+  getMostDirectorWins,
+  getMostNominatedDirector,
+  getMostNominations,
+  getMostNominationsAllTime,
+  getMostWins,
+  getMostWinsAllTime,
+  getRaceLength,
+  getShortestMovieAllTime,
+} from "@/functions/statisticsFunctions";
 
 const Wrapper = styled.div`
   padding: 24px 24px 0;
@@ -84,21 +102,32 @@ const Name = styled.span`
   text-transform: capitalize;
 `;
 
-type WonCategoriesType = {
-  maxCategories: number;
-  movies: string[];
+type User = {
+  username: string;
+  seen: number;
+  percentage: number;
+  completed: string | null;
+  seenDuration: number;
 };
+
+export interface UsersType {
+  [year: string]: User[];
+}
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
   const reversedList = movies.reverse();
-  return { props: { movies: reversedList } };
+  const users = await fetchUsers(movies);
+
+  return { props: { movies: reversedList, users } };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
+  users: UsersType;
 }>;
 
 export default function Statistics({
   movies,
+  users,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { isSignedIn } = useAuth();
   useEffect(() => {
@@ -109,398 +138,18 @@ export default function Statistics({
     };
   });
 
-  const getRaceLength = (yearMovies: MovieType[]) => {
-    const totalMinutes = yearMovies.reduce((acc, movie) => {
-      if (movie.duration) {
-        return acc + movie.duration;
-      }
-      return acc;
-    }, 0);
+  // General stats
+  const mostWins = getMostWinsAllTime(movies);
+  const mostNominations = getMostNominationsAllTime(movies);
+  const longestRace = getLongestRace(movies);
+  const longestMovie = getLongestMovieAllTime(movies);
+  const shortestMovie = getShortestMovieAllTime(movies);
+  const mostDirectorWins = getMostDirectorWins(movies);
+  const mostNominatedDirector = getMostNominatedDirector(movies);
+  const mostAppearedActor = getMostAppearedActor(movies);
 
-    const hours = Math.floor(totalMinutes / 60);
-    const remainingMinutes = totalMinutes % 60;
-
-    if (hours < 40) {
-      return "No data";
-    }
-    return `${hours}h ${remainingMinutes}min`;
-  };
-
-  const getLongestMovie = (yearMovies: MovieType[]) => {
-    const longestMovie = yearMovies.reduce(
-      (acc, movie) => {
-        if (movie.duration && movie.duration > acc.duration) {
-          acc.duration = movie.duration;
-          acc.title = movie.title;
-        }
-        return acc;
-      },
-      { duration: 0, title: "" }
-    );
-
-    if (longestMovie.duration === 0) {
-      return "No data";
-    }
-
-    return `${longestMovie.title} (${minutesToHours(longestMovie.duration)})`;
-  };
-
-  const getMostWins = (yearMovies: MovieType[]) => {
-    const result = yearMovies.reduce(
-      (acc: WonCategoriesType, movie) => {
-        const categoryCount = movie.wonCategories?.length ?? 0;
-        if (categoryCount > acc.maxCategories) {
-          acc.maxCategories = categoryCount;
-          acc.movies = [movie.title];
-        } else if (categoryCount === acc.maxCategories) {
-          acc.movies.push(movie.title);
-        }
-        return acc;
-      },
-      { maxCategories: 0, movies: [] }
-    );
-
-    if (result.maxCategories == 0) {
-      return "No data";
-    }
-
-    return result.movies
-      .map((title) => `${title} (${result.maxCategories})`)
-      .join(", ");
-  };
-
-  const getMostNominations = (yearMovies: MovieType[]) => {
-    const result = yearMovies.reduce(
-      (acc: WonCategoriesType, movie) => {
-        const categoryCount = movie.categories?.length ?? 0;
-        if (categoryCount > acc.maxCategories) {
-          acc.maxCategories = categoryCount;
-          acc.movies = [movie.title];
-        } else if (categoryCount === acc.maxCategories) {
-          acc.movies.push(movie.title);
-        }
-        return acc;
-      },
-      { maxCategories: 0, movies: [] }
-    );
-
-    return result.movies
-      .map((title) => `${title} (${result.maxCategories})`)
-      .join(", ");
-  };
-
-  const getBestPictureWinner = (yearMovies: MovieType[]) => {
-    const bestPictureWinner = yearMovies.find((movie) => {
-      return movie.wonCategories?.some((category) => {
-        return category === "Best Picture";
-      });
-    });
-
-    if (!yearMovies.length) {
-      return "No data";
-    }
-
-    return bestPictureWinner?.title ?? "Waiting for the Oscars";
-  };
-
-  const getLongestRace = () => {
-    const longestRace = movies.reduce(
-      (acc, year) => {
-        const totalMinutes = year.movies.reduce((acc, movie) => {
-          if (movie.duration) {
-            return acc + movie.duration;
-          }
-          return acc;
-        }, 0);
-
-        if (totalMinutes > acc.duration) {
-          acc.duration = totalMinutes;
-          acc.year = year.year;
-        }
-        return acc;
-      },
-      { duration: 0, year: "" }
-    );
-
-    return `${longestRace.year} (${minutesToHours(longestRace.duration)})`;
-  };
-
-  const getLongestMovieAllTime = () => {
-    const longestMovie = movies.reduce(
-      (acc, year) => {
-        const movie = year.movies.reduce(
-          (acc, movie) => {
-            if (movie.duration && movie.duration > acc.duration) {
-              acc.duration = movie.duration;
-              acc.title = movie.title;
-            }
-            return acc;
-          },
-          { duration: 0, title: "", year: "" }
-        );
-
-        if (movie.duration > acc.duration) {
-          acc.duration = movie.duration;
-          acc.title = movie.title;
-          acc.year = year.year;
-        }
-
-        return acc;
-      },
-      { duration: 0, title: "", year: "" }
-    );
-
-    return `${longestMovie.title}, ${longestMovie.year} - (${minutesToHours(
-      longestMovie.duration
-    )})`;
-  };
-
-  const getShortestMovieAllTime = () => {
-    const shortestMovie = movies.reduce(
-      (acc, year) => {
-        const movie = year.movies.reduce(
-          (acc, movie) => {
-            if (movie.duration && movie.duration < acc.duration) {
-              acc.duration = movie.duration;
-              acc.title = movie.title;
-            }
-            return acc;
-          },
-          { duration: Infinity, title: "", year: "" }
-        );
-
-        if (movie.duration < acc.duration) {
-          acc.duration = movie.duration;
-          acc.title = movie.title;
-          acc.year = year.year;
-        }
-
-        return acc;
-      },
-      { duration: Infinity, title: "", year: "" }
-    );
-
-    return `${shortestMovie.title}, ${shortestMovie.year} - (${minutesToHours(
-      shortestMovie.duration
-    )})`;
-  };
-
-  const getMostWinsAllTime = () => {
-    const result = movies.reduce(
-      (
-        acc: {
-          nrOfWins: number;
-          movies: string[];
-        },
-        year
-      ) => {
-        const yearResult = year.movies.reduce(
-          (acc: WonCategoriesType, movie) => {
-            const categoryCount = movie.wonCategories?.length ?? 0;
-            if (categoryCount > acc.maxCategories) {
-              acc.maxCategories = categoryCount;
-              acc.movies = [movie.title];
-            } else if (categoryCount === acc.maxCategories) {
-              acc.movies.push(movie.title);
-            }
-            return acc;
-          },
-          { maxCategories: 0, movies: [] }
-        );
-
-        if (yearResult.maxCategories > acc.nrOfWins) {
-          acc.nrOfWins = yearResult.maxCategories;
-          acc.movies = yearResult.movies;
-        } else if (yearResult.maxCategories === acc.nrOfWins) {
-          acc.movies.push(...yearResult.movies);
-        }
-
-        return acc;
-      },
-      { nrOfWins: 0, movies: [] }
-    );
-
-    return result.movies
-      .map((title) => `${title} (${result.nrOfWins})`)
-      .join(", ");
-  };
-
-  const getMostNominationsAllTime = () => {
-    const result = movies.reduce(
-      (
-        acc: {
-          nrOfNominations: number;
-          movies: string[];
-        },
-        year
-      ) => {
-        const yearResult = year.movies.reduce(
-          (acc: WonCategoriesType, movie) => {
-            const categoryCount = movie.categories?.length ?? 0;
-            if (categoryCount > acc.maxCategories) {
-              acc.maxCategories = categoryCount;
-              acc.movies = [movie.title];
-            } else if (categoryCount === acc.maxCategories) {
-              acc.movies.push(movie.title);
-            }
-            return acc;
-          },
-          { maxCategories: 0, movies: [] }
-        );
-
-        if (yearResult.maxCategories > acc.nrOfNominations) {
-          acc.nrOfNominations = yearResult.maxCategories;
-          acc.movies = yearResult.movies;
-        } else if (yearResult.maxCategories === acc.nrOfNominations) {
-          acc.movies.push(...yearResult.movies);
-        }
-
-        return acc;
-      },
-      { nrOfNominations: 0, movies: [] }
-    );
-
-    return result.movies
-      .map((title) => `${title} (${result.nrOfNominations})`)
-      .join(", ");
-  };
-
-  const getMedianAndAverageMovieLength = (yearMovies: MovieType[]) => {
-    const durations = [...yearMovies]
-      .filter((movie) => movie.duration && movie.duration > 60)
-      .map((movie) => movie.duration ?? 0)
-      .sort((a, b) => a - b);
-
-    if (durations.length === 0) {
-      return {
-        median: "No data",
-        average: "No data",
-      };
-    }
-
-    const half = Math.floor(durations.length / 2);
-
-    return {
-      median: minutesToHours((durations[half - 1] + durations[half]) / 2),
-      average: minutesToHours(
-        durations.reduce((acc, duration) => acc + duration, 0) /
-          durations.length
-      ),
-    };
-  };
-
-  const getMostNominatedDirector = () => {
-    const directorCount: { [key: string]: number } = {};
-    const directorMovies: { [key: string]: string[] } = {};
-
-    movies.forEach((yearData) => {
-      yearData.movies.forEach((movie) => {
-        const categories = JSON.stringify(movie.categories).toLowerCase();
-
-        if (!categories.includes("director")) return;
-
-        const director = movie.director.toLowerCase();
-        if (directorCount[director]) {
-          directorCount[director] += 1;
-          directorMovies[director].push(movie.title);
-        } else {
-          directorCount[director] = 1;
-          directorMovies[director] = [movie.title];
-        }
-      });
-    });
-
-    let maxNominations = 0;
-    let mostNominatedDirector = "";
-
-    for (const director in directorCount) {
-      if (directorCount[director] > maxNominations) {
-        maxNominations = directorCount[director];
-        mostNominatedDirector = director;
-      }
-    }
-
-    return {
-      name: mostNominatedDirector,
-      movies: directorMovies[mostNominatedDirector] || [],
-    };
-  };
-
-  const getMostDirectorWins = () => {
-    const directorCount: { [key: string]: number } = {};
-    const directorMovies: { [key: string]: string[] } = {};
-
-    movies.forEach((yearData) => {
-      yearData.movies.forEach((movie) => {
-        const wonCategories = JSON.stringify(
-          movie.wonCategories
-        )?.toLowerCase();
-
-        if (!wonCategories?.includes("director")) return;
-
-        const director = movie.director.toLowerCase();
-        if (directorCount[director]) {
-          directorCount[director] += 1;
-          directorMovies[director].push(movie.title);
-        } else {
-          directorCount[director] = 1;
-          directorMovies[director] = [movie.title];
-        }
-      });
-    });
-
-    let maxNominations = 0;
-    let mostNominatedDirector = "";
-
-    for (const director in directorCount) {
-      if (directorCount[director] > maxNominations) {
-        maxNominations = directorCount[director];
-        mostNominatedDirector = director;
-      }
-    }
-
-    return {
-      name: mostNominatedDirector,
-      movies: directorMovies[mostNominatedDirector] || [],
-    };
-  };
-
-  const mostAppearedActor = () => {
-    const actorCount: { [key: string]: number } = {};
-    const actorMovies: { [key: string]: string[] } = {};
-
-    movies.forEach((yearData) => {
-      yearData.movies.forEach((movie) => {
-        const cast = movie.cast.split(", ");
-        cast.forEach((actor) => {
-          if (actor === "N/A") return;
-          const actorLower = actor.toLowerCase();
-          if (actorCount[actorLower]) {
-            actorCount[actorLower] += 1;
-            actorMovies[actorLower].push(movie.title);
-          } else {
-            actorCount[actorLower] = 1;
-            actorMovies[actorLower] = [movie.title];
-          }
-        });
-      });
-    });
-
-    let maxAppearances = 0;
-    let mostAppearedActor = "";
-
-    for (const actor in actorCount) {
-      if (actorCount[actor] > maxAppearances) {
-        maxAppearances = actorCount[actor];
-        mostAppearedActor = actor;
-      }
-    }
-
-    return {
-      name: mostAppearedActor,
-      movies: actorMovies[mostAppearedActor] || [],
-    };
-  };
+  // User stats
+  const bestUser = findUserWithMostSeenMovies(users);
 
   return (
     <>
@@ -537,48 +186,47 @@ export default function Statistics({
         <p>More years to be added in the next days..</p>
         <AllTime>
           <p>
-            <strong>Most wins:</strong> {getMostWinsAllTime()}
+            <strong>Most wins:</strong> {mostWins}
           </p>
           <p>
-            <strong>Most nominations:</strong> {getMostNominationsAllTime()}
+            <strong>Most nominations:</strong> {mostNominations}
           </p>
           <p>
-            <strong>Longest race:</strong> {getLongestRace()}
+            <strong>Longest race:</strong> {longestRace}
           </p>
           <p>
-            <strong>Longest movie:</strong> {getLongestMovieAllTime()}
+            <strong>Longest movie:</strong> {longestMovie}
           </p>
           <p>
-            <strong>Shortest movie:</strong> {getShortestMovieAllTime()}
+            <strong>Shortest movie:</strong> {shortestMovie}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Most director wins:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {getMostDirectorWins().name} (
-                {getMostDirectorWins().movies.length})
+                {mostDirectorWins.name} ({mostDirectorWins.movies.length})
               </span>
             </strong>
-            {getMostDirectorWins().movies.join(", ")}
+            {mostDirectorWins.movies.join(", ")}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Most nominated director:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {getMostNominatedDirector().name} (
-                {getMostNominatedDirector().movies.length})
+                {mostNominatedDirector.name} (
+                {mostNominatedDirector.movies.length})
               </span>
             </strong>
-            {getMostNominatedDirector().movies.join(", ")}
+            {mostNominatedDirector.movies.join(", ")}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Appeared most times*:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {mostAppearedActor().name} ({mostAppearedActor().movies.length})
+                {mostAppearedActor.name} ({mostAppearedActor.movies.length})
               </span>
             </strong>
-            {mostAppearedActor().movies.join(", ")}
+            {mostAppearedActor.movies.join(", ")}
           </p>
         </AllTime>
         <p style={{ fontSize: "12px" }}>
@@ -588,7 +236,11 @@ export default function Statistics({
 
       {isSignedIn && (
         <ChartWrapper>
-          <SeenLineChart movies={[...movies].reverse()} />
+          <SeenLineChart
+            movies={[...movies].reverse()}
+            bestUser={bestUser}
+            users={users}
+          />
         </ChartWrapper>
       )}
 

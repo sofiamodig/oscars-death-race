@@ -7,6 +7,7 @@ export type LeaderboardUser = {
   seen: number;
   percentage: number;
   completed: string | null;
+  seenDuration: number;
 };
 
 export interface LeaderboardType {
@@ -64,6 +65,9 @@ export const fetchUsers = async (movies: MoviesYearsListType) => {
         usersArray[year].push({
           username,
           seen: filteredSeenMovies.length,
+          seenDuration: filteredSeenMovies.reduce((acc, movie) => {
+            return acc + (movie.duration ?? 0);
+          }, 0),
           percentage: Math.round(
             (filteredSeenMovies.length / yearMovies?.length) * 100
           ),

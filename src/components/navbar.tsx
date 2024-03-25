@@ -56,8 +56,12 @@ const Logo = styled(Link)`
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+
+  @media (min-width: 768px) {
+    gap: 24px;
+  }
 
   svg {
     margin-top: 3px;
@@ -76,6 +80,11 @@ const NavLinks = styled.div`
 const NavLink = styled(Link)`
   color: var(--color-primary-500);
   transition: color 0.2s ease-in-out;
+  font-size: 14px;
+
+  @media (min-width: 768px) {
+    font-size: 20px;
+  }
 
   &:hover {
     color: var(--color-primary-700);
@@ -94,7 +103,8 @@ const Navbar: React.FC = () => {
       </Logo>
       <NavLinks>
         {isAdmin && <NavLink href="/admin">Admin</NavLink>}
-        {<NavLink href="/statistics">Statistics</NavLink>}
+        <NavLink href="/all-time">All time</NavLink>
+        <NavLink href="/statistics">Statistics</NavLink>
         {isSignedIn && <NavLink href="/leaderboard">Leaderboard</NavLink>}
         {!isSignedIn && (
           <NavLink type="link" href="/login">

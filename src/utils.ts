@@ -28,8 +28,11 @@ export const CATEGORIES = [
 
 export const sortCategories = (categories: string[]) => {
   return categories.sort((a, b) => {
-    const aIndex = CATEGORIES.indexOf(a);
-    const bIndex = CATEGORIES.indexOf(b);
+    const prettyA = prettifyCategory(a);
+    const prettyB = prettifyCategory(b);
+
+    const aIndex = CATEGORIES.indexOf(prettyA);
+    const bIndex = CATEGORIES.indexOf(prettyB);
 
     if (aIndex === -1) {
       return 1;
@@ -57,6 +60,13 @@ const normalizeCategory = (category: string): string => {
 export const cleanupCategory = (category: string) => {
   const normalizedCategory = normalizeCategory(category);
   return normalizedCategory.toLowerCase().replace(/ /g, "-");
+};
+
+export const prettifyCategory = (category: string) => {
+  return category
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 export const formatCategory = (category: string) => {

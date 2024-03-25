@@ -77,7 +77,7 @@ const Title = styled.h2`
   }
 
   img {
-    margin-bottom: -6px;
+    margin-bottom: -3px;
     margin-right: 4px;
   }
 `;
@@ -245,7 +245,7 @@ export const MovieCard: FC<Props> = ({
               <Image
                 key={cat}
                 src={statueImage}
-                height={40}
+                height={30}
                 alt="Oscars statue"
               />
             ))}

@@ -240,7 +240,9 @@ export const MovieCard: FC<Props> = ({
       <ImageWrapper
         style={{
           backgroundImage: `url(${
-            posterUrl ?? "https://www.oscarsdeathrace.com/no-poster.png"
+            posterUrl.length > 0
+              ? posterUrl
+              : "https://www.oscarsdeathrace.com/no-poster.png"
           })`,
         }}
       />

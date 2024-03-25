@@ -237,7 +237,13 @@ export const MovieCard: FC<Props> = ({
           <span>{seenDate.toFormat("dd/MM-yy")}</span>
         )}
       </CheckButton>
-      <ImageWrapper style={{ backgroundImage: `url(${posterUrl})` }} />
+      <ImageWrapper
+        style={{
+          backgroundImage: `url(${
+            posterUrl ?? "https://www.oscarsdeathrace.com/no-poster.png"
+          })`,
+        }}
+      />
       <Content>
         <TitleWrapper>
           <Title>

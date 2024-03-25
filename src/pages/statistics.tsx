@@ -23,6 +23,7 @@ import {
   getMostNominationsAllTime,
   getMostWins,
   getMostWinsAllTime,
+  getNrOfRacers,
   getRaceLength,
   getShortestMovieAllTime,
 } from "@/functions/statisticsFunctions";
@@ -256,6 +257,7 @@ export default function Statistics({
               <th>Most nominations</th>
               <th>Average length*</th>
               <th>Longest movie</th>
+              <th>Nr of racers</th>
             </tr>
           </thead>
           <tbody>
@@ -274,6 +276,9 @@ export default function Statistics({
                   </td>
                   <td>{getMedianAndAverageMovieLength(obj.movies).average}</td>
                   <td>{getLongestMovie(obj.movies)}</td>
+                  <td style={{ textAlign: "center" }}>
+                    {getNrOfRacers(obj.year, users)}
+                  </td>
                 </TableRow>
               );
             })}

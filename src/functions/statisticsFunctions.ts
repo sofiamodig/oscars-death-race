@@ -493,3 +493,8 @@ export function getUserDataByUsername(
     years,
   };
 }
+
+export const getNrOfRacers = (year: string, usersData: UsersType) => {
+  if (!usersData[year]) return 0;
+  return Object.values(usersData[year]).length;
+};

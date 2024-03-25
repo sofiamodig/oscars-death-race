@@ -72,6 +72,17 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
     });
   }
 
+  const getNrOfMovies = (year: string, percentage: string) => {
+    const findYear = movies.find((yearlyMovies) => yearlyMovies.year === year);
+    if (!findYear) {
+      return 0;
+    }
+
+    const parsedPercentage = Math.round(parseInt(percentage));
+    const seenMovies = (parsedPercentage / 100) * findYear?.movies.length;
+    return Math.round(seenMovies);
+  };
+
   const labels = movies.map((yearlyMovies) => yearlyMovies.year);
   const seenPercentages = calculateSeenPercentage();
   const bestUserSeenPercentage = calculateUserSeenPercentage(bestUser);
@@ -93,6 +104,25 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
       title: {
         display: true,
         text: "Your seen percentage by year",
+      },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        callbacks: {
+          title: (xDatapoint: any) => {
+            return xDatapoint[0].label;
+          },
+          label: (yDatapoint: any) => {
+            return (
+              yDatapoint.dataset.label.replace(" (best user)", "") +
+              ": " +
+              getNrOfMovies(yDatapoint.label, yDatapoint.raw) +
+              " (" +
+              yDatapoint.formattedValue +
+              "%)"
+            );
+          },
+        },
       },
     },
 
@@ -143,6 +173,7 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
   return (
     <>
       <InnerWrapper>
+        {/* @ts-ignore */}
         <Line options={options} data={data} />
       </InnerWrapper>
       <InputWrapper>

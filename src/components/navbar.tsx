@@ -83,7 +83,7 @@ const NavLink = styled(Link)`
   font-size: 14px;
 
   @media (min-width: 768px) {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   &:hover {

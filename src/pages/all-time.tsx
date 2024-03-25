@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
 import { Heading } from "@/components/heading";
 import { AllDoneTiny } from "@/components/allDoneTiny";
+import { Flex } from "@/styles/Flex";
 
 const MovieGrid = styled.div`
   display: grid;
@@ -23,8 +24,8 @@ const MovieGrid = styled.div`
   }
 `;
 
-const YearWrapper = styled.div`
-  padding-bottom: 48px;
+const YearWrapper = styled.div<{ small?: boolean }>`
+  padding-bottom: ${(small) => (small ? "24px" : "48px")};
   margin-bottom: 24px;
   border-bottom: 1px solid var(--color-neutral-300);
 `;
@@ -62,6 +63,16 @@ const SubBarWrapper = styled.div`
       text-align: right;
     }
   }
+`;
+
+const AllDoneWrapper = styled.div`
+  background-color: #efe0af;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
 `;
 
 function transformData(moviesYearsList: MoviesYearsListType) {
@@ -253,12 +264,21 @@ export default function AllTime({
               return uniqueSeenMoviesImdbIds?.includes(movie.imdbId);
             });
 
+            if (allWasSeen) {
+              return (
+                <YearWrapper key={obj.year} small>
+                  <AllDoneWrapper>
+                    <Heading size="lg">{obj.year}</Heading>All done!
+                  </AllDoneWrapper>
+                </YearWrapper>
+              );
+            }
+
             return (
               <YearWrapper key={obj.year}>
                 <YearTitleWrapper>
                   <Heading size="lg">{obj.year}</Heading>
                 </YearTitleWrapper>
-                {allWasSeen && hideSeen && <AllDoneTiny />}
                 <MovieGrid>
                   {obj.movies.map((movie) => {
                     const hasBeenSeen = seenMoviesImdbIds?.includes(

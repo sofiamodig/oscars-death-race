@@ -264,7 +264,7 @@ export default function AllTime({
               return uniqueSeenMoviesImdbIds?.includes(movie.imdbId);
             });
 
-            if (allWasSeen) {
+            if (allWasSeen && hideSeen) {
               return (
                 <YearWrapper key={obj.year} small>
                   <AllDoneWrapper>

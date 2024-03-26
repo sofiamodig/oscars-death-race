@@ -176,7 +176,7 @@ export const minutesToHours = (minutes: number) => {
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
 
-  if (remainingMinutes === 60) {
+  if (Math.round(remainingMinutes) === 60) {
     return `${hours + 1}h`;
   } else if (hours < 1) {
     return `${remainingMinutes}min`;

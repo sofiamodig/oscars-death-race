@@ -1,11 +1,9 @@
 import Head from "next/head";
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { fetchMovies } from "@/functions/fetchMovies";
-import { MovieType, MoviesYearsListType } from "@/types";
+import { MoviesYearsListType } from "@/types";
 import styled from "styled-components";
-import { minutesToHours } from "@/utils";
-import { useContext, useEffect } from "react";
-import { SeenContext } from "@/contexts/seenContext";
+import { useEffect } from "react";
 import SeenLineChart from "@/components/seenLineChart";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchUsers } from "@/functions/fetchUsers";
@@ -99,10 +97,6 @@ const AllTime = styled.div`
   max-width: 600px;
 `;
 
-const Name = styled.span`
-  text-transform: capitalize;
-`;
-
 type User = {
   username: string;
   seen: number;
@@ -182,7 +176,7 @@ export default function Statistics({
       </Head>
       <Wrapper>
         <PageTitle>
-          Statistics <span>(since 1968)</span>
+          Statistics <span>(since 1950)</span>
         </PageTitle>
         <p>More years to be added in the next days..</p>
         <AllTime>

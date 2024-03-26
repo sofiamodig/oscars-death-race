@@ -14,7 +14,7 @@ import { TextInput } from "./textInput";
 
 const InnerWrapper = styled.div`
   height: 400px;
-  min-width: 800px;
+  min-width: 900px;
 `;
 
 const InputWrapper = styled.div`

@@ -176,7 +176,7 @@ export default function Statistics({
       </Head>
       <Wrapper>
         <PageTitle>
-          Statistics <span>(since 1950)</span>
+          Statistics <span>(since 1935)</span>
         </PageTitle>
         <p>More years to be added in the next days..</p>
         <AllTime>

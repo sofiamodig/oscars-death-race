@@ -175,10 +175,7 @@ export default function Statistics({
         <meta name="theme-color" content="#ffffff"></meta>
       </Head>
       <Wrapper>
-        <PageTitle>
-          Statistics <span>(since 1935)</span>
-        </PageTitle>
-        <p>More years to be added in the next days..</p>
+        <PageTitle>Statistics</PageTitle>
         <AllTime>
           <p>
             <strong>Most wins:</strong> {mostWins}

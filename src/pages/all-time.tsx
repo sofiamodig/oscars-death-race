@@ -393,7 +393,7 @@ export default function AllTime({
                 }
 
                 return (
-                  <YearWrapper>
+                  <YearWrapper key={obj.year}>
                     <YearTitleWrapper>
                       <Heading size="lg">{obj.year}</Heading>
                     </YearTitleWrapper>

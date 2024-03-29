@@ -101,8 +101,8 @@ type User = {
   username: string;
   seen: number;
   percentage: number;
-  completed: string | null;
-  seenDuration: number;
+  completed?: string | null;
+  seenDuration?: number;
 };
 
 export interface UsersType {

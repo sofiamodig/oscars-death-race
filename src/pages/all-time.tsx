@@ -2,7 +2,14 @@ import Head from "next/head";
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { MovieType, MoviesYearsListType } from "@/types";
-import { useContext, useEffect, useMemo, useState } from "react";
+import {
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { cleanupCategory, prettifyCategory, sortCategories } from "@/utils";
 import { MovieCard } from "@/components/movieCard";
 import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
@@ -11,8 +18,8 @@ import styled from "styled-components";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
 import { Heading } from "@/components/heading";
-import { AllDoneTiny } from "@/components/allDoneTiny";
-import { Flex } from "@/styles/Flex";
+import { TextInput } from "@/components/textInput";
+import { Box } from "@/styles/Box";
 
 const MovieGrid = styled.div`
   display: grid;
@@ -22,6 +29,23 @@ const MovieGrid = styled.div`
   @media (max-width: 450px) {
     grid-template-columns: 1fr;
   }
+`;
+
+const TitleBox = styled.div`
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 16px;
+
+  @media (min-width: 768px) {
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
+const SearchWrapper = styled.div`
+  width: 100%;
+  max-width: 300px;
 `;
 
 const YearWrapper = styled.div<{ small?: boolean }>`
@@ -53,16 +77,7 @@ const YearTitleWrapper = styled.div`
   border-radius: 8px;
   display: flex;
   justify-content: center;
-`;
-
-const SubBarWrapper = styled.div`
-  margin-bottom: 16px;
-
-  @media (min-width: 768px) {
-    p {
-      text-align: right;
-    }
-  }
+  margin-bottom: 24px;
 `;
 
 const AllDoneWrapper = styled.div`
@@ -74,6 +89,10 @@ const AllDoneWrapper = styled.div`
   justify-content: center;
   align-items: center;
 `;
+
+type ExtendedMovieType = MovieType & {
+  year: string;
+};
 
 function transformData(moviesYearsList: MoviesYearsListType) {
   const categoriesMap: {
@@ -124,10 +143,46 @@ type TransformedDataType = {
   }[];
 };
 
+const LazyMovieCardWrapper = ({ children }: { children: ReactNode }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin: "200px",
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div style={{ flex: 1 }} ref={ref}>
+      {isVisible && children}
+    </div>
+  );
+};
+
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
   const transformedData = transformData([...movies].reverse());
-  return { props: { movies, moviesPerCategory: transformedData } };
+  return {
+    props: {
+      movies: [...movies].reverse(),
+      moviesPerCategory: transformedData,
+    },
+  };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
   moviesPerCategory: TransformedDataType;
@@ -139,10 +194,34 @@ export default function AllTime({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { isSignedIn } = useAuth();
   const { seenMovies, loading } = useContext(SeenContext);
+  const [search, setSearch] = useState<string>("");
   const [onlyShowWinners, setOnlyShowWinners] = useState<boolean>(false);
   const [hideSeen, setHideSeen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("best-picture");
+
+  const allMovies: ExtendedMovieType[] = useMemo(
+    () =>
+      movies.flatMap(({ year, movies }) =>
+        movies.map((movie) => ({ ...movie, year }))
+      ),
+    [movies]
+  );
+  const allMoviesImdbIds = useMemo(
+    () => allMovies.map((movie) => movie.imdbId),
+    [allMovies]
+  );
+  const allSeenMovies = useMemo(
+    () =>
+      Array.from(new Set(seenMovies.flatMap((year) => year.seenMovies))).filter(
+        (movie) => allMoviesImdbIds.includes(movie?.imdbId)
+      ),
+    [seenMovies]
+  );
+  const allSeenMoviesImdbIds = useMemo(
+    () => allSeenMovies.map((movie) => movie.imdbId),
+    [allSeenMovies]
+  );
 
   useEffect(() => {
     if (localStorage.getItem("hideSeen")) {
@@ -151,6 +230,9 @@ export default function AllTime({
   }, []);
 
   const moviesToDisplay = useMemo(() => {
+    if (selectedCategory === "all") {
+      return movies;
+    }
     if (!moviesPerCategory[selectedCategory]) {
       return [];
     }
@@ -219,15 +301,40 @@ export default function AllTime({
       </Head>
       <>
         <div>
-          <Heading size="xl" marginBottom="lg" marginTop="md">
-            Nominations through the years
-          </Heading>
-
+          <TitleBox>
+            <Box $marginBottom="lg" $marginTop="md">
+              <Heading size="xl" marginBottom="sm">
+                Nominations through the years
+              </Heading>
+              {!loading && allSeenMovies.length ? (
+                <p>
+                  You have seen{" "}
+                  {Math.round(
+                    (allSeenMovies.length / allMoviesImdbIds.length) * 100
+                  )}
+                  % ({allSeenMovies.length}/{allMoviesImdbIds.length})
+                </p>
+              ) : null}
+            </Box>
+            <SearchWrapper>
+              <TextInput
+                setValue={(value) => setSearch(value)}
+                value={search}
+                type="text"
+                placeholder="Search for title, director or cast"
+              />
+            </SearchWrapper>
+          </TitleBox>
           <BarWrapper>
             <div className="custom-select-wrapper" style={{ width: "230px" }}>
               <select onChange={(e) => setSelectedCategory(e.target.value)}>
-                {categoriesList.map((category) => (
-                  <option key={category.value} value={category.value}>
+                <option value="all">All categories</option>
+                {categoriesList.map((category, i) => (
+                  <option
+                    selected={i === 0}
+                    key={category.value}
+                    value={category.value}
+                  >
                     {category.label}
                   </option>
                 ))}
@@ -247,70 +354,89 @@ export default function AllTime({
             )}
           </BarWrapper>
 
-          {moviesToDisplay?.map((obj) => {
-            const seenMoviesImdbIds = seenMovies
-              .find((list) => list.year === obj.year)
-              ?.seenMovies?.map((movie) => movie.imdbId);
+          {search.length > 2 ? (
+            <MovieGrid>
+              {allMovies
+                .filter(
+                  (movie) =>
+                    movie.title.toLowerCase().includes(search.toLowerCase()) ||
+                    movie.cast.toLowerCase().includes(search.toLowerCase()) ||
+                    movie.director.toLowerCase().includes(search.toLowerCase())
+                )
+                .map((movie) => (
+                  <LazyMovieCardWrapper key={movie.imdbId}>
+                    <MovieCard
+                      key={movie.imdbId}
+                      data={movie}
+                      seenList={allSeenMovies}
+                      selectedYear={movie.year}
+                      movies={movies}
+                    />
+                  </LazyMovieCardWrapper>
+                ))}
+            </MovieGrid>
+          ) : (
+            <>
+              {moviesToDisplay?.map((obj) => {
+                const allWasSeen = obj.movies.every((movie) => {
+                  return allSeenMoviesImdbIds?.includes(movie.imdbId);
+                });
 
-            const uniqueSeenMoviesImdbIds = Array.from(
-              new Set(seenMoviesImdbIds)
-            );
+                if (allWasSeen && hideSeen) {
+                  return (
+                    <YearWrapper key={obj.year} small>
+                      <AllDoneWrapper>
+                        <Heading size="lg">{obj.year}</Heading>All done!
+                      </AllDoneWrapper>
+                    </YearWrapper>
+                  );
+                }
 
-            const seenMoviesList = obj?.movies.filter((movie) => {
-              return uniqueSeenMoviesImdbIds?.includes(movie.imdbId);
-            });
+                return (
+                  <YearWrapper>
+                    <YearTitleWrapper>
+                      <Heading size="lg">{obj.year}</Heading>
+                    </YearTitleWrapper>
+                    <MovieGrid>
+                      {obj.movies.map((movie) => {
+                        const hasBeenSeen = allSeenMoviesImdbIds?.includes(
+                          movie.imdbId
+                        );
 
-            const allWasSeen = obj.movies.every((movie) => {
-              return uniqueSeenMoviesImdbIds?.includes(movie.imdbId);
-            });
+                        const isWinner = movie.wonCategories?.some(
+                          (category) => {
+                            return (
+                              cleanupCategory(category) === selectedCategory
+                            );
+                          }
+                        );
 
-            if (allWasSeen && hideSeen) {
-              return (
-                <YearWrapper key={obj.year} small>
-                  <AllDoneWrapper>
-                    <Heading size="lg">{obj.year}</Heading>All done!
-                  </AllDoneWrapper>
-                </YearWrapper>
-              );
-            }
+                        if (onlyShowWinners && !isWinner) {
+                          return null;
+                        }
 
-            return (
-              <YearWrapper key={obj.year}>
-                <YearTitleWrapper>
-                  <Heading size="lg">{obj.year}</Heading>
-                </YearTitleWrapper>
-                <MovieGrid>
-                  {obj.movies.map((movie) => {
-                    const hasBeenSeen = seenMoviesImdbIds?.includes(
-                      movie.imdbId
-                    );
+                        if (hasBeenSeen && hideSeen) {
+                          return null;
+                        }
 
-                    const isWinner = movie.wonCategories?.some((category) => {
-                      return cleanupCategory(category) === selectedCategory;
-                    });
-
-                    if (onlyShowWinners && !isWinner) {
-                      return null;
-                    }
-
-                    if (hasBeenSeen && hideSeen) {
-                      return null;
-                    }
-
-                    return (
-                      <MovieCard
-                        key={movie.imdbId}
-                        data={movie}
-                        seenList={seenMoviesList ?? []}
-                        selectedYear={obj.year}
-                        movies={movies}
-                      />
-                    );
-                  })}
-                </MovieGrid>
-              </YearWrapper>
-            );
-          })}
+                        return (
+                          <LazyMovieCardWrapper key={movie.imdbId}>
+                            <MovieCard
+                              key={movie.imdbId}
+                              data={movie}
+                              seenList={allSeenMovies ?? []}
+                              selectedYear={obj.year}
+                              movies={movies}
+                            />
+                          </LazyMovieCardWrapper>
+                        );
+                      })}
+                    </MovieGrid>
+                  </YearWrapper>
+                );
+              })}
+            </>
+          )}
         </div>
       </>
     </>

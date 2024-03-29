@@ -81,21 +81,23 @@ export default function Leaderboard({
       }
     });
 
-    const sortedUsersList = updatedUsersList?.sort((a, b) => {
-      if (a.seen > b.seen) {
-        return -1;
-      } else if (a.seen < b.seen) {
-        return 1;
-      } else {
-        const dateA = a.completed
-          ? DateTime.fromISO(a.completed)
-          : DateTime.now();
-        const dateB = b.completed
-          ? DateTime.fromISO(b.completed)
-          : DateTime.now();
-        return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
-      }
-    });
+    const sortedUsersList = updatedUsersList
+      ?.sort((a, b) => {
+        if (a.seen > b.seen) {
+          return -1;
+        } else if (a.seen < b.seen) {
+          return 1;
+        } else {
+          const dateA = a.completed
+            ? DateTime.fromISO(a.completed)
+            : DateTime.now();
+          const dateB = b.completed
+            ? DateTime.fromISO(b.completed)
+            : DateTime.now();
+          return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
+        }
+      })
+      .filter((user) => user.username);
 
     setUsersList(sortedUsersList);
   }, [selectedYear, yearLeaderboard]);
@@ -132,12 +134,10 @@ export default function Leaderboard({
       ) : (
         <div>
           {usersList?.map((user, i) => {
-            if (!user.username) return null;
-
             return (
               <LeaderboardItem
-                key={selectedYear + user.username + Math.random()}
-                username={user.username}
+                key={selectedYear + user.username}
+                username={user.username ?? "unknown"}
                 percentage={user.percentage}
                 completed={
                   parseInt(selectedYear ?? "0") > 2020 ? user.completed : null

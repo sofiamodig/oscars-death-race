@@ -43,7 +43,7 @@ const ErrorMessage = styled.div`
 `;
 
 interface InputProps {
-  label: string;
+  label?: string;
   placeholder?: string;
   type?: "text" | "password" | "email" | "number";
   value: string;
@@ -65,7 +65,7 @@ export const TextInput: React.FC<InputProps> = ({
 }) => {
   return (
     <Container width={width} style={style}>
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       <StyledInput
         type={type}
         placeholder={placeholder}

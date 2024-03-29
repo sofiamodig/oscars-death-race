@@ -31,6 +31,7 @@ export const Wrapper = styled.div`
   box-shadow: 0 0 20px var(--color-neutral-300);
   min-height: 250px;
   position: relative;
+  height: 100%;
 
   @media (max-width: 450px) {
     min-height: 0;

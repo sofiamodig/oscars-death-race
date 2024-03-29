@@ -95,8 +95,8 @@ export default function Leaderboard({
 
   useEffect(() => {
     if (selectedYear === "all") {
-      setUsersList(undefined);
-      setYearLeaderboard(allUsers);
+      setUsersList(allUsers);
+      setYearLeaderboard([]);
     } else if (selectedYear) {
       setUsersList(undefined);
       setYearLeaderboard(leaderboard[selectedYear]);

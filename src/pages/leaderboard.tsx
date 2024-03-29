@@ -113,6 +113,10 @@ export default function Leaderboard({
   }, [yearsList, selectedYear]);
 
   useEffect(() => {
+    if (selectedYear === "all") {
+      return;
+    }
+
     const updatedUsersList =
       yearLeaderboard?.map((user, i) => {
         if (user.username === userSettings?.username) {

@@ -216,7 +216,7 @@ export default function AllTime({
       Array.from(new Set(seenMovies.flatMap((year) => year.seenMovies))).filter(
         (movie) => allMoviesImdbIds.includes(movie?.imdbId)
       ),
-    [seenMovies]
+    [seenMovies, allMoviesImdbIds]
   );
   const allSeenMoviesImdbIds = useMemo(
     () => allSeenMovies.map((movie) => movie.imdbId),
@@ -241,7 +241,7 @@ export default function AllTime({
       return [];
     }
     return moviesPerCategory[selectedCategory];
-  }, [moviesPerCategory, selectedCategory]);
+  }, [moviesPerCategory, selectedCategory, movies]);
 
   if (loading) {
     return (

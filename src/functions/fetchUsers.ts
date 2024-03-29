@@ -4,10 +4,11 @@ import { collection, getDocs } from "@firebase/firestore";
 
 export type LeaderboardUser = {
   username: string;
+  id: string;
   seen: number;
   percentage: number;
-  completed: string | null;
-  seenDuration: number;
+  completed?: string | null;
+  seenDuration?: number;
 };
 
 export interface LeaderboardType {
@@ -48,6 +49,10 @@ export const fetchUsers = async (movies: MoviesYearsListType) => {
           continue;
         }
 
+        if (!userData.username) {
+          continue;
+        }
+
         const yearMovies = movies?.find((movie) => movie.year === key)?.movies;
 
         if (!yearMovies) {
@@ -64,6 +69,7 @@ export const fetchUsers = async (movies: MoviesYearsListType) => {
 
         usersArray[year].push({
           username,
+          id: username + doc.id.slice(0, 10),
           seen: filteredSeenMovies.length,
           seenDuration: filteredSeenMovies.reduce((acc, movie) => {
             return acc + (movie.duration ?? 0);

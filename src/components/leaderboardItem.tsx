@@ -92,6 +92,7 @@ interface Props {
   completed?: string | null;
   isCurrentUser: boolean;
   rank: number;
+  seen?: number;
 }
 
 export const LeaderboardItem: FC<Props> = ({
@@ -100,6 +101,7 @@ export const LeaderboardItem: FC<Props> = ({
   completed,
   isCurrentUser,
   rank,
+  seen,
 }) => {
   return (
     <TableItem key={username} $isCurrentUser={isCurrentUser}>
@@ -114,7 +116,10 @@ export const LeaderboardItem: FC<Props> = ({
         <div style={{ wordBreak: "break-word" }}>{username}</div>
       </Flex>
       <RightCol>
-        <Percentage>{percentage} %</Percentage>
+        <Percentage>
+          {seen && <span style={{ fontWeight: 400 }}>{seen}, </span>}
+          {percentage} %
+        </Percentage>
         {completed && percentage == 100 && (
           <DateWrapper>
             Completed: <wbr />

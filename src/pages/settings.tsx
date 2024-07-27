@@ -1,5 +1,6 @@
 import { AdminSettings } from "@/components/adminSettings";
 import { Button } from "@/components/button";
+import exportToCsv from "@/components/exportToCSV";
 import { Heading } from "@/components/heading";
 import { Modal } from "@/components/modal";
 import { Paragraph } from "@/components/paragraph";
@@ -8,21 +9,38 @@ import { Toggle } from "@/components/toggle";
 import { useSeenContext } from "@/contexts/seenContext";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
 import { auth, db } from "@/firebaseConfig";
+import { fetchMovies } from "@/functions/fetchMovies";
 import { useAuth, emailChange, userDeletion } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
+import { MoviesYearsListType } from "@/types";
 import { validateEmail } from "@/utils";
 import { signOut } from "@firebase/auth";
 import { updateDoc, doc, deleteDoc } from "@firebase/firestore";
+import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect } from "react";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
-const Settings = () => {
+export const getStaticProps = (async () => {
+  const movies = await fetchMovies();
+  return {
+    props: {
+      movies: [...movies].reverse(),
+    },
+  };
+}) satisfies GetStaticProps<{
+  movies: MoviesYearsListType;
+}>;
+
+export default function Settings({
+  movies,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   const { userId, isAdmin } = useAuth();
   const {
+    seenMovies,
     userSettings,
     changeUserName,
     changeShowInLeaderboard,
@@ -127,6 +145,10 @@ const Settings = () => {
       });
   };
 
+  const handleExport = () => {
+    exportToCsv(seenMovies, movies, "seen_movies");
+  };
+
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
       <Heading size="lg" marginBottom="md">
@@ -184,7 +206,22 @@ const Settings = () => {
             <Button onClick={handleSignOut} label="Log out" />
           </Box>
 
-          <Box $marginTop="md" $marginBottom="md">
+          <Box $marginTop="lg" $marginBottom="md">
+            <Heading size="lg" marginBottom="md">
+              Export your data
+            </Heading>
+            <Button
+              type="button"
+              onClick={handleExport}
+              label="Export"
+              variant="secondary"
+            />
+          </Box>
+
+          <Box $marginTop="lg" $marginBottom="md">
+            <Heading size="lg" marginBottom="md">
+              Danger zone
+            </Heading>
             <Button
               type="button"
               onClick={() => setDeleteModal(true)}
@@ -222,6 +259,4 @@ const Settings = () => {
       )}
     </Box>
   );
-};
-
-export default Settings;
+}

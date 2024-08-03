@@ -1,6 +1,6 @@
 import { UsersType } from "@/pages/statistics";
 import { MovieType, MoviesYearsListType } from "@/types";
-import { minutesToHours } from "@/utils";
+import { BLOCKED_USERS, minutesToHours } from "@/utils";
 
 type WonCategoriesType = {
   maxCategories: number;
@@ -414,6 +414,10 @@ export function findUserWithMostSeenMovies(usersData: UsersType): MaxUserType {
       let userData;
 
       if (!user.username) {
+        return;
+      }
+
+      if (BLOCKED_USERS.includes(user.username)) {
         return;
       }
 

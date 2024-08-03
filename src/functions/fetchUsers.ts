@@ -1,5 +1,6 @@
 import { db } from "@/firebaseConfig";
 import { MovieType, MoviesYearsListType, SeenType } from "@/types";
+import { BLOCKED_USERS } from "@/utils";
 import { collection, getDocs } from "@firebase/firestore";
 
 export type LeaderboardUser = {
@@ -46,6 +47,10 @@ export const fetchUsers = async (movies: MoviesYearsListType) => {
         }
 
         if (showInLeaderboard === false) {
+          continue;
+        }
+
+        if (BLOCKED_USERS.includes(userData.username)) {
           continue;
         }
 

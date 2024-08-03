@@ -184,3 +184,5 @@ export const minutesToHours = (minutes: number) => {
     return `${hours}h ${Math.round(remainingMinutes)}min`;
   }
 };
+
+export const BLOCKED_USERS = ["testaccount"];

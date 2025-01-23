@@ -44,29 +44,21 @@ export const Modal: React.FC<Props> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const closeModal = useCallback(
-    (e: MouseEvent) => {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();
       }
-    },
-    [onClose]
-  );
+    };
 
-  useEffect(() => {
-    document.body.classList.toggle("scroll-lock", isOpen);
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.body.classList.remove("scroll-lock");
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen]);
-
-  useEffect(() => {
-    document.addEventListener("click", closeModal);
-    return () => {
-      document.removeEventListener("click", closeModal);
-    };
-  }, [closeModal]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

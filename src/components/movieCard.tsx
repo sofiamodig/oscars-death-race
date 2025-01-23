@@ -1,4 +1,4 @@
-import { FC, useContext, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 
 import { formatCategory, minutesToHours, sortCategories } from "../utils";
 
@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { MovieType, MoviesYearsListType, SeenType } from "@/types";
 import { DateTime } from "luxon";
 import { CheckIcon } from "@/assets/icons/CheckIcon";
+import { PenIcon } from "@/assets/icons/PenIcon";
 import Image from "next/image";
 import { ChevronRightIcon } from "@/assets/icons/ChevronRightIcon";
 import { Modal } from "./modal";
@@ -19,19 +20,30 @@ import { Paragraph } from "./paragraph";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Button } from "./button";
+import { useCommentsContext } from "@/contexts/commentsContext";
+
+const OuterWrapper = styled.div`
+  margin-bottom: 16px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-flow: column nowrap;
+  height: 100%;
+`;
 
 export const Wrapper = styled.div`
   border: 1px solid black;
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   border: none;
-  border-radius: 8px;
   overflow: hidden;
   background-color: var(--color-neutral-0);
   box-shadow: 0 0 20px var(--color-neutral-300);
   min-height: 250px;
   position: relative;
   height: 100%;
+  flex: 1;
 
   @media (max-width: 450px) {
     min-height: 0;
@@ -85,7 +97,6 @@ const Title = styled.h2`
 
 const MovieLink = styled.a`
   margin-top: auto;
-  padding-top: 8px;
   color: var(--color-secondary-500);
   font-weight: 600;
   font-size: 14px;
@@ -95,7 +106,6 @@ const MovieLink = styled.a`
   align-items: center;
   align-self: flex-end;
   margin-right: -4px;
-  margin-bottom: -4px;
 
   &:hover {
     color: var(--color-secondary-700);
@@ -168,6 +178,49 @@ const Nominations = styled.p`
   }
 `;
 
+const BottomRow = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+  justify-content: space-between;
+  padding-top: 8px;
+`;
+
+const Comment = styled.p`
+  font-size: 12px;
+  width: 100%;
+  background: #bad4f6;
+  padding: 2px 4px;
+  margin: 0;
+`;
+
+const InputField = styled.input`
+  border: 1px solid var(--color-neutral-300);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  margin-bottom: 16px;
+`;
+
+const PenIconButton = styled.button`
+  all: unset;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+`;
+
+const CommentButtons = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+
+  button:last-child {
+    flex: 1;
+  }
+`;
+
 interface Props {
   movies: MoviesYearsListType;
   data: MovieType;
@@ -182,9 +235,19 @@ export const MovieCard: FC<Props> = ({
   selectedYear,
 }) => {
   const { isSignedIn } = useAuth();
+  const { comments, addComment, updateComment, deleteComment } =
+    useCommentsContext();
+  const [showCommentModal, setShowCommentModal] = useState(false);
   const [signInModalOpen, setSignInModalOpen] = useState(false);
+  const [newComment, setNewComment] = useState("");
   const { userSettings, addMovieToSeen, removeMovieFromSeen, changeSeenDate } =
     useContext(SeenContext);
+
+  const savedComment = comments.find((c) => c.imdbId === data.imdbId);
+
+  useEffect(() => {
+    setNewComment(savedComment?.comment || "");
+  }, [savedComment]);
 
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -223,72 +286,84 @@ export const MovieCard: FC<Props> = ({
     data.posterUrl && data.posterUrl !== "N/A" ? data.posterUrl : "";
 
   return (
-    <Wrapper>
-      <CheckButton
-        type="button"
-        $checked={Boolean(seen)}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleSeenClick();
-        }}
-      >
-        <CheckIcon />
-        {seenDate && !userSettings.hideSeenDates && (
-          <span>{seenDate.toFormat("dd/MM-yy")}</span>
-        )}
-      </CheckButton>
-      <ImageWrapper
-        style={{
-          backgroundImage: `url(${
-            posterUrl.length > 0
-              ? posterUrl
-              : "https://www.oscarsdeathrace.com/no-poster.png"
-          })`,
-        }}
-      />
-      <Content>
-        <TitleWrapper>
-          <Title>
-            {data.wonCategories?.map((cat) => (
-              <Image
-                key={cat}
-                src={statueImage}
-                height={30}
-                alt="Oscars statue"
-              />
-            ))}
-            {data.title}
-          </Title>
-          {data.duration && <Time>{minutesToHours(data.duration)}</Time>}
-        </TitleWrapper>
-        <p>
-          <strong>Director:</strong> {data.director}
-        </p>
-        <p>
-          <strong>Cast:</strong> {data.cast}
-        </p>
+    <>
+      <OuterWrapper>
+        <Wrapper>
+          <CheckButton
+            type="button"
+            $checked={Boolean(seen)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSeenClick();
+            }}
+          >
+            <CheckIcon />
+            {seenDate && !userSettings.hideSeenDates && (
+              <span>{seenDate.toFormat("dd/MM-yy")}</span>
+            )}
+          </CheckButton>
+          <ImageWrapper
+            style={{
+              backgroundImage: `url(${
+                posterUrl.length > 0
+                  ? posterUrl
+                  : "https://www.oscarsdeathrace.com/no-poster.png"
+              })`,
+            }}
+          />
+          <Content>
+            <TitleWrapper>
+              <Title>
+                {data.wonCategories?.map((cat) => (
+                  <Image
+                    key={cat}
+                    src={statueImage}
+                    height={30}
+                    alt="Oscars statue"
+                  />
+                ))}
+                {data.title}
+              </Title>
+              {data.duration && <Time>{minutesToHours(data.duration)}</Time>}
+            </TitleWrapper>
+            <p>
+              <strong>Director:</strong> {data.director}
+            </p>
+            <p>
+              <strong>Cast:</strong> {data.cast}
+            </p>
 
-        {data.categories && data.categories?.length > 0 && (
-          <Nominations>
-            <strong>Nominations:</strong>{" "}
-            {sortedCategories.map((cat) => {
-              if (data.wonCategories?.includes(cat)) {
-                return <em key={cat}>{formatCategory(cat)}</em>;
-              } else {
-                return <span key={cat}>{formatCategory(cat)}</span>;
-              }
-            })}
-          </Nominations>
-        )}
-        <MovieLink
-          href={`https://imdb.com/title/${data.imdbId}`}
-          target="_BLANK"
-        >
-          <span>GO TO IMDB</span>
-          <ChevronRightIcon />
-        </MovieLink>
-      </Content>
+            {data.categories && data.categories?.length > 0 && (
+              <Nominations>
+                <strong>Nominations:</strong>{" "}
+                {sortedCategories.map((cat) => {
+                  if (data.wonCategories?.includes(cat)) {
+                    return <em key={cat}>{formatCategory(cat)}</em>;
+                  } else {
+                    return <span key={cat}>{formatCategory(cat)}</span>;
+                  }
+                })}
+              </Nominations>
+            )}
+            <BottomRow>
+              {isSignedIn && (
+                <PenIconButton onClick={() => setShowCommentModal(true)}>
+                  <PenIcon />
+                </PenIconButton>
+              )}
+              <MovieLink
+                href={`https://imdb.com/title/${data.imdbId}`}
+                target="_BLANK"
+              >
+                <span>GO TO IMDB</span>
+                <ChevronRightIcon />
+              </MovieLink>
+            </BottomRow>
+          </Content>
+        </Wrapper>
+        {savedComment && <Comment>{savedComment.comment}</Comment>}
+      </OuterWrapper>
 
       <Modal
         isOpen={signInModalOpen}
@@ -316,6 +391,55 @@ export const MovieCard: FC<Props> = ({
       </Modal>
 
       <Modal
+        isOpen={showCommentModal}
+        onClose={() => setShowCommentModal(false)}
+        maxWidth="400px"
+      >
+        <Flex $direction="column" $justifyContent="center" $gap="sm">
+          <InputField
+            placeholder="Add a personal note"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+          />
+          <CommentButtons>
+            {savedComment && (
+              <Button
+                label="Remove"
+                size="md"
+                variant="danger"
+                onClick={() => {
+                  deleteComment(savedComment.imdbId);
+                  setShowCommentModal(false);
+                }}
+              />
+            )}
+            <Button
+              label="Save comment"
+              size="md"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (savedComment) {
+                  updateComment({
+                    ...savedComment,
+                    comment: newComment,
+                  });
+                } else {
+                  addComment({
+                    imdbId: data.imdbId,
+                    comment: newComment,
+                  });
+                }
+
+                setShowCommentModal(false);
+              }}
+            />
+          </CommentButtons>
+        </Flex>
+      </Modal>
+
+      <Modal
         isOpen={showCalendar}
         onClose={() => setShowCalendar(false)}
         maxWidth="400px"
@@ -337,6 +461,6 @@ export const MovieCard: FC<Props> = ({
           />
         </Flex>
       </Modal>
-    </Wrapper>
+    </>
   );
 };

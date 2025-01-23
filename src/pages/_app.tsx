@@ -6,15 +6,18 @@ import { Layout } from "@/components/layout";
 import "../assets/fonts/notoSans/fonts.css";
 import "@/styles/globals.css";
 import "react-dropdown/style.css";
+import { CommentsProvider } from "@/contexts/commentsContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <SnackbarProvider>
       <SiteInfoProvider>
         <SeenProvider>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
+          <CommentsProvider>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </CommentsProvider>
         </SeenProvider>
       </SiteInfoProvider>
     </SnackbarProvider>

@@ -32,7 +32,7 @@ const NotFound = () => {
       <GifWrapper>
         <Image
           src={gif}
-          alt="People at the oscars state being confused because they announced the wrong movie as the winner"
+          alt="People at the oscars being confused because they announced the wrong movie as the winner"
         />
       </GifWrapper>
     </Flex>

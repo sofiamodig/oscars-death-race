@@ -179,8 +179,8 @@ export default function Leaderboard({
             closer to the oscars.
           </Paragraph> */}
           <Paragraph size="sm">
-            {/* The leaderboard is updated every 10 minutes. */}
-            The leaderboard is updated once per day.
+            The leaderboard is updated every 20 minutes.
+            {/* The leaderboard is updated once per day. */}
           </Paragraph>
           {selectedYear === "all" && (
             <Paragraph size="sm">

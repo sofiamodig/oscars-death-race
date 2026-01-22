@@ -24,6 +24,7 @@ export const CATEGORIES = [
   "Best Costume Design",
   "Best Film Editing",
   "Best Visual Effects",
+  "Best Casting",
 ];
 
 export const sortCategories = (categories: string[]) => {

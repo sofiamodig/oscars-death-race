@@ -2,8 +2,10 @@ name: Rebuild site
 
 on:
   schedule:
-    - cron: "35 * * * *" # Every 20 minutes
-    # - cron: "0 0 * * *" # Every day at 00:00 (UTC)
+    - cron: "50 * * * *" # Every 20 minutes
+    - cron: "10 * * * *" 
+    - cron: "30 * * * *" 
+
 
   workflow_dispatch:
 

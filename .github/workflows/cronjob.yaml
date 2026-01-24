@@ -3,19 +3,17 @@ name: Rebuild site (cron)
 on:
   schedule:
     - cron: "*/20 * * * *" # Every 20 minutes
-    # - cron: "0 0 * * *" # Every day at 00:00
+    # - cron: "0 0 * * *" # Every day at 00:00 (UTC)
+
+  workflow_dispatch:
 
 jobs:
   trigger-webhook:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Trigger Webhook
-        shell: bash
         env:
           WEBHOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          curl -X GET "$WEBHOOK_URL"
+          curl -X POST "$WEBHOOK_URL"

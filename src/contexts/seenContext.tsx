@@ -189,18 +189,19 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
     });
   };
 
-  const togglePercentageByWatchTime = () => {
-     if (!userId) return;
-    setPercentageByWatchTime((prev) => !prev);
+const togglePercentageByWatchTime = () => {
+  if (!userId) return;
 
-    const docRef = doc(db, "users", userId);
+  setUserSettings((prev) => {
+    const newValue = !prev.percentageByWatchTime;
 
-    updateDoc(docRef, {
-      percentageByWatchTime: !percentageByWatchTime,
-    }).catch((error) => {
-      showSnackbar(error.message, "error");
-    });
-  }
+    updateDoc(doc(db, "users", userId), {
+      percentageByWatchTime: newValue,
+    }).catch((error) => showSnackbar(error.message, "error"));
+
+    return { ...prev, percentageByWatchTime: newValue };
+  });
+};
 
   useEffect(() => {
     if (localStorage.getItem("hideSeenDates")) {

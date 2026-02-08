@@ -27,7 +27,7 @@ export const AllDone: FC<Props> = ({ inCategories, isPredictions }) => {
         {inCategories
           ? inCategories == 1
             ? "You have seen all the movies in this category."
-            : "You have seen all the movies in this categories."
+            : "You have seen all the movies in these categories."
           : isPredictions
           ? "You have seen all the predictions for this year."
           : "You have seen all the movies for this year."}

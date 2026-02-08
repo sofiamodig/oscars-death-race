@@ -1,5 +1,6 @@
-import { useAuth } from "@/hooks/useAuth";
-import { FC, useEffect } from "react";
+import { SeenContext } from "@/contexts/seenContext";
+import { Duration } from "luxon";
+import { FC, useContext } from "react";
 import styled from "styled-components";
 
 const Wrapper = styled.div`
@@ -42,6 +43,15 @@ const Progress = styled.div<{ width: number }>`
   }
 `;
 
+const Text = styled.div<{leftPosition: boolean}>`
+  position: absolute;
+  right: ${({leftPosition}) => leftPosition ? 'auto' : '8px'};
+  left: ${({leftPosition}) => leftPosition ? '8px' : 'auto'};
+  font-size: 12px;
+  bottom: 4px;
+  font-weight: bold;
+`;
+
 const Percentage = styled.div`
   padding: 4px 8px;
 
@@ -61,21 +71,48 @@ const Numbers = styled.div`
 interface Props {
   nrOfMovies?: number;
   seenNr?: number;
+  seenTotalDuration?: number;
+  moviesTotalDuration?: number;
 }
 
-export const ProgressBar: FC<Props> = ({ nrOfMovies, seenNr = 0 }) => {
+export const ProgressBar: FC<Props> = ({ nrOfMovies, seenNr = 0, seenTotalDuration = 0, moviesTotalDuration = 0 }) => {
+    const { userSettings } =
+    useContext(SeenContext);
+    
   if (!nrOfMovies) {
     return null;
   }
+  
+  const nrPercentage = Math.round((seenNr / nrOfMovies) * 100);
+  const durationPercentage = Math.round((seenTotalDuration / moviesTotalDuration) * 100);
 
-  const percentage = Math.round((seenNr / nrOfMovies) * 100);
+  const percentage = userSettings.percentageByWatchTime ? durationPercentage : nrPercentage;
+
+  const remainingMinutes = Math.max(moviesTotalDuration - seenTotalDuration, 0);
+
+  // Luxon Duration -> hours + minutes
+  const dur = Duration.fromObject({ minutes: remainingMinutes })
+    .shiftTo("hours", "minutes");
+
+  // shiftTo can produce decimals in hours; ensure nice ints
+  const hours = Math.floor(dur.hours);
+  const minutes = Math.floor(dur.minutes);
+
+  const remainingTimeText =
+    hours > 0
+      ? (minutes > 0 ? `${hours}h ${minutes}m left` : `${hours}h left`)
+      : `${minutes}m left`;
 
   return (
     <Wrapper>
+          <Text leftPosition={percentage > 60}>
+            {userSettings.percentageByWatchTime
+              ? remainingTimeText
+              : `${nrOfMovies - seenNr} left to see`}
+          </Text>
       <Progress width={percentage}>
         {percentage > 5 && <Percentage>{percentage}%</Percentage>}
       </Progress>
-      <Numbers></Numbers>
     </Wrapper>
   );
 };

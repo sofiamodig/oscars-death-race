@@ -25,6 +25,7 @@ export type UserSettingsType = {
   username: string;
   showInLeaderboard?: boolean;
   hideSeenDates?: boolean;
+  percentageByWatchTime?: boolean;
 };
 
 export type SiteInfoType = {

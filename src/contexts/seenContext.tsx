@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { fetchSeenMovies } from "@/functions/fetchSeenMovies";
 import { addMovieToSeenFunc } from "@/functions/addMovieToSeen";
 import { SiteInfoContext } from "./siteInfoContext";
-import { arrayUnion, doc, getDoc, updateDoc } from "@firebase/firestore";
+import { doc, getDoc, updateDoc } from "@firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { removeMovieFromSeenFunc } from "@/functions/removeMovieFromSeen";
 
@@ -28,6 +28,7 @@ type SeenContextType = {
   changeUserName: (name: string) => void;
   changeShowInLeaderboard: () => void;
   toggleShowSeenDates: () => void;
+  togglePercentageByWatchTime: () => void;
   loading: boolean;
 };
 
@@ -40,6 +41,7 @@ export const SeenContext = createContext<SeenContextType>({
   changeUserName: () => {},
   changeShowInLeaderboard: () => {},
   toggleShowSeenDates: () => {},
+  togglePercentageByWatchTime: () => {},
   loading: true,
 });
 
@@ -54,6 +56,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
   const [seenMovies, setSeenMovies] = useState<SeenMoviesType[]>([]);
   const [showInLeaderboard, setShowInLeaderboard] = useState(true);
   const [userSettings, setUserSettings] = useState({} as UserSettingsType);
+  const [percentageByWatchTime, setPercentageByWatchTime] = useState(false);
   const [loading, setLoading] = useState(true);
   const { predictions } = useContext(SiteInfoContext);
   const { showSnackbar } = useSnackbarContext();
@@ -74,6 +77,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
               username: data.settings.username,
               showInLeaderboard: data.settings.showInLeaderboard,
               hideSeenDates: prev.hideSeenDates,
+              percentageByWatchTime: data.settings.percentageByWatchTime
             };
           });
           setLoading(false);
@@ -185,6 +189,19 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
     });
   };
 
+  const togglePercentageByWatchTime = () => {
+     if (!userId) return;
+    setPercentageByWatchTime((prev) => !prev);
+
+    const docRef = doc(db, "users", userId);
+
+    updateDoc(docRef, {
+      percentageByWatchTime: !percentageByWatchTime,
+    }).catch((error) => {
+      showSnackbar(error.message, "error");
+    });
+  }
+
   useEffect(() => {
     if (localStorage.getItem("hideSeenDates")) {
       setUserSettings((prev) => ({
@@ -216,6 +233,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
         changeUserName,
         changeShowInLeaderboard,
         toggleShowSeenDates,
+        togglePercentageByWatchTime,
         userSettings,
         loading,
       }}

@@ -45,9 +45,11 @@ export default function Settings({
     changeUserName,
     changeShowInLeaderboard,
     toggleShowSeenDates,
+    togglePercentageByWatchTime
   } = useSeenContext();
   const router = useRouter();
   const [showInLeaderboard, setShowInLeaderboard] = useState<boolean>();
+  const [percentageByWatchTime, setPercentageByWatchTime] = useState<boolean>(false);
   const [username, setUsername] = useState<string>();
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
@@ -69,6 +71,14 @@ export default function Settings({
         userSettings.showInLeaderboard !== undefined
           ? userSettings.showInLeaderboard
           : true
+      );
+    }
+
+    if (!percentageByWatchTime) {
+      setPercentageByWatchTime(
+        userSettings.percentageByWatchTime !== undefined
+          ? userSettings.percentageByWatchTime
+          : false
       );
     }
   }, [userSettings, username]);
@@ -199,6 +209,14 @@ export default function Settings({
               onToggle={() => {
                 setShowInLeaderboard((prev) => !prev);
                 changeShowInLeaderboard();
+              }}
+            />
+            <Toggle
+              label="Progress by watchtime instead of movie count"
+              value={percentageByWatchTime ?? true}
+              onToggle={() => {
+                setPercentageByWatchTime((prev) => !prev);
+                togglePercentageByWatchTime();
               }}
             />
           </Flex>

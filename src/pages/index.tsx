@@ -336,7 +336,7 @@ export default function Home({
                 {categoriesOptionsOpen && (
                   <div className="custom-multiselect__menu">
                     {categoriesList.map((category) => (
-                      <label key={category.value}>
+                      <label key={category.value} style={{ cursor: 'pointer' }}>
                         <input
                           type="checkbox"
                           value={category.value}
@@ -401,7 +401,13 @@ export default function Home({
           {seenMoviesList && seenMoviesList?.length > 0 && (
             <ProgressBar
               seenNr={seenMoviesList?.length}
+              seenTotalDuration={seenMoviesList.reduce((acc, movie) => {
+                return acc + (movie.duration || 0)
+              }, 0)}
               nrOfMovies={moviesList?.length}
+              moviesTotalDuration={moviesList?.reduce((acc, movie) => {
+                return acc + (movie.duration || 0)
+              }, 0)}
             />
           )}
         </>

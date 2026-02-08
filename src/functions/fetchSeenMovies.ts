@@ -23,6 +23,7 @@ export const fetchSeenMovies = async (userId: string) => {
         const settings: UserSettingsType = {
           showInLeaderboard: false,
           username: "",
+          percentageByWatchTime: false,
         };
 
         const obj = doc.data();

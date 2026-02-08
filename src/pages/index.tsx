@@ -74,7 +74,9 @@ export default function Home({
   const { seenMovies, loading } = useContext(SeenContext);
   const [onlyShowWinners, setOnlyShowWinners] = useState<boolean>(false);
   const [hideSeen, setHideSeen] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>();
+  const [categoriesOptionsOpen, setCategoriesOptionsOpen] =
+    useState<boolean>(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>();
   const { yearsList, latestYear } = getYearsList(movies);
   const { predictions, moviesBeingAdded } = useContext(SiteInfoContext);
@@ -107,7 +109,7 @@ export default function Home({
     }
 
     if (isLatestYear && predictions) {
-      setSelectedCategory(undefined);
+      setSelectedCategories([]);
     }
   }, [selectedYear, latestYear, predictions, yearHasWinners, isLatestYear]);
 
@@ -122,17 +124,17 @@ export default function Home({
   });
 
   const filteredMovies = useMemo(() => {
-    if (selectedCategory) {
+    if (selectedCategories.length) {
       const filteredByCategory = moviesList?.filter((movie) => {
-        return movie.categories?.some(
-          (category) => cleanupCategory(category) === selectedCategory
+        return movie.categories?.some((category) =>
+          selectedCategories.includes(cleanupCategory(category))
         );
       });
 
       if (onlyShowWinners) {
         return filteredByCategory?.filter((movie) => {
-          return movie.wonCategories?.find(
-            (cat) => cleanupCategory(cat) === selectedCategory
+          return movie.wonCategories?.find((cat) =>
+            selectedCategories.includes(cleanupCategory(cat))
           );
         });
       } else {
@@ -147,7 +149,7 @@ export default function Home({
         return moviesList;
       }
     }
-  }, [moviesList, onlyShowWinners, selectedCategory]);
+  }, [moviesList, onlyShowWinners, selectedCategories]);
 
   const moviesToDisplay = useMemo(() => {
     if (hideSeen) {
@@ -220,7 +222,7 @@ export default function Home({
       });
     });
 
-    if (selectedCategory) {
+    if (selectedCategories.length) {
       return `${seenMoviesInCategory?.length ?? 0} / ${
         filteredMovies?.length
       } movies`;
@@ -290,15 +292,74 @@ export default function Home({
               </select>
             </div>
             {(!isLatestYear || (isLatestYear && !predictions)) && (
-              <div className="custom-select-wrapper" style={{ width: "230px" }}>
-                <select onChange={(e) => setSelectedCategory(e.target.value)}>
-                  <option value="">All categories</option>
-                  {categoriesList.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
+              <div
+                className={`custom-multiselect ${
+                  categoriesOptionsOpen ? "open" : ""
+                }`}
+                style={{ width: "230px" }}
+                tabIndex={0}
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setCategoriesOptionsOpen(false);
+                  }
+                }}
+              >
+                <div
+                  className="custom-multiselect__control"
+                  onClick={() =>
+                    setCategoriesOptionsOpen(!categoriesOptionsOpen)
+                  }
+                  onBlur={() => {
+                    setCategoriesOptionsOpen(false);
+                  }}
+                  title={
+                    selectedCategories.length
+                      ? sortCategories(selectedCategories)
+                          .map(
+                            (v) =>
+                              categoriesList.find((c) => c.value === v)?.label
+                          )
+                          .join(", ")
+                      : "All categories"
+                  }
+                >
+                  {selectedCategories.length
+                    ? sortCategories(selectedCategories)
+                        .map(
+                          (v) =>
+                            categoriesList.find((c) => c.value === v)?.label
+                        )
+                        .join(", ")
+                    : "All categories"}
+                </div>
+
+                {categoriesOptionsOpen && (
+                  <div className="custom-multiselect__menu">
+                    {categoriesList.map((category) => (
+                      <label key={category.value}>
+                        <input
+                          type="checkbox"
+                          value={category.value}
+                          checked={selectedCategories.includes(category.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (selectedCategories.includes(value)) {
+                              setSelectedCategories(
+                                selectedCategories.filter((v) => v != value)
+                              );
+                            } else {
+                              setSelectedCategories([
+                                ...selectedCategories,
+                                value,
+                              ]);
+                            }
+                          }}
+                        />
+                        {category.label}
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {yearHasWinners && (
@@ -332,7 +393,7 @@ export default function Home({
           </Wrapper>
           {moviesToDisplay?.length === 0 && hideSeen && (
             <AllDone
-              inCategory={Boolean(selectedCategory)}
+              inCategories={selectedCategories.length}
               isPredictions={isLatestYear && predictions}
             />
           )}

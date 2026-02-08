@@ -6,11 +6,11 @@ import Image from "next/image";
 import { Flex } from "@/styles/Flex";
 
 interface Props {
-  inCategory?: boolean;
+  inCategories?: number;
   isPredictions?: boolean;
 }
 
-export const AllDone: FC<Props> = ({ inCategory, isPredictions }) => {
+export const AllDone: FC<Props> = ({ inCategories, isPredictions }) => {
   return (
     <Flex
       $justifyContent="center"
@@ -24,8 +24,10 @@ export const AllDone: FC<Props> = ({ inCategory, isPredictions }) => {
         All done!
       </Heading>
       <Paragraph size="lg" textAlign="center">
-        {inCategory
-          ? "You have seen all the movies in this category."
+        {inCategories
+          ? inCategories == 1
+            ? "You have seen all the movies in this category."
+            : "You have seen all the movies in these categories."
           : isPredictions
           ? "You have seen all the predictions for this year."
           : "You have seen all the movies for this year."}

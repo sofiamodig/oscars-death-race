@@ -174,14 +174,13 @@ export default function Leaderboard({
           <Heading as="h1" size="xl" marginBottom="xs">
             Leaderboard
           </Heading>
-          {/* <Paragraph size="sm">
+          <Paragraph size="sm">
             The leaderboard is updated once per day. The interval is shortened
             closer to the oscars.
-          </Paragraph> */}
-          <Paragraph size="sm">
-            The leaderboard is updated every 20 minutes.
-            {/* The leaderboard is updated once per day */}
           </Paragraph>
+          {/* <Paragraph size="sm">
+            The leaderboard is updated every 20 minutes.
+          </Paragraph> */}
           {selectedYear === "all" && (
             <Paragraph size="sm">
               All years are combined to the ultimate race! 🏆 In total there are{" "}

@@ -13,6 +13,7 @@ import Dropdown from "react-dropdown";
 import NotFound from "./404";
 import { Button } from "@/components/button";
 import { Paragraph } from "@/components/paragraph";
+import { adminRequest } from "@/functions/adminRequest";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
@@ -44,21 +45,16 @@ export default function Admin({
   }
 
   const triggerDeploy = async () => {
-    const link = process.env.NEXT_PUBLIC_VERCEL_DEPLOY_HOOK;
-    if (!link) {
-      return;
-    }
     setStatus("Started deploy");
-
-    const res = await fetch(link, {
-      method: "GET",
-    });
-    const json = await res.json();
-    if (json.job.state === "PENDING") {
+    try {
+      await adminRequest("/api/admin/redeploy", "POST");
       setStatus("Deploying");
       setTimeout(() => {
         setStatus(undefined);
       }, 90000);
+    } catch (error: any) {
+      setStatus(undefined);
+      window.alert(error.message);
     }
   };
 

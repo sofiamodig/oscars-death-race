@@ -69,6 +69,7 @@ export const getStaticProps = (async () => {
       allUsers: sortBySeen.slice(0, 100),
       totalNrOfMovies: totalNrOfMovies,
     },
+    revalidate: 86400,
   };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
@@ -101,10 +102,12 @@ export default function Leaderboard({
       setUsersList(undefined);
       setYearLeaderboard(leaderboard[selectedYear]);
     }
-  }, [selectedYear]);
+  }, [selectedYear, allUsers, leaderboard]);
 
-  const yearMovies =
-    movies.find((movie) => movie.year === selectedYear)?.movies ?? [];
+  const yearMovies = useMemo(
+    () => movies.find((movie) => movie.year === selectedYear)?.movies ?? [],
+    [movies, selectedYear]
+  );
 
   useEffect(() => {
     if (!selectedYear) {
@@ -165,7 +168,13 @@ export default function Leaderboard({
       .filter((user) => user.username);
 
     setUsersList(sortedUsersList);
-  }, [selectedYear, yearLeaderboard]);
+  }, [
+    selectedYear,
+    yearLeaderboard,
+    seenMovies,
+    userSettings?.username,
+    yearMovies,
+  ]);
 
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">

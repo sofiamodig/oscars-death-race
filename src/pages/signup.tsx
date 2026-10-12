@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useRouter } from "next/router";
-import { db } from "@/firebaseConfig";
 import { ErrorIcon } from "@/assets/icons/ErrorIcon";
+import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
 import { Checkbox } from "@/components/checkbox";
 import { Heading } from "@/components/heading";
 import { Paragraph } from "@/components/paragraph";
 import { TextInput } from "@/components/textInput";
-import { useAuth, createUser } from "@/hooks/useAuth";
+import { supabase } from "@/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
-import { ErrorMessage } from "@/styles/Message";
-import { validateEmail, validateUsername, validatePassword } from "@/utils";
-import { collection, getDocs } from "@firebase/firestore";
+import { ErrorMessage, InfoMessage } from "@/styles/Message";
+import { validateEmail, validatePassword, validateUsername } from "@/utils";
 
 type Errors = {
   username?: string;
@@ -22,53 +23,87 @@ type Errors = {
 };
 
 const Signup = () => {
-  const { isSignedIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Errors>();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const router = useRouter();
+  const { isSignedIn, isReady } = useAuth();
 
-  if (isSignedIn) {
-    setTimeout(() => {
-      router.push("/");
-    });
-  }
+  useEffect(() => {
+    if (isReady && isSignedIn) void router.replace("/");
+  }, [isReady, isSignedIn, router]);
 
-  const handleForm = (e: any) => {
+  const handleForm = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setErrors(undefined);
-    e.preventDefault();
-    setLoading(true);
+    setSuccessMessage("");
 
-    const newErrors: Errors = {};
-
-    newErrors.email = validateEmail(email);
-
-    newErrors.password = validatePassword(password);
-
-    newErrors.username = validateUsername(username);
+    const newErrors: Errors = {
+      email: validateEmail(email),
+      password: validatePassword(password),
+      username: validateUsername(username),
+    };
 
     if (!acceptedTerms) {
       newErrors.acceptedTerms = "You must accept the terms";
     }
 
-    if (Object.values(newErrors).filter(Boolean).length > 0) {
-      setLoading(false);
+    if (Object.values(newErrors).some(Boolean)) {
       setErrors(newErrors);
       return;
     }
 
-    createUser(email, password, username)
-      .then((res) => {
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-        setErrors(error.message);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { username: username.trim() },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
+
+      if (error) {
+        setErrors({
+          general:
+            error.code === "23505"
+              ? "That username is already taken. Please choose another."
+              : error.message,
+        });
+        return;
+      }
+
+      // With email confirmation disabled, signUp returns a session and the
+      // user is already logged in. Fall back to sign-in for configurations
+      // that create the account but don't return a session.
+      if (!data.session) {
+        const { data: loginData, error: loginError } =
+          await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          });
+        if (loginError || !loginData.session) {
+          setSuccessMessage(
+            "Your account was created, check your email to confirm your account."
+          );
+          return;
+        }
+      }
+
+      await router.replace("/");
+    } catch (error: any) {
+      setErrors({ general: error.message ?? "Could not create your account." });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!isReady || isSignedIn) return null;
 
   return (
     <Box
@@ -80,11 +115,11 @@ const Signup = () => {
       <Heading size="xxl" marginBottom="lg" textAlign="center">
         Sign up
       </Heading>
-      <form onSubmit={(e: any) => handleForm(e)}>
+      <form onSubmit={handleForm}>
         <Box $marginBottom="md">
           <TextInput
             value={username}
-            setValue={(value) => setUsername(value)}
+            setValue={setUsername}
             label="Username"
             type="text"
             placeholder="Username"
@@ -97,7 +132,7 @@ const Signup = () => {
         <Box $marginBottom="md">
           <TextInput
             value={email}
-            setValue={(value) => setEmail(value)}
+            setValue={setEmail}
             label="Email"
             type="email"
             placeholder="E-mail"
@@ -106,7 +141,7 @@ const Signup = () => {
         </Box>
         <Box $marginBottom="md">
           <TextInput
-            setValue={(value) => setPassword(value)}
+            setValue={setPassword}
             label="Password"
             value={password}
             type="password"
@@ -119,7 +154,7 @@ const Signup = () => {
           <Checkbox
             label="I accept that my information will be saved to be used on this site."
             checked={acceptedTerms}
-            onChange={() => setAcceptedTerms(!acceptedTerms)}
+            onChange={setAcceptedTerms}
           />
           {errors?.acceptedTerms && (
             <ErrorMessage>{errors.acceptedTerms}</ErrorMessage>
@@ -135,9 +170,17 @@ const Signup = () => {
           </Box>
         )}
 
+        {successMessage && (
+          <Box $marginBottom="md" $marginTop="md">
+            <InfoMessage>
+              <InfoIcon />
+              {successMessage}
+            </InfoMessage>
+          </Box>
+        )}
+
         <Button
           type="submit"
-          onClick={handleForm}
           label="Sign up"
           isLoading={loading}
           width="100%"

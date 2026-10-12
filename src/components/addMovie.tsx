@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { SearchIcon } from "@/assets/icons/SearchIcon";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
-import { db } from "@/firebaseConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
-import { doc, getDoc, setDoc, collection, addDoc } from "@firebase/firestore";
+import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
 import { TextInput } from "./textInput";
 import styled from "styled-components";
@@ -193,35 +192,18 @@ const AddMovie = () => {
       wonCategories: wonCategories,
     };
 
-    const yearRef = doc(db, "movie-collection", formData.year);
-
-    getDoc(yearRef)
-      .then((docSnap) => {
-        if (!docSnap.exists()) {
-          // If the year doesn't exist, create it
-          return setDoc(yearRef, { name: formData.year }).then(() => {
-            const movieCollectionRef = collection(yearRef, "movies");
-
-            return addDoc(movieCollectionRef, movieObj);
-          });
-        } else {
-          // If the year exists, add the movie directly
-          const movieCollectionRef = collection(yearRef, "movies");
-          return addDoc(movieCollectionRef, movieObj);
-        }
-      })
-      .then(() => {
-        setFormData({
-          ...InitialData,
-          year: formData.year,
-        });
-        setIsSubmitting(false);
-        showSnackbar("Movie added successfully", "success");
-      })
-      .catch((error) => {
-        setIsSubmitting(false);
-        showSnackbar(error.message, "error");
+    try {
+      await adminRequest("/api/admin/movies", "POST", {
+        ...movieObj,
+        year: formData.year,
       });
+      setFormData({ ...InitialData, year: formData.year });
+      showSnackbar("Movie added successfully", "success");
+    } catch (error: any) {
+      showSnackbar(error.message, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

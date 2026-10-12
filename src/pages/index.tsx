@@ -163,7 +163,7 @@ export default function Home({
     }
   }, [filteredMovies, hideSeen, seenMoviesList]);
 
-  if (loading || !selectedYear) {
+  if (loading) {
     return (
       <Wrapper>
         <MovieCardSkeleton />
@@ -172,6 +172,20 @@ export default function Home({
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />
+        <MovieCardSkeleton />
+        <MovieCardSkeleton />
+        <MovieCardSkeleton />
+      </Wrapper>
+    );
+  }
+
+  if (movies.length === 0) {
+    return <InfoMessage>No movies were returned from the database.</InfoMessage>;
+  }
+
+  if (!selectedYear) {
+    return (
+      <Wrapper>
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />

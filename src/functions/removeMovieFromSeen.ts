@@ -1,14 +1,5 @@
-import { db } from "@/firebaseConfig";
-import { MoviesYearsListType, SeenMoviesType, SeenType } from "@/types";
-import { checkLatestYear } from "@/utils";
-import {
-  arrayUnion,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-} from "@firebase/firestore";
-import { DateTime } from "luxon";
+import { SeenMoviesType } from "@/types";
+import { supabase } from "@/supabase";
 
 interface Props {
   imdbId: string;
@@ -23,37 +14,30 @@ export const removeMovieFromSeenFunc = async ({
   year,
   seenMovies,
 }: Props) => {
-  const newSeenMovies = seenMovies.map((entry) => ({
-    ...entry,
-    seenMovies: entry.seenMovies?.filter((movie) => movie.imdbId !== imdbId),
-    completed: null, // Reset completed date when removing a movie
-  }));
+  const yearNumber = Number(year);
+  const { error } = await supabase
+    .from("seen_movies")
+    .delete()
+    .eq("user_id", userId)
+    .eq("year", yearNumber)
+    .eq("imdb_id", imdbId);
+  if (error) throw error;
 
-  const docRef = doc(db, "users", userId);
+  // Current behavior resets the completion date whenever a movie is removed.
+  const { error: progressError } = await supabase
+    .from("user_year_progress")
+    .delete()
+    .eq("user_id", userId)
+    .eq("year", yearNumber);
+  if (progressError) throw progressError;
 
-  try {
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const yearData = docSnap.data()[year];
-
-      if (yearData) {
-        const updatedSeenMovies = yearData.seenMovies?.filter(
-          (movie: { imdbId: string }) => movie.imdbId !== imdbId
-        );
-
-        // Update the document in Firestore
-        updateDoc(docRef, {
-          [`${year}.seenMovies`]: updatedSeenMovies,
-          [`${year}.completed`]: null, // Reset completed date in the document
-        });
-      }
-    } else {
-      throw new Error("An error occurred");
-    }
-  } catch (error) {
-    throw new Error("An error occurred");
-  }
-
-  return newSeenMovies;
+  return seenMovies.map((entry) =>
+    entry.year === year
+      ? {
+          ...entry,
+          seenMovies: entry.seenMovies.filter((movie) => movie.imdbId !== imdbId),
+          completed: null,
+        }
+      : entry
+  );
 };

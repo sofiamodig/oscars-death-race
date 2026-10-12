@@ -114,7 +114,7 @@ export const getStaticProps = (async () => {
   const reversedList = movies.reverse();
   const users = await fetchUsers(movies);
 
-  return { props: { movies: reversedList, users } };
+  return { props: { movies: reversedList, users }, revalidate: 86400 };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
   users: UsersType;

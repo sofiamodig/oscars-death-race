@@ -8,19 +8,17 @@ import { TextInput } from "@/components/textInput";
 import { Toggle } from "@/components/toggle";
 import { useSeenContext } from "@/contexts/seenContext";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
-import { auth, db } from "@/firebaseConfig";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { useAuth, emailChange, userDeletion } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { MoviesYearsListType } from "@/types";
-import { validateEmail } from "@/utils";
-import { signOut } from "@firebase/auth";
-import { updateDoc, doc, deleteDoc } from "@firebase/firestore";
+import { validateEmail, validateUsername } from "@/utils";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect } from "react";
+import { supabase } from "@/supabase";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
@@ -49,15 +47,15 @@ export default function Settings({
   } = useSeenContext();
   const router = useRouter();
   const [showInLeaderboard, setShowInLeaderboard] = useState<boolean>();
-  const [percentageByWatchTime, setPercentageByWatchTime] = useState<boolean>(false);
+  const [percentageByWatchTime, setPercentageByWatchTime] = useState<boolean>();
   const [username, setUsername] = useState<string>();
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const { showSnackbar } = useSnackbarContext();
 
-  const handleSignOut = () => {
-    signOut(auth);
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
     router.push("/");
   };
 
@@ -66,7 +64,7 @@ export default function Settings({
       setUsername(userSettings?.username);
     }
 
-    if (!showInLeaderboard) {
+    if (showInLeaderboard === undefined) {
       setShowInLeaderboard(
         userSettings.showInLeaderboard !== undefined
           ? userSettings.showInLeaderboard
@@ -74,32 +72,47 @@ export default function Settings({
       );
     }
 
-    if (!percentageByWatchTime) {
+    if (percentageByWatchTime === undefined) {
       setPercentageByWatchTime(
         userSettings.percentageByWatchTime !== undefined
           ? userSettings.percentageByWatchTime
           : false
       );
     }
-  }, [userSettings, username]);
+  }, [
+    userSettings,
+    username,
+    showInLeaderboard,
+    percentageByWatchTime,
+  ]);
 
   const updateUsername = async () => {
     setLoading("username");
 
-    if (username && username !== userSettings?.username && userId) {
-      updateDoc(doc(db, "users", userId), {
-        username: username,
-      })
-        .then(() => {
-          changeUserName(username);
-          showSnackbar("Username was successfully changed", "success");
-          setLoading(undefined);
-        })
-        .catch((error) => {
-          showSnackbar(error.message, "error");
-          setLoading(undefined);
-        });
+    if (!username || username === userSettings?.username || !userId) {
+      setLoading(undefined);
+      return;
     }
+    const usernameError = validateUsername(username.trim());
+    if (usernameError) {
+      showSnackbar(usernameError, "error");
+      setLoading(undefined);
+      return;
+    }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ username: username.trim() })
+      .eq("id", userId);
+    if (error) {
+      showSnackbar(
+        error.code === "23505" ? "That username is already taken" : error.message,
+        "error"
+      );
+    } else {
+      changeUserName(username.trim());
+      showSnackbar("Username was successfully changed", "success");
+    }
+    setLoading(undefined);
   };
 
   const changeEmail = async () => {
@@ -108,20 +121,21 @@ export default function Settings({
     const emailError = validateEmail(newEmail);
     if (emailError) {
       showSnackbar(emailError, "error");
+      setLoading(undefined);
     } else {
-      await emailChange(newEmail)
-        .then(() => {
-          setLoading(undefined);
-          showSnackbar(
-            "A verification email has been sent to your new email",
-            "success"
-          );
-          router.push("/login");
-        })
-        .catch((error) => {
-          setLoading(undefined);
-          showSnackbar(error.message, "error");
-        });
+      try {
+        await emailChange(newEmail.trim());
+        await supabase.auth.signOut();
+        showSnackbar(
+          "A verification email has been sent to your new email",
+          "success"
+        );
+        router.push("/login");
+      } catch (error: any) {
+        showSnackbar(error.message, "error");
+      } finally {
+        setLoading(undefined);
+      }
     }
   };
 
@@ -140,20 +154,7 @@ export default function Settings({
       });
   };
 
-  const deleteUserData = () => {
-    // Delete user data document
-    if (!userId) return;
-
-    deleteDoc(doc(db, "users", userId))
-      .then(() => {
-        console.log("Document successfully deleted!");
-        deleteAccount();
-      })
-      .catch((error) => {
-        showSnackbar(error.message, "error");
-        setLoading(undefined);
-      });
-  };
+  const deleteUserData = deleteAccount;
 
   const handleExport = () => {
     exportToCsv(seenMovies, movies, "seen_movies");
@@ -213,7 +214,7 @@ export default function Settings({
             />
             <Toggle
               label="Progress by watchtime instead of movie count"
-              value={percentageByWatchTime ?? true}
+              value={percentageByWatchTime ?? false}
               onToggle={() => {
                 setPercentageByWatchTime((prev) => !prev);
                 togglePercentageByWatchTime();

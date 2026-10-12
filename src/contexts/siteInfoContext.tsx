@@ -5,15 +5,11 @@ import React, {
   ReactNode,
   useContext,
 } from "react";
-import { doc, getDoc, updateDoc } from "@firebase/firestore";
-import { db } from "@/firebaseConfig";
-import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/supabase";
 import { useSnackbarContext } from "./snackbarContext";
+import { SiteInfoType } from "@/types";
 
-type SiteInfoContextType = {
-  predictions?: boolean;
-  moviesBeingAdded?: boolean;
-  construction?: boolean;
+type SiteInfoContextType = SiteInfoType & {
   togglePredictions: () => void;
   toggleMoviesBeingAdded: () => void;
   toggleConstruction: () => void;
@@ -27,71 +23,78 @@ export const SiteInfoContext = createContext<SiteInfoContextType>({
   toggleMoviesBeingAdded: () => {},
   toggleConstruction: () => {},
 });
-
 export const useSiteInfoContext = () => useContext(SiteInfoContext);
 
-interface SiteInfoProviderProps {
-  children: ReactNode;
-}
-
-export const SiteInfoProvider: React.FC<SiteInfoProviderProps> = ({
-  children,
-}) => {
-  const [predictions, setPredictions] = useState(false);
-  const [moviesBeingAdded, setMoviesBeingAdded] = useState(false);
-  const [construction, setConstruction] = useState(false);
+export const SiteInfoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [settings, setSettings] = useState<SiteInfoType>({});
   const { showSnackbar } = useSnackbarContext();
 
   useEffect(() => {
-    const docRef = doc(db, "site-status", "info");
-    getDoc(docRef)
-      .then((doc: any) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          if (data) {
-            setPredictions(data.predictions);
-            setMoviesBeingAdded(data.moviesBeingAdded);
-            setConstruction(data.construction);
-          }
-        } else {
-          showSnackbar("An error occurred", "error");
+    let active = true;
+    supabase
+      .from("site_settings")
+      .select("predictions, movies_being_added, construction")
+      .eq("id", true)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error || !data) {
+          showSnackbar("Could not load site settings", "error");
+          setSettings({ predictions: false, moviesBeingAdded: false, construction: false });
+          return;
         }
-      })
-      .catch(() => {
-        showSnackbar("An error occurred", "error");
+        setSettings({
+          predictions: data.predictions,
+          moviesBeingAdded: data.movies_being_added,
+          construction: data.construction,
+        });
       });
+    return () => { active = false; };
   }, [showSnackbar]);
 
-  const togglePredictions = () => {
-    setPredictions(!predictions);
-    updateDoc(doc(db, "site-status", "info"), {
-      predictions: !predictions,
-    });
-  };
+  const update = async (field: "predictions" | "movies_being_added" | "construction") => {
+    const columnToProperty = {
+      predictions: "predictions",
+      movies_being_added: "moviesBeingAdded",
+      construction: "construction",
+    } as const;
+    const property = columnToProperty[field];
+    const next = !settings[property];
+    setSettings((previous) => ({ ...previous, [property]: next }));
 
-  const toggleMoviesBeingAdded = () => {
-    setMoviesBeingAdded(!moviesBeingAdded);
-    updateDoc(doc(db, "site-status", "info"), {
-      moviesBeingAdded: !moviesBeingAdded,
-    });
-  };
-
-  const toggleConstruction = () => {
-    setConstruction(!construction);
-    updateDoc(doc(db, "site-status", "info"), {
-      construction: !construction,
-    });
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
+      setSettings((previous) => ({ ...previous, [property]: !next }));
+      showSnackbar("Sign in as an administrator to change site settings", "error");
+      return;
+    }
+    try {
+      const response = await fetch("/api/admin/site-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ [field]: next }),
+      });
+      if (response.ok) return;
+      const result = await response.json().catch(() => ({}));
+      setSettings((previous) => ({ ...previous, [property]: !next }));
+      showSnackbar(result.error ?? "Could not update site settings", "error");
+    } catch {
+      setSettings((previous) => ({ ...previous, [property]: !next }));
+      showSnackbar("Could not update site settings", "error");
+    }
   };
 
   return (
     <SiteInfoContext.Provider
       value={{
-        predictions,
-        moviesBeingAdded,
-        construction,
-        togglePredictions,
-        toggleMoviesBeingAdded,
-        toggleConstruction,
+        ...settings,
+        togglePredictions: () => void update("predictions"),
+        toggleMoviesBeingAdded: () => void update("movies_being_added"),
+        toggleConstruction: () => void update("construction"),
       }}
     >
       {children}

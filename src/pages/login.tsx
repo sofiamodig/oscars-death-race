@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { signIn, useAuth } from "@/hooks/useAuth";
 import { ErrorIcon } from "@/assets/icons/ErrorIcon";
 import { Button } from "@/components/button";
 import { Heading } from "@/components/heading";
 import { Paragraph } from "@/components/paragraph";
 import { TextInput } from "@/components/textInput";
+import { supabase } from "@/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { ErrorMessage } from "@/styles/Message";
-import Link from "next/link";
 
 type Errors = {
   email?: string;
@@ -17,47 +19,51 @@ type Errors = {
 };
 
 const Login = () => {
-  const { isSignedIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Errors>();
   const router = useRouter();
+  const { isSignedIn, isReady } = useAuth();
 
-  if (isSignedIn) {
-    router.push("/");
-  }
+  useEffect(() => {
+    if (isReady && isSignedIn) void router.replace("/");
+  }, [isReady, isSignedIn, router]);
 
-  const handleForm = (e: any) => {
+  const handleForm = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setErrors(undefined);
-    e.preventDefault();
-    setLoading(true);
 
     const newErrors: Errors = {};
-    if (!email) {
-      newErrors.email = "Email is required";
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required";
-    }
+    if (!email.trim()) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
 
     if (Object.keys(newErrors).length > 0) {
-      setLoading(false);
       setErrors(newErrors);
       return;
     }
 
-    signIn(email, password)
-      .then(() => {
-        setLoading(false);
-        router.push("/");
-      })
-      .catch((error) => {
-        setLoading(false);
-        setErrors((prev) => ({ ...prev, general: error.message }));
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
       });
+
+      if (error) {
+        setErrors({ general: error.message });
+        return;
+      }
+
+      await router.replace("/");
+    } catch (error: any) {
+      setErrors({ general: error.message ?? "Could not log in." });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!isReady || isSignedIn) return null;
 
   return (
     <Box
@@ -69,11 +75,11 @@ const Login = () => {
       <Heading size="xxl" marginBottom="lg" textAlign="center">
         Log in
       </Heading>
-      <form onSubmit={(e: any) => handleForm(e)}>
+      <form onSubmit={handleForm}>
         <Box $marginBottom="md">
           <TextInput
             value={email}
-            setValue={(value) => setEmail(value)}
+            setValue={setEmail}
             label="Email"
             type="email"
             placeholder="E-mail"
@@ -82,7 +88,7 @@ const Login = () => {
         </Box>
         <Box $marginBottom="md">
           <TextInput
-            setValue={(value) => setPassword(value)}
+            setValue={setPassword}
             label="Password"
             value={password}
             type="password"
@@ -102,7 +108,6 @@ const Login = () => {
 
         <Button
           type="submit"
-          onClick={handleForm}
           label="Log in"
           isLoading={loading}
           width="100%"

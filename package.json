@@ -9,9 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@firebase/app": "^0.9.25",
-    "@firebase/auth": "^1.5.1",
-    "@firebase/firestore": "^4.4.0",
+    "@supabase/supabase-js": "^2.117.3",
     "chart.js": "^4.4.2",
     "file-saver": "^2.0.5",
     "luxon": "^3.4.4",

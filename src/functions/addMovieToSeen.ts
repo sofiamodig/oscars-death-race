@@ -1,13 +1,6 @@
-import { db } from "@/firebaseConfig";
 import { MoviesYearsListType, SeenMoviesType, SeenType } from "@/types";
 import { checkLatestYear } from "@/utils";
-import {
-  arrayUnion,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-} from "@firebase/firestore";
+import { supabase } from "@/supabase";
 import { DateTime } from "luxon";
 
 interface Props {
@@ -27,89 +20,63 @@ export const addMovieToSeenFunc = async ({
   seenMovies,
   predictions,
 }: Props) => {
-  const docRef = doc(db, "users", userId);
-  const currentDate = DateTime.now().toUTC().toISO();
-  const movieYearObj = movies.find((movie) => movie.year === year);
-  const moviesList = movieYearObj ? movieYearObj.movies : [];
-  const seenMoviesList =
-    seenMovies.find((list) => list.year === year)?.seenMovies ?? [];
+  const yearNumber = Number(year);
+  const movieYear = movies.find((entry) => entry.year === year);
+  const yearMovies = movieYear?.movies ?? [];
+  const now = DateTime.now().toUTC().toISO();
+  if (!now) throw new Error("Could not create a seen date.");
 
-  const filteredSeenMovies = seenMoviesList.filter((movie) => {
-    return moviesList.some((yearMovie) => yearMovie.imdbId === movie.imdbId);
-  });
-
-  const seenMoviesImdbIds = Array.from(
-    new Set(filteredSeenMovies.map((movie) => movie.imdbId))
+  const { error } = await supabase.from("seen_movies").upsert(
+    { user_id: userId, year: yearNumber, imdb_id: imdbId, seen_at: now },
+    { onConflict: "user_id,year,imdb_id" }
   );
+  if (error) throw error;
 
-  const isLatestYear = checkLatestYear(year, movies);
+  const priorSeen = seenMovies.find((entry) => entry.year === year)?.seenMovies ?? [];
+  const seenIds = new Set(
+    priorSeen
+      .filter((item) => yearMovies.some((movie) => movie.imdbId === item.imdbId))
+      .map((item) => item.imdbId)
+  );
+  seenIds.add(imdbId);
+  const isComplete =
+    yearMovies.length > 0 &&
+    seenIds.size >= yearMovies.length &&
+    (!checkLatestYear(year, movies) || !predictions);
 
-  const isCompletedRace =
-    (isLatestYear &&
-      !predictions &&
-      moviesList?.length === seenMoviesImdbIds?.length + 1) ||
-    (!isLatestYear && moviesList?.length === seenMoviesImdbIds?.length + 1);
-
-  const movieObj: SeenType = {
-    imdbId,
-    date: currentDate,
-  };
-
-  const currentYearEntry = seenMovies.find((entry) => entry.year === year);
-
-  const newSeenMovies = [];
-  if (currentYearEntry) {
-    // If the entry exists, add the new movie to its seenMovies array
-    newSeenMovies.push(
-      ...seenMovies.map((entry) =>
-        entry.year === year
-          ? {
-              ...entry,
-              seenMovies: [...entry?.seenMovies, movieObj],
-              completed: isCompletedRace ? currentDate : null,
-            }
-          : entry
-      )
-    );
-  } else {
-    // If the entry doesn't exist, create a new one for the current year
-    newSeenMovies.push(...seenMovies, {
-      year: year,
-      seenMovies: [movieObj],
-      completed: isCompletedRace ? currentDate : null,
-    });
+  if (isComplete) {
+    const { error: progressError } = await supabase
+      .from("user_year_progress")
+      .upsert(
+        { user_id: userId, year: yearNumber, completed_at: now },
+        { onConflict: "user_id,year" }
+      );
+    if (progressError) throw progressError;
   }
 
-  getDoc(docRef)
-    .then((docSnap) => {
-      if (docSnap.exists()) {
-        // Check if the year exists in the document
-        if (docSnap.data()[year]) {
-          // Year exists, update the list
-          return updateDoc(docRef, {
-            [`${year}.seenMovies`]: arrayUnion(movieObj),
-            [`${year}.completed`]: isCompletedRace ? currentDate : null,
-          });
-        } else {
-          // Year does not exist, create it
-          return setDoc(
-            docRef,
-            {
-              [year]: {
-                seenMovies: [movieObj],
-                completed: isCompletedRace ? currentDate : null,
-              },
-            },
-            { merge: true }
-          );
-        }
-      } else {
-        throw new Error("An error occurred");
-      }
-    })
-    .catch(() => {
-      throw new Error("An error occurred");
-    });
+  const result: SeenType = { imdbId, date: now };
+  const existingYear = seenMovies.find((entry) => entry.year === year);
+  if (existingYear) {
+    return seenMovies.map((entry) =>
+      entry.year === year
+        ? {
+            ...entry,
+            seenMovies: [
+              ...entry.seenMovies.filter((item) => item.imdbId !== imdbId),
+              result,
+            ],
+            ...(isComplete ? { completed: now } : {}),
+          }
+        : entry
+    );
+  }
 
-  return newSeenMovies;
+  return [
+    ...seenMovies,
+    {
+      year,
+      seenMovies: [result],
+      ...(isComplete ? { completed: now } : {}),
+    },
+  ];
 };

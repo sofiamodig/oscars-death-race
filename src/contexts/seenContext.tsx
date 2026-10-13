@@ -28,6 +28,7 @@ type SeenContextType = {
   changeShowInLeaderboard: () => void;
   toggleShowSeenDates: () => void;
   togglePercentageByWatchTime: () => void;
+  changeMovieLinkDestination: (destination: "imdb" | "letterboxd" | "simkl") => void;
   loading: boolean;
 };
 
@@ -41,6 +42,7 @@ export const SeenContext = createContext<SeenContextType>({
   changeShowInLeaderboard: () => {},
   toggleShowSeenDates: () => {},
   togglePercentageByWatchTime: () => {},
+  changeMovieLinkDestination: () => {},
   loading: true,
 });
 
@@ -198,6 +200,22 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       });
   };
 
+  const changeMovieLinkDestination = (destination: "imdb" | "letterboxd" | "simkl") => {
+    if (!userId) return;
+    const previous = userSettings.movieLinkDestination ?? "imdb";
+    setUserSettings((prev) => ({ ...prev, movieLinkDestination: destination }));
+    supabase
+      .from("profiles")
+      .update({ movie_link_destination: destination })
+      .eq("id", userId)
+      .then(({ error }) => {
+        if (error) {
+          setUserSettings((prev) => ({ ...prev, movieLinkDestination: previous }));
+          showSnackbar(error.message, "error");
+        }
+      });
+  };
+
   useEffect(() => {
     if (localStorage.getItem("hideSeenDates")) {
       setUserSettings((prev) => ({
@@ -230,6 +248,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
         changeShowInLeaderboard,
         toggleShowSeenDates,
         togglePercentageByWatchTime,
+        changeMovieLinkDestination,
         userSettings,
         loading,
       }}

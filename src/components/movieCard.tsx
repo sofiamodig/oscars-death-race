@@ -99,7 +99,7 @@ const MovieLink = styled.a`
   margin-top: auto;
   color: var(--color-secondary-500);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.4px;
   transition: color 0.2s ease-in-out;
   display: flex;
@@ -244,6 +244,12 @@ export const MovieCard: FC<Props> = ({
     useContext(SeenContext);
 
   const savedComment = comments.find((c) => c.imdbId === data.imdbId);
+  const destination = userSettings.movieLinkDestination ?? "imdb";
+  const movieLink = destination === "letterboxd" && data.tmdbId
+    ? { href: `https://letterboxd.com/tmdb/${data.tmdbId}`, label: "GO TO LETTERBOXD" }
+    : destination === "simkl" && data.simklId
+      ? { href: `https://simkl.com/movies/${data.simklId}/`, label: "GO TO SIMKL" }
+      : { href: `https://imdb.com/title/${data.imdbId}`, label: "GO TO IMDB" };
 
   useEffect(() => {
     setNewComment(savedComment?.comment || "");
@@ -353,10 +359,10 @@ export const MovieCard: FC<Props> = ({
                 </PenIconButton>
               )}
               <MovieLink
-                href={`https://imdb.com/title/${data.imdbId}`}
+                href={movieLink.href}
                 target="_BLANK"
               >
-                <span>GO TO IMDB</span>
+                <span>{movieLink.label}</span>
                 <ChevronRightIcon />
               </MovieLink>
             </BottomRow>

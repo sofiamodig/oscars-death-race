@@ -14,7 +14,7 @@ export const fetchSeenMovies = async (userId: string) => {
       .eq("user_id", userId),
     supabase
       .from("profiles")
-      .select("username, show_in_leaderboard, percentage_by_watch_time")
+      .select("username, show_in_leaderboard, percentage_by_watch_time, movie_link_destination")
       .eq("id", userId)
       .maybeSingle(),
   ]);
@@ -42,6 +42,7 @@ export const fetchSeenMovies = async (userId: string) => {
     username: profile?.username ?? "",
     showInLeaderboard: profile?.show_in_leaderboard ?? true,
     percentageByWatchTime: profile?.percentage_by_watch_time ?? false,
+    movieLinkDestination: profile?.movie_link_destination ?? "imdb",
   };
 
   return {

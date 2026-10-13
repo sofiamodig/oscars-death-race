@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { authenticateAdmin, getAdminClient } from "@/server/supabaseAdmin";
+import { fetchMovieExternalIds } from "@/server/movieExternalIds";
 
 const asStringArray = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
@@ -20,10 +21,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const title = String(body.title ?? "").trim();
     if (!title) return res.status(400).json({ error: "A title is required." });
     const duration = body.duration == null || body.duration === "" ? null : Number(body.duration);
+    const { data: existingMovie, error: existingMovieError } = await client
+      .from("movies")
+      .select("tmdb_id, simkl_id")
+      .eq("year", year)
+      .eq("imdb_id", imdbId)
+      .maybeSingle();
+    if (existingMovieError) {
+      return res.status(500).json({ error: existingMovieError.message });
+    }
+
+    const externalIds = await fetchMovieExternalIds(imdbId);
+    const tmdbId = externalIds.tmdbId ?? existingMovie?.tmdb_id ?? null;
+    const simklId = externalIds.simklId ?? existingMovie?.simkl_id ?? null;
+    const warnings = externalIds.warnings.filter((warning) =>
+      warning.startsWith("TMDb") || warning.startsWith("TMDB_API_KEY")
+        ? tmdbId === null
+        : simklId === null
+    );
     const { error: writeError } = await client.from("movies").upsert(
       {
         year,
         imdb_id: imdbId,
+        tmdb_id: tmdbId,
+        simkl_id: simklId,
         title,
         director: body.director || null,
         cast_members: typeof body.cast === "string" ? body.cast.split(", ").filter(Boolean) : asStringArray(body.cast),
@@ -35,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { onConflict: "year,imdb_id" }
     );
     if (writeError) return res.status(500).json({ error: writeError.message });
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, tmdbId, simklId, warnings });
   }
 
   if (req.method === "PATCH") {

@@ -52,6 +52,8 @@ export const fetchMovies = async (): Promise<MoviesYearsListType> => {
       // Existing app code uses this ID for seen-movie lookups.
       id: row.imdb_id,
       imdbId: row.imdb_id,
+      ...(row.tmdb_id ? { tmdbId: row.tmdb_id } : {}),
+      ...(row.simkl_id !== null ? { simklId: row.simkl_id } : {}),
       title: row.title,
       director: row.director ?? "",
       cast: (row.cast_members ?? []).join(", "),

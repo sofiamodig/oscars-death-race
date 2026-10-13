@@ -19,6 +19,56 @@ import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect } from "react";
 import { supabase } from "@/supabase";
+import styled from "styled-components";
+
+const SettingsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+`;
+
+const LogoutLink = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--color-secondary-500);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--color-secondary-700);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const DangerAccordion = styled.details`
+  margin: 112px 0 32px;
+  padding-top: 48px;
+  border-top: 1px solid var(--color-neutral-300);
+
+  summary {
+    width: fit-content;
+    color: var(--color-ui-red, #b42318);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button {
+    margin-top: 12px;
+  }
+`;
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
@@ -43,7 +93,8 @@ export default function Settings({
     changeUserName,
     changeShowInLeaderboard,
     toggleShowSeenDates,
-    togglePercentageByWatchTime
+    togglePercentageByWatchTime,
+    changeMovieLinkDestination,
   } = useSeenContext();
   const router = useRouter();
   const [showInLeaderboard, setShowInLeaderboard] = useState<boolean>();
@@ -162,14 +213,24 @@ export default function Settings({
 
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
-      <Heading size="lg" marginBottom="md">
-        Settings
-      </Heading>
+      <SettingsHeader>
+        <Heading size="lg">Settings</Heading>
+        {userId && (
+          <LogoutLink type="button" onClick={handleSignOut}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10 17l5-5-5-5" />
+              <path d="M15 12H3" />
+              <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7" />
+            </svg>
+            Log out
+          </LogoutLink>
+        )}
+      </SettingsHeader>
       {!userId || !userSettings ? (
         <Loader />
       ) : (
         <>
-          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="md">
+          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="lg">
             <TextInput
               label="Username"
               value={username ?? ""}
@@ -181,7 +242,7 @@ export default function Settings({
               isLoading={loading === "username"}
             />
           </Flex>
-          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="md">
+          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="lg">
             <TextInput
               label="Change email"
               value={newEmail ?? ""}
@@ -195,14 +256,15 @@ export default function Settings({
           </Flex>
           <Flex
             $direction="column"
-            $gap="sm"
-            $marginBottom="md"
+            $gap="md"
+            $marginBottom="lg"
             $alignItems="flex-start"
           >
             <Toggle
               label="Hide seen dates in the movie list"
               value={userSettings.hideSeenDates ?? false}
               onToggle={toggleShowSeenDates}
+              size="sm"
             />
             <Toggle
               label="Show your user in the leaderboard"
@@ -211,6 +273,7 @@ export default function Settings({
                 setShowInLeaderboard((prev) => !prev);
                 changeShowInLeaderboard();
               }}
+              size="sm"
             />
             <Toggle
               label="Progress by watchtime instead of movie count"
@@ -219,13 +282,33 @@ export default function Settings({
                 setPercentageByWatchTime((prev) => !prev);
                 togglePercentageByWatchTime();
               }}
+              size="sm"
             />
           </Flex>
-          <Box $marginTop="md" $marginBottom="md">
-            <Button onClick={handleSignOut} label="Log out" />
+          <Box $marginTop="xxl" $marginBottom="lg">
+            <Heading size="md" marginBottom="sm">
+              Movie links
+            </Heading>
+            <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+              <legend>Open movies with:</legend>
+              {([
+                ["imdb", "IMDb"],
+                ["letterboxd", "Letterboxd"],
+                ["simkl", "Simkl"],
+              ] as const).map(([value, label]) => (
+                <label key={value} style={{ display: "block", marginTop: 8 }}>
+                  <input
+                    type="radio"
+                    name="movie-link-destination"
+                    value={value}
+                    checked={(userSettings.movieLinkDestination ?? "imdb") === value}
+                    onChange={() => changeMovieLinkDestination(value)}
+                  />{" "}{label}
+                </label>
+              ))}
+            </fieldset>
           </Box>
-
-          <Box $marginTop="lg" $marginBottom="md">
+          <Box $marginTop="xxxl" $marginBottom="lg">
             <Heading size="lg" marginBottom="md">
               Export your data
             </Heading>
@@ -237,21 +320,22 @@ export default function Settings({
             />
           </Box>
 
-          <Box $marginTop="lg" $marginBottom="md">
-            <Heading size="lg" marginBottom="md">
-              Danger zone
-            </Heading>
-            <Button
-              type="button"
-              onClick={() => setDeleteModal(true)}
-              label="Delete account"
-              variant="danger"
-            />
-          </Box>
         </>
       )}
 
       {isAdmin && <AdminSettings />}
+
+      {userId && userSettings && (
+        <DangerAccordion>
+          <summary>Danger zone</summary>
+          <Button
+            type="button"
+            onClick={() => setDeleteModal(true)}
+            label="Delete account"
+            variant="danger"
+          />
+        </DangerAccordion>
+      )}
 
       {deleteModal && (
         <Modal

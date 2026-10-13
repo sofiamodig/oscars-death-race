@@ -2,6 +2,8 @@ export type MovieType = {
   id: string;
   title: string;
   imdbId: string;
+  tmdbId?: string;
+  simklId?: number;
   cast: string;
   director: string;
   categories?: string[];
@@ -26,6 +28,7 @@ export type UserSettingsType = {
   showInLeaderboard?: boolean;
   hideSeenDates?: boolean;
   percentageByWatchTime?: boolean;
+  movieLinkDestination?: "imdb" | "letterboxd" | "simkl";
 };
 
 export type SiteInfoType = {

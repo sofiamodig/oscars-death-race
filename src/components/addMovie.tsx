@@ -206,12 +206,18 @@ const AddMovie = () => {
     };
 
     try {
-      await adminRequest("/api/admin/movies", "POST", {
+      const result = await adminRequest("/api/admin/movies", "POST", {
         ...movieObj,
         year: formData.year,
       });
       setFormData({ ...InitialData, year: formData.year });
-      showSnackbar("Movie added successfully", "success");
+      const idSummary = `TMDb: ${result.tmdbId ?? "not found"}; Simkl: ${result.simklId ?? "not found"}.`;
+      showSnackbar(
+        result.warnings?.length
+          ? `Movie added. ${idSummary} ${result.warnings.join(" ")}`
+          : `Movie added successfully. ${idSummary}`,
+        result.warnings?.length ? "info" : "success"
+      );
     } catch (error: any) {
       showSnackbar(error.message, "error");
     } finally {

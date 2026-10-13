@@ -9,6 +9,7 @@ import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
 import { TextInput } from "./textInput";
 import styled from "styled-components";
+import { PosterPreview } from "./posterPreview";
 
 const SearchInputWrapper = styled.div`
   display: flex;
@@ -46,6 +47,18 @@ const Chips = styled.div`
 
 const ButtonWrapper = styled.div`
   width: 100%;
+`;
+
+const PosterField = styled.div`
+  display: flex;
+  flex: 1 0 100%;
+  align-items: flex-start;
+  gap: 12px;
+
+  & > div:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 const InitialErrors = {
@@ -242,17 +255,6 @@ const AddMovie = () => {
         </button>
       </SearchInputWrapper>
       <TextInput
-        label="Poster URL"
-        placeholder="Poster URL"
-        type="text"
-        value={formData.posterUrl}
-        errorMessage={errors.posterUrl}
-        setValue={(value: string) =>
-          setFormData((prev) => ({ ...prev, posterUrl: value }))
-        }
-        style={{ flex: 1 }}
-      />
-      <TextInput
         label="Director"
         placeholder="Director"
         type="text"
@@ -296,6 +298,22 @@ const AddMovie = () => {
         }
         width="68px"
       />
+      <PosterField>
+        <PosterPreview
+          url={formData.posterUrl}
+          title={formData.title || "Movie"}
+        />
+        <TextInput
+          label="Poster URL"
+          placeholder="Poster URL"
+          type="text"
+          value={formData.posterUrl}
+          errorMessage={errors.posterUrl}
+          setValue={(value: string) =>
+            setFormData((prev) => ({ ...prev, posterUrl: value }))
+          }
+        />
+      </PosterField>
       <Box $marginTop="md">
         <p>Nominated Categories</p>
         <Chips>

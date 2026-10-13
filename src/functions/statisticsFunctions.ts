@@ -1,6 +1,5 @@
-import { UsersType } from "@/pages/statistics";
 import { MovieType, MoviesYearsListType } from "@/types";
-import { BLOCKED_USERS, minutesToHours } from "@/utils";
+import { minutesToHours } from "@/utils";
 
 type WonCategoriesType = {
   maxCategories: number;
@@ -397,108 +396,9 @@ export const getMostAppearedActor = (movies: MoviesYearsListType) => {
   };
 };
 
-export interface MaxUserType {
-  username: string;
-  totalSeen: number;
-  years: { year: string; seen: number }[];
-}
-
-export function findUserWithMostSeenMovies(usersData: UsersType): MaxUserType {
-  const userTotals: Map<
-    string,
-    { totalSeen: number; years: Map<string, number> }
-  > = new Map();
-
-  Object.entries(usersData).forEach(([year, users]) => {
-    users.forEach((user) => {
-      let userData;
-
-      if (!user.username) {
-        return;
-      }
-
-      if (BLOCKED_USERS.includes(user.username)) {
-        return;
-      }
-
-      if (userTotals.has(user.username)) {
-        userData = userTotals.get(user.username);
-        userData!.totalSeen += user.seen;
-        const yearSeen = userData!.years.get(year) || 0;
-        userData!.years.set(year, yearSeen + user.seen);
-      } else {
-        userData = {
-          totalSeen: user.seen,
-          years: new Map([[year, user.seen]]),
-        };
-        userTotals.set(user.username, userData);
-      }
-    });
-  });
-
-  let maxUser: MaxUserType = { username: "", totalSeen: 0, years: [] };
-  userTotals.forEach((value, key) => {
-    const yearsArray = Array.from(value.years, ([year, seen]) => ({
-      year,
-      seen,
-    }));
-    if (value.totalSeen > maxUser.totalSeen) {
-      maxUser = {
-        username: key,
-        totalSeen: value.totalSeen,
-        years: yearsArray,
-      };
-    }
-  });
-
-  return maxUser;
-}
-
-export function getUserDataByUsername(
-  username: string,
-  usersData: UsersType
-): MaxUserType | null {
-  let totalSeen = 0;
-  const years: { year: string; seen: number }[] = [];
-
-  const userExists = Object.values(usersData).some((users) => {
-    return users.some(
-      (user) => user?.username?.toLowerCase() === username.toLowerCase()
-    );
-  });
-
-  if (!userExists) {
-    return null;
-  }
-
-  Object.entries(usersData).forEach(([year, users]) => {
-    const user = users.find(
-      (u) => u.username?.toLowerCase() === username.toLowerCase()
-    );
-
-    if (!user?.username) {
-      return;
-    }
-
-    if (user) {
-      totalSeen += user.seen;
-      years.push({ year, seen: user.seen });
-    }
-  });
-
-  if (years.length === 0) {
-    // If no data is found for the user, you might return null or an empty MaxUserType structure.
-    return null; // Or: return { username, totalSeen: 0, years: [] };
-  }
-
-  return {
-    username,
-    totalSeen,
-    years,
-  };
-}
-
-export const getNrOfRacers = (year: string, usersData: UsersType) => {
-  if (!usersData[year]) return 0;
-  return Object.values(usersData[year]).length;
+export const getNrOfRacers = (
+  year: string,
+  racerCountsByYear: Record<string, number>,
+) => {
+  return racerCountsByYear[year] ?? 0;
 };

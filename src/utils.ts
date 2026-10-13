@@ -160,15 +160,17 @@ export const validateEmail = (email: string) => {
 };
 
 export const validateUsername = (username: string) => {
+  const usernameLength = Array.from(username).length;
+
   if (!username) {
     return "Username is required";
-  } else if (username.length < 3) {
+  } else if (usernameLength < 3) {
     return "Username must be at least 3 characters long";
-  } else if (username.length > 20) {
-    return "Username must be less than 20 characters long";
-  } else if (username.includes(" ")) {
-    return "Username can not contain space";
-  } else if (emailRegex.test(username)) {
+  } else if (usernameLength > 32) {
+    return "Username cannot exceed 32 characters";
+  } else if (/[\t\n\r\f\v]/.test(username)) {
+    return "Username can contain spaces, but not tabs or line breaks";
+  } else if (emailRegex.test(username.trim())) {
     return "Username can not be an email";
   }
 };

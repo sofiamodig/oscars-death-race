@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Dropdown from "react-dropdown";
 import { DateTime } from "luxon";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
@@ -14,59 +14,26 @@ import { getYearsList } from "@/utils";
 import {
   LeaderboardType,
   LeaderboardUser,
-  fetchUsers,
+  fetchLeaderboardInitial,
+  fetchUsersForYear,
 } from "@/functions/fetchUsers";
 import { Paragraph } from "@/components/paragraph";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
-  const leaderboard = await fetchUsers(movies);
-  const allUsers = Object.values(leaderboard).flat();
-
   const totalNrOfMovies = movies.map((year) => year.movies).flat().length;
+  const latestYear = movies.at(-1)?.year;
+  if (!latestYear) throw new Error("No movie years are available for the leaderboard.");
 
-  // map through all users and if a user with the same id is found, the user should only be once in the array
-  const allUsersFinal = allUsers.reduce(
-    (
-      acc: {
-        id: string;
-        username: string;
-        seen: number;
-      }[],
-      user
-    ) => {
-      if (!user.username) return acc;
-
-      const existingUser = acc.find((u) => u.id === user.id);
-      if (!existingUser) {
-        acc.push({
-          id: user.id,
-          username: user.username,
-          seen: user.seen,
-        });
-      } else {
-        existingUser.seen += user.seen;
-      }
-      return acc;
-    },
-    []
-  );
-
-  // After accumulating the seen counts, calculate the percentage
-  const allUsersWithPercentage = allUsersFinal.map((user) => ({
-    ...user,
-    percentage: Math.round((user.seen / totalNrOfMovies) * 100),
-  }));
-
-  const sortBySeen = [...allUsersWithPercentage].sort(
-    (a, b) => b.seen - a.seen
-  );
+  const { yearUsers: latestYearUsers, allTimeUsers: allUsers } =
+    await fetchLeaderboardInitial(latestYear);
+  const leaderboard = { [String(latestYear)]: latestYearUsers };
 
   return {
     props: {
       movies,
       leaderboard,
-      allUsers: sortBySeen.slice(0, 100),
+      allUsers,
       totalNrOfMovies: totalNrOfMovies,
     },
     revalidate: 86400,
@@ -91,21 +58,60 @@ export default function Leaderboard({
   const [selectedYear, setSelectedYear] = useState<string>();
   const [yearLeaderboard, setYearLeaderboard] = useState<LeaderboardUser[]>();
   const [usersList, setUsersList] = useState<LeaderboardUser[]>();
+  const [isYearLoading, setIsYearLoading] = useState(true);
+  const [leaderboardError, setLeaderboardError] = useState<string>();
+  const leaderboardCache = useRef(leaderboard);
   const { seenMovies, userSettings, loading } = useSeenContext();
   const { yearsList } = getYearsList(movies);
 
   useEffect(() => {
+    if (!selectedYear) return;
+
     if (selectedYear === "all") {
       setUsersList(allUsers);
       setYearLeaderboard([]);
+      setIsYearLoading(false);
+      setLeaderboardError(undefined);
     } else if (selectedYear) {
       setUsersList(undefined);
-      setYearLeaderboard(leaderboard[selectedYear]);
+      const cachedUsers = leaderboardCache.current[selectedYear];
+      if (cachedUsers) {
+        setYearLeaderboard(cachedUsers);
+        setIsYearLoading(false);
+        setLeaderboardError(undefined);
+        return;
+      }
+
+      let cancelled = false;
+      setYearLeaderboard(undefined);
+      setIsYearLoading(true);
+      setLeaderboardError(undefined);
+      fetchUsersForYear(Number(selectedYear))
+        .then((users) => {
+          if (!cancelled) {
+            leaderboardCache.current[selectedYear] = users;
+            setYearLeaderboard(users);
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            setLeaderboardError(
+              error instanceof Error ? error.message : "Could not load this leaderboard."
+            );
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setIsYearLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
     }
-  }, [selectedYear, allUsers, leaderboard]);
+  }, [selectedYear, allUsers]);
 
   const yearMovies = useMemo(
-    () => movies.find((movie) => movie.year === selectedYear)?.movies ?? [],
+    () => movies.find((movie) => movie.year === Number(selectedYear))?.movies ?? [],
     [movies, selectedYear]
   );
 
@@ -126,14 +132,11 @@ export default function Leaderboard({
           const seenMoviesImdbIds = seenMovies
             ?.find((list) => list.year === selectedYear)
             ?.seenMovies.map((movie) => movie.imdbId);
-
-          const uniqueSeenMoviesImdbIds = Array.from(
-            new Set(seenMoviesImdbIds)
-          );
+          const uniqueSeenMoviesImdbIds = new Set(seenMoviesImdbIds);
 
           const seenCount =
             yearMovies?.filter((movie) =>
-              uniqueSeenMoviesImdbIds?.includes(movie.imdbId)
+              uniqueSeenMoviesImdbIds.has(movie.imdbId)
             ).length ?? 0;
           const totalMovies = yearMovies?.length ?? 0;
           const percentage =
@@ -212,10 +215,12 @@ export default function Leaderboard({
           </select>
         </div>
       </Flex>
-      {loading ? (
+      {loading || isYearLoading ? (
         <Flex $justifyContent="center" $marginTop="lg">
           <Loader />
         </Flex>
+      ) : leaderboardError ? (
+        <Paragraph>{leaderboardError}</Paragraph>
       ) : (
         <div>
           {usersList?.map((user, i) => {

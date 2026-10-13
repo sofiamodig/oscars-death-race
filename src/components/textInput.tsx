@@ -51,6 +51,7 @@ interface InputProps {
   errorMessage?: string;
   width?: string;
   style?: CSSProperties;
+  disabled?: boolean;
 }
 
 export const TextInput: React.FC<InputProps> = ({
@@ -62,6 +63,7 @@ export const TextInput: React.FC<InputProps> = ({
   errorMessage,
   width,
   style,
+  disabled,
 }) => {
   return (
     <Container width={width} style={style}>
@@ -72,6 +74,7 @@ export const TextInput: React.FC<InputProps> = ({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         $errormessage={Boolean(errorMessage)}
+        disabled={disabled}
       />
       {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
     </Container>

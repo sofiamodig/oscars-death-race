@@ -126,7 +126,7 @@ const Signup = () => {
             errorMessage={errors?.username}
           />
           <Paragraph size="xs" color="var(--color-text-secondary)">
-            This username will show up in the leaderboard
+            This username will show up in the leaderboard. Spaces are allowed.
           </Paragraph>
         </Box>
         <Box $marginBottom="md">

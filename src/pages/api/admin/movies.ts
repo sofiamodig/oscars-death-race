@@ -39,11 +39,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "PATCH") {
-    const updates = {
-      poster_url: body.posterUrl || null,
-      categories: asStringArray(body.categories),
-      won_categories: asStringArray(body.wonCategories),
-    };
+    const updates: Record<string, unknown> = {};
+    if (Object.prototype.hasOwnProperty.call(body, "posterUrl")) updates.poster_url = body.posterUrl || null;
+    if (Object.prototype.hasOwnProperty.call(body, "categories")) updates.categories = asStringArray(body.categories);
+    if (Object.prototype.hasOwnProperty.call(body, "wonCategories")) {
+      updates.won_categories = asStringArray(body.wonCategories);
+    }
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "At least one movie field must be provided." });
+    }
     const { error: writeError } = await client
       .from("movies")
       .update(updates)

@@ -16,6 +16,11 @@ const InnerWrapper = styled.div`
   min-width: 900px;
 `;
 
+const ChartScrollArea = styled.div`
+  width: 100%;
+  overflow-x: auto;
+`;
+
 const InputWrapper = styled.div`
   max-width: 500px;
   margin-top: 8px;
@@ -24,7 +29,7 @@ const InputWrapper = styled.div`
 
 const Suggestions = styled.div`
   position: absolute;
-  z-index: 2;
+  z-index: 10;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
@@ -221,10 +226,12 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
 
   return (
     <>
-      <InnerWrapper>
-        {/* @ts-ignore */}
-        <Line options={options} data={data} />
-      </InnerWrapper>
+      <ChartScrollArea>
+        <InnerWrapper>
+          {/* @ts-ignore */}
+          <Line options={options} data={data} />
+        </InnerWrapper>
+      </ChartScrollArea>
       <InputWrapper>
         <TextInput
           type="text"

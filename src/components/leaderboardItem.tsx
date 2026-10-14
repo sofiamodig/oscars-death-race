@@ -93,6 +93,7 @@ interface Props {
   isCurrentUser: boolean;
   rank: number;
   seen?: number;
+  isPending?: boolean;
 }
 
 export const LeaderboardItem: FC<Props> = ({
@@ -102,6 +103,7 @@ export const LeaderboardItem: FC<Props> = ({
   isCurrentUser,
   rank,
   seen,
+  isPending = false,
 }) => {
   return (
     <TableItem key={username} $isCurrentUser={isCurrentUser}>
@@ -116,11 +118,15 @@ export const LeaderboardItem: FC<Props> = ({
         <div style={{ wordBreak: "break-word" }}>{username}</div>
       </Flex>
       <RightCol>
-        <Percentage>
-          {seen && <span style={{ fontWeight: 400 }}>{seen}, </span>}
-          {percentage} %
-        </Percentage>
-        {completed && percentage == 100 && (
+        {isPending ? (
+          <DateWrapper>Pending invitation</DateWrapper>
+        ) : (
+          <Percentage>
+            {seen && <span style={{ fontWeight: 400 }}>{seen}, </span>}
+            {percentage} %
+          </Percentage>
+        )}
+        {!isPending && completed && percentage == 100 && (
           <DateWrapper>
             Completed: <wbr />
             <Date>{DateTime.fromISO(completed).toFormat("yyyy-MM-dd")}</Date>

@@ -46,7 +46,7 @@ const PageTitle = styled.h1`
 `;
 
 const ChartWrapper = styled.div`
-  overflow-x: auto;
+  overflow: visible;
   padding: 24px;
   width: 100%;
   max-width: 1400px;

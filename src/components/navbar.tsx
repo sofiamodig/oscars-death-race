@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import logo from "@/assets/images/oscarslogo.svg";
 import { AccountCircleIcon } from "@/assets/icons/AccountCircleIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./button";
 import styled from "styled-components";
+import { supabase } from "@/supabase";
 
 // Styled components
 const NavbarContainer = styled.nav`
@@ -91,9 +93,63 @@ const NavLink = styled(Link)`
   }
 `;
 
+const LeaderboardNavLink = styled(NavLink)`
+  position: relative;
+`;
+
+const InvitationBadge = styled.span`
+  position: absolute;
+  top: -9px;
+  right: -12px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  background: var(--color-ui-red, #b42318);
+  font-size: 11px;
+  font-weight: 700;
+`;
+
 // Navbar Component
 const Navbar: React.FC = () => {
   const { isSignedIn, isAdmin } = useAuth();
+  const router = useRouter();
+  const [invitationCount, setInvitationCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const loadInvitations = async () => {
+      if (!isSignedIn) {
+        setInvitationCount(0);
+        return;
+      }
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        if (!token) return;
+        const response = await fetch("/api/groups", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) return;
+        const result = await response.json();
+        if (active) setInvitationCount(result.invitations?.length ?? 0);
+      } catch {
+        // Keep the existing badge state if the request is temporarily unavailable.
+      }
+    };
+    void loadInvitations();
+    window.addEventListener("focus", loadInvitations);
+    window.addEventListener("group-invitations-changed", loadInvitations);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", loadInvitations);
+      window.removeEventListener("group-invitations-changed", loadInvitations);
+    };
+  }, [isSignedIn, router.asPath]);
 
   return (
     <NavbarContainer>
@@ -105,7 +161,12 @@ const Navbar: React.FC = () => {
         {isAdmin && <NavLink href="/admin">Admin</NavLink>}
         <NavLink href="/all-time">All time</NavLink>
         <NavLink href="/statistics">Statistics</NavLink>
-        {isSignedIn && <NavLink href="/leaderboard">Leaderboard</NavLink>}
+        {isSignedIn && (
+          <LeaderboardNavLink href="/leaderboard#invitations" aria-label={`Leaderboard${invitationCount ? `, ${invitationCount} invitations` : ""}`}>
+            Leaderboard
+            {invitationCount > 0 && <InvitationBadge>{invitationCount}</InvitationBadge>}
+          </LeaderboardNavLink>
+        )}
         {!isSignedIn && (
           <NavLink type="link" href="/login">
             Log in

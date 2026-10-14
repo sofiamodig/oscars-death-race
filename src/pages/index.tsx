@@ -113,9 +113,10 @@ export default function Home({
     }
   }, [selectedYear, latestYear, predictions, yearHasWinners, isLatestYear]);
 
-  const seenMoviesImdbIds = seenMovies
-    .find((list) => list.year === selectedYear)
-    ?.seenMovies?.map((movie) => movie.imdbId);
+  const seenEntriesForYear = seenMovies.find(
+    (list) => list.year === selectedYear
+  )?.seenMovies ?? [];
+  const seenMoviesImdbIds = seenEntriesForYear.map((movie) => movie.imdbId);
 
   const uniqueSeenMoviesImdbIds = Array.from(new Set(seenMoviesImdbIds));
 
@@ -399,7 +400,7 @@ export default function Home({
               <MovieCard
                 key={movie.imdbId}
                 data={movie}
-                seenList={seenMoviesList ?? []}
+                seenList={seenEntriesForYear}
                 selectedYear={selectedYear}
                 movies={movies}
               />

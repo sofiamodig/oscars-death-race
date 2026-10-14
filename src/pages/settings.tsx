@@ -89,6 +89,7 @@ export default function Settings({
   const { userId, isAdmin } = useAuth();
   const {
     seenMovies,
+    refreshSeenMovies,
     userSettings,
     changeUserName,
     changeShowInLeaderboard,
@@ -103,6 +104,9 @@ export default function Settings({
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
+  const [imdbFile, setImdbFile] = useState<File>();
+  const [isImporting, setIsImporting] = useState(false);
+  const [importStatus, setImportStatus] = useState("");
   const { showSnackbar } = useSnackbarContext();
 
   const handleSignOut = async () => {
@@ -209,6 +213,39 @@ export default function Settings({
 
   const handleExport = () => {
     exportToCsv(seenMovies, movies, "seen_movies");
+  };
+
+  const importImdbRatings = async () => {
+    if (!imdbFile) return;
+    if (imdbFile.size > 5 * 1024 * 1024) {
+      setImportStatus("Please choose a CSV file smaller than 5 MB.");
+      return;
+    }
+    setIsImporting(true);
+    setImportStatus("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Please sign in again to import your ratings.");
+      const response = await fetch("/api/import/imdb-ratings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ csv: await imdbFile.text() }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? "Could not import IMDb ratings.");
+      await refreshSeenMovies();
+      setImportStatus(
+        `Imported ${result.imported} new movies. ${result.alreadySeen} were already marked seen and left unchanged; ${result.unmatched} were not in the catalog.`
+      );
+      setImdbFile(undefined);
+    } catch (error) {
+      setImportStatus(error instanceof Error ? error.message : "Could not import IMDb ratings.");
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -318,6 +355,34 @@ export default function Settings({
               label="Export"
               variant="secondary"
             />
+          </Box>
+
+          <Box $marginTop="xxl" $marginBottom="lg">
+            <Heading size="lg" marginBottom="sm">
+              Import IMDb ratings
+            </Heading>
+            <Paragraph marginBottom="sm">
+              Upload your IMDb ratings CSV. Movies in this catalog will be marked as seen using their IMDb rating date.
+            </Paragraph>
+            <Flex $direction="column" $gap="sm" $alignItems="flex-start">
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => {
+                  setImdbFile(event.currentTarget.files?.[0]);
+                  setImportStatus("");
+                }}
+                aria-label="Choose IMDb ratings CSV"
+              />
+              <Button
+                type="button"
+                onClick={importImdbRatings}
+                label="Import ratings"
+                isLoading={isImporting}
+                disabled={!imdbFile || isImporting}
+              />
+              {importStatus && <Paragraph>{importStatus}</Paragraph>}
+            </Flex>
           </Box>
 
         </>

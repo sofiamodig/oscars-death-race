@@ -29,6 +29,7 @@ type SeenContextType = {
   toggleShowSeenDates: () => void;
   togglePercentageByWatchTime: () => void;
   changeMovieLinkDestination: (destination: "imdb" | "letterboxd" | "simkl") => void;
+  refreshSeenMovies: () => Promise<void>;
   loading: boolean;
 };
 
@@ -43,6 +44,7 @@ export const SeenContext = createContext<SeenContextType>({
   toggleShowSeenDates: () => {},
   togglePercentageByWatchTime: () => {},
   changeMovieLinkDestination: () => {},
+  refreshSeenMovies: async () => {},
   loading: true,
 });
 
@@ -216,6 +218,12 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       });
   };
 
+  const refreshSeenMovies = async () => {
+    if (!userId) return;
+    const data = await fetchSeenMovies(userId);
+    setSeenMovies(data.years);
+  };
+
   useEffect(() => {
     if (localStorage.getItem("hideSeenDates")) {
       setUserSettings((prev) => ({
@@ -249,6 +257,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
         toggleShowSeenDates,
         togglePercentageByWatchTime,
         changeMovieLinkDestination,
+        refreshSeenMovies,
         userSettings,
         loading,
       }}

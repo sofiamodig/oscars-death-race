@@ -9,6 +9,7 @@ export type LeaderboardUser = {
   percentage: number;
   completed?: string | null;
   seenDuration?: number;
+  pending?: boolean;
 };
 
 export interface LeaderboardType {
@@ -26,6 +27,9 @@ type LeaderboardRow = {
   completed: string | null;
   seen_duration: number;
 };
+
+type RacerCountRow = { year: number; racer_count: number };
+type LeaderboardUsernamesRow = { usernames: string[] };
 
 export const fetchUsers = async (_movies?: MoviesYearsListType) => {
   const { data, error } = await supabase.rpc("get_public_leaderboard");
@@ -53,7 +57,10 @@ export const fetchRacerCountsByYear = async (): Promise<RacerCountsByYear> => {
   if (error) throw new Error(`Failed to fetch racer counts: ${error.message}`);
 
   return Object.fromEntries(
-    (data ?? []).map((row) => [String(row.year), Number(row.racer_count)]),
+    ((data ?? []) as RacerCountRow[]).map((row) => [
+      String(row.year),
+      Number(row.racer_count),
+    ]),
   );
 };
 
@@ -61,7 +68,8 @@ export const fetchLeaderboardUsernames = async (): Promise<string[]> => {
   const { data, error } = await supabase.rpc("get_public_leaderboard_usernames");
   if (error) throw new Error(`Failed to fetch leaderboard usernames: ${error.message}`);
 
-  return (data?.[0]?.usernames ?? []).filter(
+  const rows = (data ?? []) as LeaderboardUsernamesRow[];
+  return (rows[0]?.usernames ?? []).filter(
     (username) => !BLOCKED_USERS.includes(username),
   );
 };

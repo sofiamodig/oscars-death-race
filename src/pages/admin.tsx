@@ -146,11 +146,11 @@ export default function Admin({
 
     return () => {
       cancelled = true;
-      for (const [image, finish] of activeImages) {
+      activeImages.forEach((finish, image) => {
         image.onload = null;
         image.onerror = null;
         finish(false);
-      }
+      });
     };
   }, [showBrokenPostersOnly, selectedYear, yearMovies]);
 

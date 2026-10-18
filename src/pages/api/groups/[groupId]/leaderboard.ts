@@ -3,6 +3,9 @@ import { authenticateRequest, getAdminClient } from "@/server/supabaseAdmin";
 
 type MovieRow = { year: number; imdb_id: string; duration: number | null };
 
+const uniqueValues = <T,>(values: T[]): T[] =>
+  values.filter((value, index) => values.indexOf(value) === index);
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -22,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .select("user_id")
     .eq("group_id", groupId);
   if (membersError) return res.status(500).json({ error: membersError.message });
-  const userIds = [...new Set((members ?? []).map((member) => member.user_id))];
+  const userIds = uniqueValues((members ?? []).map((member) => member.user_id));
   if (!userIds.includes(user.id)) return res.status(403).json({ error: "You are not a member of this group." });
   if (userIds.length === 0) return res.status(200).json({ users: [] });
 
@@ -31,10 +34,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .select("invited_user_id")
     .eq("group_id", groupId);
   if (invitationError) return res.status(500).json({ error: invitationError.message });
-  const pendingUserIds = [...new Set((invitations ?? [])
+  const pendingUserIds = uniqueValues((invitations ?? [])
     .map((invitation) => invitation.invited_user_id)
-    .filter((invitedUserId) => !userIds.includes(invitedUserId)))];
-  const profilesForRanking = [...new Set([...userIds, ...pendingUserIds])];
+    .filter((invitedUserId) => !userIds.includes(invitedUserId)));
+  const profilesForRanking = uniqueValues([...userIds, ...pendingUserIds]);
 
   const { data: profiles, error: profilesError } = await client
     .from("profiles")
@@ -55,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const movieMap = new Map(movies.map((movie) => [`${movie.year}:${movie.imdb_id}`, movie]));
   const movieCount = movies.length;
   const totalDuration = movies.reduce((total, movie) => total + (movie.duration ?? 0), 0);
-  const selectedYears = [...new Set(movies.map((movie) => movie.year))];
+  const selectedYears = uniqueValues(movies.map((movie) => movie.year));
 
   const seenRows: { user_id: string; year: number; imdb_id: string }[] = [];
   for (let offset = 0; ; offset += 1000) {
@@ -99,7 +102,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!profile?.username) return [];
     const seenKeys = seenByUser.get(userId) ?? new Set<string>();
     const seen = seenKeys.size;
-    const seenDuration = [...seenKeys].reduce((total, key) => total + (movieMap.get(key)?.duration ?? 0), 0);
+    let seenDuration = 0;
+    seenKeys.forEach((key) => {
+      seenDuration += movieMap.get(key)?.duration ?? 0;
+    });
     const percentage = profile.percentage_by_watch_time
       ? (totalDuration ? Math.round((seenDuration / totalDuration) * 100) : 0)
       : (movieCount ? Math.round((seen / movieCount) * 100) : 0);

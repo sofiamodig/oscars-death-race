@@ -136,7 +136,7 @@ const AddGroupButton = styled.button`
   }
 `;
 
-const LeaveGroupLink = styled.button`
+const RedLink = styled.button`
   padding: 0;
   border: 0;
   background: transparent;
@@ -154,7 +154,7 @@ const LeaveGroupLink = styled.button`
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
   const totalNrOfMovies = movies.map((year) => year.movies).flat().length;
-  const latestYear = movies.at(-1)?.year;
+  const latestYear = Number(movies.at(-1)?.year);
   if (!latestYear) throw new Error("No movie years are available for the leaderboard.");
 
   const { yearUsers: latestYearUsers, allTimeUsers: allUsers } =
@@ -313,7 +313,7 @@ export default function Leaderboard({
   }, [selectedYear, allUsers, showAllUsers, selectedGroupId]);
 
   const yearMovies = useMemo(
-    () => movies.find((movie) => movie.year === Number(selectedYear))?.movies ?? [],
+    () => movies.find((movie) => movie.year === selectedYear)?.movies ?? [],
     [movies, selectedYear]
   );
 
@@ -392,7 +392,6 @@ export default function Leaderboard({
       await refreshGroups(result.group.id);
       setShowAllUsers(false);
       setGroupModalMode("edit");
-      setGroupStatus("Group created.");
     } catch (error) {
       setGroupStatus(error instanceof Error ? error.message : "Could not create group.");
     }
@@ -457,7 +456,6 @@ export default function Leaderboard({
       await updateGroup({ action: "leaveGroup", groupId: selectedGroup.id });
       await refreshGroups();
       setIsGroupModalOpen(false);
-      setGroupStatus("You left the group.");
     } catch (error) {
       setGroupStatus(error instanceof Error ? error.message : "Could not leave this group.");
     }
@@ -470,7 +468,6 @@ export default function Leaderboard({
       await updateGroup({ action: "deleteGroup", groupId: selectedGroup.id });
       await refreshGroups();
       setIsGroupModalOpen(false);
-      setGroupStatus("Group deleted.");
     } catch (error) {
       setGroupStatus(error instanceof Error ? error.message : "Could not delete this group.");
     }
@@ -578,7 +575,7 @@ export default function Leaderboard({
       </Box>
       <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} maxWidth="520px">
         <Heading size="lg" marginBottom="md">
-          {groupModalMode === "create" ? "Add a new group" : "Manage group"}
+          {groupModalMode === "create" ? "Add a new group" : selectedGroup?.name || ''}
         </Heading>
         <Flex $direction="column" $alignItems="flex-start" $gap="md">
           {groupModalMode === "create" && (
@@ -589,10 +586,9 @@ export default function Leaderboard({
           )}
           {groupModalMode === "edit" && selectedGroup && (
             <Box $width="100%">
-              <Heading size="md" marginBottom="sm">{selectedGroup.name}</Heading>
-              <Paragraph marginBottom="xs">Members</Paragraph>
+              <Heading size="xs" marginBottom="xs">Members:</Heading>
               {selectedGroup.members.map((member) => (
-                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="xs">
+                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="md">
                   <Paragraph>
                     {member.username}{member.status === "pending" ? " · Pending invitation" : ""}
                   </Paragraph>
@@ -633,12 +629,14 @@ export default function Leaderboard({
               ) : (
                 <>
                   <Paragraph>You are a member of this group.</Paragraph>
-                  <Button label="Leave group" variant="danger" onClick={leaveGroup} />
+                  <RedLink onClick={leaveGroup}>Leave group</RedLink>
                 </>
               )}
               {selectedGroup.isOwner && (
                 <Box $marginTop="md">
-                  <Button label="Delete group" variant="danger" onClick={deleteGroup} />
+                  <RedLink onClick={deleteGroup}>
+                    Delete group
+                  </RedLink>
                 </Box>
               )}
             </Box>
@@ -687,9 +685,9 @@ export default function Leaderboard({
               }}
             />
           ) : (
-            <LeaveGroupLink type="button" onClick={leaveGroup}>
+            <RedLink type="button" onClick={leaveGroup}>
               Leave group
-            </LeaveGroupLink>
+            </RedLink>
           )}
         </Box>
       )}

@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { authenticateRequest, getAdminClient } from "@/server/supabaseAdmin";
 
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, "\\$&");
+const uniqueValues = <T,>(values: T[]): T[] =>
+  values.filter((value, index) => values.indexOf(value) === index);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { user, error } = await authenticateRequest(req);
@@ -37,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? await client.from("leaderboard_group_members").select("group_id, user_id").in("group_id", groupIds)
       : { data: [], error: null };
     if (membersResult.error) return res.status(500).json({ error: membersResult.error.message });
-    const activeMemberIds = [...new Set((membersResult.data ?? []).map((member) => member.user_id))];
+    const activeMemberIds = uniqueValues((membersResult.data ?? []).map((member) => member.user_id));
     const outgoingInvitations = groupIds.length
       ? await client.from("leaderboard_group_invitations").select("group_id, invited_user_id").in("group_id", groupIds)
       : { data: [], error: null };
@@ -45,10 +47,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const pendingInvitations = (outgoingInvitations.data ?? []).filter(
       (invite) => !activeMemberIds.includes(invite.invited_user_id)
     );
-    const memberIds = [...new Set([
+    const memberIds = uniqueValues([
       ...activeMemberIds,
       ...pendingInvitations.map((invite) => invite.invited_user_id),
-    ])];
+    ]);
     const profiles = memberIds.length
       ? await client.from("profiles").select("id, username, show_in_leaderboard").in("id", memberIds)
       : { data: [], error: null };
@@ -73,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .select("id, group_id, invited_by, created_at")
       .eq("invited_user_id", user.id);
     if (invitationsError) return res.status(500).json({ error: invitationsError.message });
-    const invitationGroupIds = [...new Set((invitations ?? []).map((invite) => invite.group_id))];
+    const invitationGroupIds = uniqueValues((invitations ?? []).map((invite) => invite.group_id));
     const acceptedInvitations = invitationGroupIds.length
       ? await client.from("leaderboard_group_members").select("group_id")
           .eq("user_id", user.id).in("group_id", invitationGroupIds)
@@ -85,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       : { data: [], error: null };
     if (invitationGroups.error) return res.status(500).json({ error: invitationGroups.error.message });
     const invitationGroupNames = new Map((invitationGroups.data ?? []).map((group) => [group.id, group.name]));
-    const inviterIds = [...new Set((invitations ?? []).map((invite) => invite.invited_by))];
+    const inviterIds = uniqueValues((invitations ?? []).map((invite) => invite.invited_by));
     const inviters = inviterIds.length
       ? await client.from("profiles").select("id, username").in("id", inviterIds)
       : { data: [], error: null };

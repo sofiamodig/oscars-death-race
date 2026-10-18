@@ -5,16 +5,11 @@ import React, {
   ReactNode,
   useContext,
 } from "react";
-import { arrayUnion, doc, getDoc, updateDoc } from "@firebase/firestore";
-import { db } from "@/firebaseConfig";
 import { useSnackbarContext } from "./snackbarContext";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/supabase";
 
-type Comment = {
-  comment: string;
-  imdbId: string;
-};
-
+type Comment = { comment: string; imdbId: string };
 type CommentsContextType = {
   comments: Comment[];
   addComment: (comment: Comment) => void;
@@ -28,118 +23,68 @@ export const CommentsContext = createContext<CommentsContextType>({
   updateComment: () => {},
   deleteComment: () => {},
 });
-
 export const useCommentsContext = () => useContext(CommentsContext);
 
-interface CommentsProviderProps {
-  children: ReactNode;
-}
-
-export const CommentsProvider: React.FC<CommentsProviderProps> = ({
-  children,
-}) => {
+export const CommentsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { userId } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const { showSnackbar } = useSnackbarContext();
 
-  // Fetch comments from Firestore on mount
   useEffect(() => {
-    const fetchComments = async () => {
-      if (!userId) {
-        return;
-      }
-      const docRef = doc(db, "users", userId);
-      try {
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setComments(data.Comments || []);
+    let active = true;
+    if (!userId) {
+      setComments([]);
+      return;
+    }
+    setComments([]);
+    supabase
+      .from("user_comments")
+      .select("imdb_id, comment")
+      .eq("user_id", userId)
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          showSnackbar(`Failed to fetch comments: ${error.message}`, "error");
+          return;
         }
-      } catch (error: any) {
-        showSnackbar(`Failed to fetch comments: ${error.message}`, "error");
-      }
-    };
-
-    fetchComments();
+        setComments((data ?? []).map((row) => ({ imdbId: row.imdb_id, comment: row.comment })));
+      });
+    return () => { active = false; };
   }, [showSnackbar, userId]);
 
-  const addComment = async (comment: Comment) => {
-    if (!userId) {
+  const saveComment = async (comment: Comment) => {
+    if (!userId) return;
+    const { error } = await supabase.from("user_comments").upsert(
+      { user_id: userId, imdb_id: comment.imdbId, comment: comment.comment },
+      { onConflict: "user_id,imdb_id" }
+    );
+    if (error) {
+      showSnackbar(`Failed to save comment: ${error.message}`, "error");
       return;
     }
-    const docRef = doc(db, "users", userId);
-
-    try {
-      // Add comment to Firestore
-      await updateDoc(docRef, {
-        Comments: arrayUnion(comment),
-      });
-
-      // Update local state
-      setComments((prevComments) => [...prevComments, comment]);
-    } catch (error: any) {
-      showSnackbar(`Failed to add comment: ${error.message}`, "error");
-    }
-  };
-
-  const updateComment = async (updatedComment: Comment) => {
-    if (!userId) {
-      return;
-    }
-    const docRef = doc(db, "users", userId);
-
-    try {
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const updatedComments = (data.Comments || []).map((comment: Comment) =>
-          comment.imdbId === updatedComment.imdbId ? updatedComment : comment
-        );
-
-        // Update Firestore
-        await updateDoc(docRef, { Comments: updatedComments });
-
-        // Update local state
-        setComments(updatedComments);
-      }
-    } catch (error: any) {
-      showSnackbar(`Failed to update comment: ${error.message}`, "error");
-    }
+    setComments((previous) => [
+      ...previous.filter((item) => item.imdbId !== comment.imdbId),
+      comment,
+    ]);
   };
 
   const deleteComment = async (imdbId: string) => {
-    if (!userId) {
+    if (!userId) return;
+    const { error } = await supabase
+      .from("user_comments")
+      .delete()
+      .eq("user_id", userId)
+      .eq("imdb_id", imdbId);
+    if (error) {
+      showSnackbar(`Failed to delete comment: ${error.message}`, "error");
       return;
     }
-    const docRef = doc(db, "users", userId);
-
-    try {
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-
-        // Filter out the comment to be deleted
-        const filteredComments = (data.Comments || []).filter(
-          (comment: Comment) => comment.imdbId !== imdbId
-        );
-        // Update local state
-        setComments(filteredComments);
-      }
-    } catch (error: any) {
-      showSnackbar(`Failed to delete comment: ${error.message}`, "error");
-    }
+    setComments((previous) => previous.filter((item) => item.imdbId !== imdbId));
   };
 
   return (
     <CommentsContext.Provider
-      value={{
-        comments,
-        addComment,
-        updateComment,
-        deleteComment,
-      }}
+      value={{ comments, addComment: saveComment, updateComment: saveComment, deleteComment }}
     >
       {children}
     </CommentsContext.Provider>

@@ -6,9 +6,12 @@ import styled from "styled-components";
 import { useEffect } from "react";
 import SeenLineChart from "@/components/seenLineChart";
 import { useAuth } from "@/hooks/useAuth";
-import { fetchUsers } from "@/functions/fetchUsers";
 import {
-  findUserWithMostSeenMovies,
+  fetchLeaderboardUsernames,
+  fetchRacerCountsByYear,
+  RacerCountsByYear,
+} from "@/functions/fetchUsers";
+import {
   getBestPictureWinner,
   getLongestMovie,
   getLongestMovieAllTime,
@@ -43,7 +46,7 @@ const PageTitle = styled.h1`
 `;
 
 const ChartWrapper = styled.div`
-  overflow-x: auto;
+  overflow: visible;
   padding: 24px;
   width: 100%;
   max-width: 1400px;
@@ -97,32 +100,28 @@ const AllTime = styled.div`
   max-width: 600px;
 `;
 
-type User = {
-  username: string;
-  seen: number;
-  percentage: number;
-  completed?: string | null;
-  seenDuration?: number;
-};
-
-export interface UsersType {
-  [year: string]: User[];
-}
-
 export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
+  const [movies, racerCountsByYear, usernames] = await Promise.all([
+    fetchMovies(),
+    fetchRacerCountsByYear(),
+    fetchLeaderboardUsernames(),
+  ]);
   const reversedList = movies.reverse();
-  const users = await fetchUsers(movies);
 
-  return { props: { movies: reversedList, users } };
+  return {
+    props: { movies: reversedList, racerCountsByYear, usernames },
+    revalidate: 86400,
+  };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
-  users: UsersType;
+  racerCountsByYear: RacerCountsByYear;
+  usernames: string[];
 }>;
 
 export default function Statistics({
   movies,
-  users,
+  racerCountsByYear,
+  usernames,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { isSignedIn } = useAuth();
   useEffect(() => {
@@ -142,9 +141,6 @@ export default function Statistics({
   const mostDirectorWins = getMostDirectorWins(movies);
   const mostNominatedDirector = getMostNominatedDirector(movies);
   const mostAppearedActor = getMostAppearedActor(movies);
-
-  // User stats
-  const bestUser = findUserWithMostSeenMovies(users);
 
   return (
     <>
@@ -230,8 +226,7 @@ export default function Statistics({
         <ChartWrapper>
           <SeenLineChart
             movies={[...movies].reverse()}
-            bestUser={bestUser}
-            users={users}
+            usernames={usernames}
           />
         </ChartWrapper>
       )}
@@ -268,7 +263,7 @@ export default function Statistics({
                   <td>{getMedianAndAverageMovieLength(obj.movies).average}</td>
                   <td>{getLongestMovie(obj.movies)}</td>
                   <td style={{ textAlign: "center" }}>
-                    {getNrOfRacers(obj.year, users)}
+                    {getNrOfRacers(obj.year, racerCountsByYear)}
                   </td>
                 </TableRow>
               );

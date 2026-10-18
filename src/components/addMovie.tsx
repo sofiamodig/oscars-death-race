@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { SearchIcon } from "@/assets/icons/SearchIcon";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
-import { db } from "@/firebaseConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
-import { doc, getDoc, setDoc, collection, addDoc } from "@firebase/firestore";
+import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
 import { TextInput } from "./textInput";
 import styled from "styled-components";
+import { PosterPreview } from "./posterPreview";
 
 const SearchInputWrapper = styled.div`
   display: flex;
@@ -47,6 +47,18 @@ const Chips = styled.div`
 
 const ButtonWrapper = styled.div`
   width: 100%;
+`;
+
+const PosterField = styled.div`
+  display: flex;
+  flex: 1 0 100%;
+  align-items: flex-start;
+  gap: 12px;
+
+  & > div:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 const InitialErrors = {
@@ -193,35 +205,24 @@ const AddMovie = () => {
       wonCategories: wonCategories,
     };
 
-    const yearRef = doc(db, "movie-collection", formData.year);
-
-    getDoc(yearRef)
-      .then((docSnap) => {
-        if (!docSnap.exists()) {
-          // If the year doesn't exist, create it
-          return setDoc(yearRef, { name: formData.year }).then(() => {
-            const movieCollectionRef = collection(yearRef, "movies");
-
-            return addDoc(movieCollectionRef, movieObj);
-          });
-        } else {
-          // If the year exists, add the movie directly
-          const movieCollectionRef = collection(yearRef, "movies");
-          return addDoc(movieCollectionRef, movieObj);
-        }
-      })
-      .then(() => {
-        setFormData({
-          ...InitialData,
-          year: formData.year,
-        });
-        setIsSubmitting(false);
-        showSnackbar("Movie added successfully", "success");
-      })
-      .catch((error) => {
-        setIsSubmitting(false);
-        showSnackbar(error.message, "error");
+    try {
+      const result = await adminRequest("/api/admin/movies", "POST", {
+        ...movieObj,
+        year: formData.year,
       });
+      setFormData({ ...InitialData, year: formData.year });
+      const idSummary = `TMDb: ${result.tmdbId ?? "not found"}; Simkl: ${result.simklId ?? "not found"}.`;
+      showSnackbar(
+        result.warnings?.length
+          ? `Movie added. ${idSummary} ${result.warnings.join(" ")}`
+          : `Movie added successfully. ${idSummary}`,
+        result.warnings?.length ? "info" : "success"
+      );
+    } catch (error: any) {
+      showSnackbar(error.message, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -259,17 +260,6 @@ const AddMovie = () => {
           <SearchIcon />
         </button>
       </SearchInputWrapper>
-      <TextInput
-        label="Poster URL"
-        placeholder="Poster URL"
-        type="text"
-        value={formData.posterUrl}
-        errorMessage={errors.posterUrl}
-        setValue={(value: string) =>
-          setFormData((prev) => ({ ...prev, posterUrl: value }))
-        }
-        style={{ flex: 1 }}
-      />
       <TextInput
         label="Director"
         placeholder="Director"
@@ -314,6 +304,22 @@ const AddMovie = () => {
         }
         width="68px"
       />
+      <PosterField>
+        <PosterPreview
+          url={formData.posterUrl}
+          title={formData.title || "Movie"}
+        />
+        <TextInput
+          label="Poster URL"
+          placeholder="Poster URL"
+          type="text"
+          value={formData.posterUrl}
+          errorMessage={errors.posterUrl}
+          setValue={(value: string) =>
+            setFormData((prev) => ({ ...prev, posterUrl: value }))
+          }
+        />
+      </PosterField>
       <Box $marginTop="md">
         <p>Nominated Categories</p>
         <Chips>

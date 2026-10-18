@@ -43,12 +43,13 @@ interface Props {
   label: string;
   value: boolean;
   onToggle: () => void;
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl";
 }
 
-export const Toggle: FC<Props> = ({ label, value, onToggle }) => {
+export const Toggle: FC<Props> = ({ label, value, onToggle, size = "xs" }) => {
   return (
     <OuterContainer onClick={onToggle}>
-      <Paragraph as="span" size="xs">
+      <Paragraph as="span" size={size}>
         {label}
       </Paragraph>
       <ToggleContainer>

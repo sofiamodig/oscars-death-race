@@ -1,4 +1,4 @@
-import React, { FC, use, useContext, useEffect, useState } from "react";
+import React, { FC, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { SeenContext } from "@/contexts/seenContext";
 import { MoviesYearsListType } from "@/types";
 import { Chart, registerables } from "chart.js";
@@ -6,10 +6,9 @@ Chart.register(...registerables);
 import { Line } from "react-chartjs-2";
 import styled from "styled-components";
 import {
-  MaxUserType,
-  getUserDataByUsername,
-} from "@/functions/statisticsFunctions";
-import { UsersType } from "@/pages/statistics";
+  fetchPublicUserSeenData,
+} from "@/functions/fetchUsers";
+import type { PublicUserSeenData } from "@/functions/fetchUsers";
 import { TextInput } from "./textInput";
 
 const InnerWrapper = styled.div`
@@ -17,36 +16,93 @@ const InnerWrapper = styled.div`
   min-width: 900px;
 `;
 
+const ChartScrollArea = styled.div`
+  width: 100%;
+  overflow-x: auto;
+`;
+
 const InputWrapper = styled.div`
   max-width: 500px;
   margin-top: 8px;
+  position: relative;
+`;
+
+const Suggestions = styled.div`
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 4px;
+  background: white;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+`;
+
+const Suggestion = styled.button`
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: 0;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    background: var(--color-neutral-200);
+    outline: none;
+  }
 `;
 
 interface Props {
   movies: MoviesYearsListType;
-  users: UsersType;
-  bestUser: MaxUserType;
+  usernames: string[];
 }
 
-const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
+const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
   const [userToCompareTo, setUserToCompareTo] = useState<string>("");
+  const [compareUser, setCompareUser] = useState<PublicUserSeenData | null>(null);
+  const [isLoadingCompareUser, setIsLoadingCompareUser] = useState(false);
+  const [compareError, setCompareError] = useState("");
+  const selectionRequestId = useRef(0);
   const { seenMovies } = useContext(SeenContext);
   const flattenedSeenMoviesImdbIds = seenMovies.flatMap((seenYear) =>
     seenYear.seenMovies?.map((movie) => movie.imdbId)
   );
 
-  useEffect(() => {
-    const localUserToCompareTo = localStorage.getItem("userToCompareTo");
-    if (localUserToCompareTo) {
-      setUserToCompareTo(localUserToCompareTo);
+  const selectUser = useCallback(async (username: string) => {
+    const requestId = ++selectionRequestId.current;
+    setUserToCompareTo(username);
+    setCompareUser(null);
+    setCompareError("");
+    setIsLoadingCompareUser(true);
+    try {
+      const data = await fetchPublicUserSeenData(username);
+      if (requestId !== selectionRequestId.current) return;
+      setCompareUser(data);
+      if (!data) setCompareError("No movie data found for this user.");
+      else localStorage.setItem("userToCompareTo", data.username);
+    } catch (error) {
+      if (requestId !== selectionRequestId.current) return;
+      setCompareError(
+        error instanceof Error ? error.message : "Could not load this user.",
+      );
+    } finally {
+      if (requestId === selectionRequestId.current) {
+        setIsLoadingCompareUser(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    if (userToCompareTo.length > 0) {
-      localStorage.setItem("userToCompareTo", userToCompareTo);
+    const savedUsername = localStorage.getItem("userToCompareTo");
+    if (savedUsername && usernames.includes(savedUsername)) {
+      void selectUser(savedUsername);
     }
-  }, [userToCompareTo]);
+  }, [selectUser, usernames]);
 
   const calculateSeenPercentage = () => {
     return movies.map((yearlyMovies) => {
@@ -60,7 +116,7 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
     });
   };
 
-  function calculateUserSeenPercentage(user: MaxUserType): number[] {
+  function calculateUserSeenPercentage(user: PublicUserSeenData): number[] {
     const userSeenByYear = new Map(user.years.map((y) => [y.year, y.seen]));
 
     return movies.map(({ year, movies }) => {
@@ -85,11 +141,15 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
 
   const labels = movies.map((yearlyMovies) => yearlyMovies.year);
   const seenPercentages = calculateSeenPercentage();
-  const bestUserSeenPercentage = calculateUserSeenPercentage(bestUser);
-  const userToCompareData =
-    userToCompareTo && getUserDataByUsername(userToCompareTo, users);
-  const userToCompareToSeenPercentage = userToCompareData
-    ? calculateUserSeenPercentage(userToCompareData)
+  const filteredUsernames = userToCompareTo.trim() && !compareUser && !isLoadingCompareUser
+    ? usernames
+        .filter((username) =>
+          username.toLocaleLowerCase().includes(userToCompareTo.toLocaleLowerCase()),
+        )
+        .slice(0, 10)
+    : [];
+  const userToCompareToSeenPercentage = compareUser
+    ? calculateUserSeenPercentage(compareUser)
     : [];
 
   const options = {
@@ -114,7 +174,7 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
           },
           label: (yDatapoint: any) => {
             return (
-              yDatapoint.dataset.label.replace(" (best user)", "") +
+              yDatapoint.dataset.label +
               ": " +
               getNrOfMovies(yDatapoint.label, yDatapoint.raw) +
               " (" +
@@ -152,18 +212,12 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
         borderColor: "#bb9c38",
         backgroundColor: "#bb9c38",
       },
-      {
-        label: bestUser.username + " (best user)",
-        data: bestUserSeenPercentage,
-        borderColor: "#3e95cd",
-        backgroundColor: "#3e95cd",
-      },
     ],
   };
 
-  if (userToCompareData) {
+  if (compareUser) {
     data.datasets.push({
-      label: userToCompareData.username,
+      label: compareUser.username,
       data: userToCompareToSeenPercentage,
       borderColor: "#f5b65d",
       backgroundColor: "#f5b65d",
@@ -172,18 +226,42 @@ const SeenLineChart: FC<Props> = ({ movies, bestUser, users }) => {
 
   return (
     <>
-      <InnerWrapper>
-        {/* @ts-ignore */}
-        <Line options={options} data={data} />
-      </InnerWrapper>
+      <ChartScrollArea>
+        <InnerWrapper>
+          {/* @ts-ignore */}
+          <Line options={options} data={data} />
+        </InnerWrapper>
+      </ChartScrollArea>
       <InputWrapper>
         <TextInput
           type="text"
           placeholder="Search username"
           value={userToCompareTo}
           label="Compare to user:"
-          setValue={(value) => setUserToCompareTo(value)}
+          setValue={(value) => {
+            selectionRequestId.current += 1;
+            setUserToCompareTo(value);
+            setCompareUser(null);
+            setCompareError("");
+            setIsLoadingCompareUser(false);
+          }}
         />
+        {filteredUsernames.length > 0 && (
+          <Suggestions role="listbox" aria-label="Username suggestions">
+            {filteredUsernames.map((username) => (
+              <Suggestion
+                key={username}
+                type="button"
+                role="option"
+                onClick={() => void selectUser(username)}
+              >
+                {username}
+              </Suggestion>
+            ))}
+          </Suggestions>
+        )}
+        {isLoadingCompareUser && <p>Loading user data…</p>}
+        {compareError && <p role="status">{compareError}</p>}
       </InputWrapper>
     </>
   );

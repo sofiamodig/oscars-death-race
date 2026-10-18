@@ -20,7 +20,7 @@ export const AdminSettings = () => {
       $maxWidth="600px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="xxl"
+      $marginTop="xxxl"
     >
       <Heading size="lg" marginBottom="md">
         Admin settings

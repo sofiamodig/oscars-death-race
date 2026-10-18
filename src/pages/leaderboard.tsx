@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import Dropdown from "react-dropdown";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { MoviesYearsListType } from "@/types";
@@ -14,61 +13,162 @@ import { getYearsList } from "@/utils";
 import {
   LeaderboardType,
   LeaderboardUser,
-  fetchUsers,
+  fetchLeaderboardInitial,
+  fetchUsersForYear,
 } from "@/functions/fetchUsers";
 import { Paragraph } from "@/components/paragraph";
+import { Button } from "@/components/button";
+import { TextInput } from "@/components/textInput";
+import { Modal } from "@/components/modal";
+import styled from "styled-components";
+import {
+  fetchGroupLeaderboard,
+  fetchGroups,
+  GroupInvitation,
+  LeaderboardGroup,
+  searchGroupUsers,
+  updateGroup,
+} from "@/functions/groupRequests";
+
+const GroupSearchArea = styled.div`
+  width: 100%;
+  position: relative;
+`;
+
+const GroupSearchDropdown = styled.div`
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 4px;
+  background: white;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+`;
+
+const GroupSearchOption = styled.button`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: white;
+  color: var(--color-neutral-900);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    background: var(--color-neutral-200);
+    outline: none;
+  }
+`;
+
+const GroupNavigation = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const GroupTabs = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-neutral-300);
+  margin-bottom: 16px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    margin-bottom: 0;
+  }
+`;
+
+const GroupTab = styled.button<{ $active: boolean }>`
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 3px solid ${({ $active }) => $active ? "var(--color-primary-500)" : "transparent"};
+  margin-bottom: -1px;
+  background: transparent;
+  color: ${({ $active }) => $active ? "var(--color-primary-700)" : "var(--color-neutral-700)"};
+  font: inherit;
+  font-weight: ${({ $active }) => $active ? 600 : 400};
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-primary-700);
+  }
+`;
+
+const AddGroupButton = styled.button`
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border: 1px solid var(--color-primary-500);
+  border-radius: 4px;
+  margin: 0 0 16px;
+  background: transparent;
+  color: var(--color-primary-500);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-primary-700);
+    color: var(--color-primary-700);
+  }
+
+  @media (max-width: 600px) {
+    align-self: flex-start;
+  }
+`;
+
+const RedLink = styled.button`
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ui-red, #b42318);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: #8f1b13;
+  }
+`;
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
-  const leaderboard = await fetchUsers(movies);
-  const allUsers = Object.values(leaderboard).flat();
-
   const totalNrOfMovies = movies.map((year) => year.movies).flat().length;
+  const latestYear = Number(movies.at(-1)?.year);
+  if (!latestYear) throw new Error("No movie years are available for the leaderboard.");
 
-  // map through all users and if a user with the same id is found, the user should only be once in the array
-  const allUsersFinal = allUsers.reduce(
-    (
-      acc: {
-        id: string;
-        username: string;
-        seen: number;
-      }[],
-      user
-    ) => {
-      if (!user.username) return acc;
-
-      const existingUser = acc.find((u) => u.id === user.id);
-      if (!existingUser) {
-        acc.push({
-          id: user.id,
-          username: user.username,
-          seen: user.seen,
-        });
-      } else {
-        existingUser.seen += user.seen;
-      }
-      return acc;
-    },
-    []
-  );
-
-  // After accumulating the seen counts, calculate the percentage
-  const allUsersWithPercentage = allUsersFinal.map((user) => ({
-    ...user,
-    percentage: Math.round((user.seen / totalNrOfMovies) * 100),
-  }));
-
-  const sortBySeen = [...allUsersWithPercentage].sort(
-    (a, b) => b.seen - a.seen
-  );
+  const { yearUsers: latestYearUsers, allTimeUsers: allUsers } =
+    await fetchLeaderboardInitial(latestYear);
+  const leaderboard = { [String(latestYear)]: latestYearUsers };
 
   return {
     props: {
       movies,
       leaderboard,
-      allUsers: sortBySeen.slice(0, 100),
+      allUsers,
       totalNrOfMovies: totalNrOfMovies,
     },
+    revalidate: 86400,
   };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
@@ -90,21 +190,132 @@ export default function Leaderboard({
   const [selectedYear, setSelectedYear] = useState<string>();
   const [yearLeaderboard, setYearLeaderboard] = useState<LeaderboardUser[]>();
   const [usersList, setUsersList] = useState<LeaderboardUser[]>();
+  const [isYearLoading, setIsYearLoading] = useState(true);
+  const [leaderboardError, setLeaderboardError] = useState<string>();
+  const leaderboardCache = useRef(leaderboard);
   const { seenMovies, userSettings, loading } = useSeenContext();
   const { yearsList } = getYearsList(movies);
+  const [groups, setGroups] = useState<LeaderboardGroup[]>([]);
+  const [invitations, setInvitations] = useState<GroupInvitation[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const [groupsError, setGroupsError] = useState("");
+  const [showAllUsers, setShowAllUsers] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState("");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<Awaited<ReturnType<typeof searchGroupUsers>>>([]);
+  const [groupStatus, setGroupStatus] = useState("");
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [groupModalMode, setGroupModalMode] = useState<"create" | "edit">("create");
+
+  const refreshGroups = async (preferredGroupId?: string) => {
+    const data = await fetchGroups();
+    setGroups(data.groups);
+    setInvitations(data.invitations);
+    setSelectedGroupId((current) => {
+      if (preferredGroupId && data.groups.some((group) => group.id === preferredGroupId)) return preferredGroupId;
+      if (current && data.groups.some((group) => group.id === current)) return current;
+      return data.groups[0]?.id || "";
+    });
+  };
 
   useEffect(() => {
+    let active = true;
+    fetchGroups()
+      .then((data) => {
+        if (!active) return;
+        setGroups(data.groups);
+        setInvitations(data.invitations);
+        setSelectedGroupId((current) => current || data.groups[0]?.id || "");
+        setGroupsError("");
+      })
+      .catch((error: unknown) => {
+        if (active) setGroupsError(error instanceof Error ? error.message : "Could not load groups.");
+      })
+      .finally(() => { if (active) setGroupsLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    const managedGroup = groups.find((group) => group.id === selectedGroupId);
+    if (memberSearch.trim().length < 2 || !isGroupModalOpen || !managedGroup?.isOwner) {
+      setSearchResults([]);
+      return;
+    }
+    let active = true;
+    const timer = setTimeout(() => {
+      searchGroupUsers(memberSearch.trim())
+        .then((results) => { if (active) setSearchResults(results); })
+        .catch((error: unknown) => { if (active) setGroupStatus(error instanceof Error ? error.message : "Could not search users."); });
+    }, 250);
+    return () => { active = false; clearTimeout(timer); };
+  }, [memberSearch, selectedGroupId, groups, isGroupModalOpen]);
+
+  useEffect(() => {
+    if (!selectedYear) return;
+
+    if (!showAllUsers && selectedGroupId) {
+      let cancelled = false;
+      setUsersList(undefined);
+      setYearLeaderboard(undefined);
+      setIsYearLoading(true);
+      setLeaderboardError(undefined);
+      fetchGroupLeaderboard(selectedGroupId, selectedYear)
+        .then(({ users }) => { if (!cancelled) setUsersList(users); })
+        .catch((error: unknown) => {
+          if (!cancelled) setLeaderboardError(error instanceof Error ? error.message : "Could not load this group leaderboard.");
+        })
+        .finally(() => { if (!cancelled) setIsYearLoading(false); });
+      return () => { cancelled = true; };
+    }
+
     if (selectedYear === "all") {
       setUsersList(allUsers);
       setYearLeaderboard([]);
+      setIsYearLoading(false);
+      setLeaderboardError(undefined);
     } else if (selectedYear) {
       setUsersList(undefined);
-      setYearLeaderboard(leaderboard[selectedYear]);
-    }
-  }, [selectedYear]);
+      const cachedUsers = leaderboardCache.current[selectedYear];
+      if (cachedUsers) {
+        setYearLeaderboard(cachedUsers);
+        setIsYearLoading(false);
+        setLeaderboardError(undefined);
+        return;
+      }
 
-  const yearMovies =
-    movies.find((movie) => movie.year === selectedYear)?.movies ?? [];
+      let cancelled = false;
+      setYearLeaderboard(undefined);
+      setIsYearLoading(true);
+      setLeaderboardError(undefined);
+      fetchUsersForYear(Number(selectedYear))
+        .then((users) => {
+          if (!cancelled) {
+            leaderboardCache.current[selectedYear] = users;
+            setYearLeaderboard(users);
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            setLeaderboardError(
+              error instanceof Error ? error.message : "Could not load this leaderboard."
+            );
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setIsYearLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [selectedYear, allUsers, showAllUsers, selectedGroupId]);
+
+  const yearMovies = useMemo(
+    () => movies.find((movie) => movie.year === selectedYear)?.movies ?? [],
+    [movies, selectedYear]
+  );
 
   useEffect(() => {
     if (!selectedYear) {
@@ -113,6 +324,7 @@ export default function Leaderboard({
   }, [yearsList, selectedYear]);
 
   useEffect(() => {
+    if (!showAllUsers && selectedGroupId) return;
     if (selectedYear === "all") {
       return;
     }
@@ -123,14 +335,11 @@ export default function Leaderboard({
           const seenMoviesImdbIds = seenMovies
             ?.find((list) => list.year === selectedYear)
             ?.seenMovies.map((movie) => movie.imdbId);
-
-          const uniqueSeenMoviesImdbIds = Array.from(
-            new Set(seenMoviesImdbIds)
-          );
+          const uniqueSeenMoviesImdbIds = new Set(seenMoviesImdbIds);
 
           const seenCount =
             yearMovies?.filter((movie) =>
-              uniqueSeenMoviesImdbIds?.includes(movie.imdbId)
+              uniqueSeenMoviesImdbIds.has(movie.imdbId)
             ).length ?? 0;
           const totalMovies = yearMovies?.length ?? 0;
           const percentage =
@@ -165,7 +374,106 @@ export default function Leaderboard({
       .filter((user) => user.username);
 
     setUsersList(sortedUsersList);
-  }, [selectedYear, yearLeaderboard]);
+  }, [
+    selectedYear,
+    yearLeaderboard,
+    seenMovies,
+    userSettings?.username,
+    yearMovies,
+    showAllUsers,
+    selectedGroupId,
+  ]);
+
+  const createGroup = async () => {
+    setGroupStatus("");
+    try {
+      const result = await updateGroup({ action: "create", name: newGroupName });
+      setNewGroupName("");
+      await refreshGroups(result.group.id);
+      setShowAllUsers(false);
+      setGroupModalMode("edit");
+    } catch (error) {
+      setGroupStatus(error instanceof Error ? error.message : "Could not create group.");
+    }
+  };
+
+  const inviteUser = async (username: string) => {
+    setGroupStatus("");
+    try {
+      const result = await updateGroup({ action: "invite", groupId: selectedGroupId, username });
+      setGroupStatus(`Invitation sent to ${username}.`);
+      setMemberSearch("");
+      setSearchResults([]);
+      await refreshGroups();
+    } catch (error) {
+      setGroupStatus(error instanceof Error ? error.message : "Could not add this user.");
+    }
+  };
+
+  const respondToInvitation = async (
+    invitation: GroupInvitation,
+    action: "accept" | "reject" | "dismiss" | "leave"
+  ) => {
+    setGroupStatus("");
+    try {
+      const accept = action === "accept";
+      await updateGroup({
+        action: "respond",
+        invitationId: invitation.id,
+        accept,
+        dismiss: action === "dismiss",
+        leave: action === "leave",
+      });
+      await refreshGroups(accept ? invitation.groupId : undefined);
+      window.dispatchEvent(new Event("group-invitations-changed"));
+      if (accept) setShowAllUsers(false);
+      setGroupStatus(
+        action === "accept" ? "You joined the group." :
+        action === "reject" ? "Invitation declined." :
+        action === "leave" ? "You left the group." : "Invitation dismissed."
+      );
+    } catch (error) {
+      setGroupStatus(error instanceof Error ? error.message : "Could not update invitation.");
+    }
+  };
+
+  const removeGroupMember = async (userId: string, username: string) => {
+    if (!selectedGroup || !window.confirm(`Remove ${username} from ${selectedGroup.name}?`)) return;
+    setGroupStatus("");
+    try {
+      await updateGroup({ action: "removeMember", groupId: selectedGroup.id, userId });
+      await refreshGroups();
+      setGroupStatus(`${username} was removed from the group.`);
+    } catch (error) {
+      setGroupStatus(error instanceof Error ? error.message : "Could not remove this member.");
+    }
+  };
+
+  const leaveGroup = async () => {
+    if (!selectedGroup || !window.confirm(`Leave ${selectedGroup.name}?`)) return;
+    setGroupStatus("");
+    try {
+      await updateGroup({ action: "leaveGroup", groupId: selectedGroup.id });
+      await refreshGroups();
+      setIsGroupModalOpen(false);
+    } catch (error) {
+      setGroupStatus(error instanceof Error ? error.message : "Could not leave this group.");
+    }
+  };
+
+  const deleteGroup = async () => {
+    if (!selectedGroup || !window.confirm(`Delete ${selectedGroup.name} and remove all its members?`)) return;
+    setGroupStatus("");
+    try {
+      await updateGroup({ action: "deleteGroup", groupId: selectedGroup.id });
+      await refreshGroups();
+      setIsGroupModalOpen(false);
+    } catch (error) {
+      setGroupStatus(error instanceof Error ? error.message : "Could not delete this group.");
+    }
+  };
+
+  const selectedGroup = groups.find((group) => group.id === selectedGroupId);
 
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
@@ -203,10 +511,146 @@ export default function Leaderboard({
           </select>
         </div>
       </Flex>
-      {loading ? (
+      {invitations.length > 0 && (
+        <Box id="invitations" $marginBottom="lg">
+          <Heading size="md" marginBottom="sm">Group invitations ({invitations.length})</Heading>
+          {invitations.map((invitation) => (
+            <Flex key={invitation.id} $alignItems="center" $gap="sm" $marginBottom="sm">
+              {invitation.alreadyMember ? (
+                <>
+                  <Paragraph>You have been invited to {invitation.groupName}. It is already in your groups.</Paragraph>
+                  <Button label="Got it" size="sm" onClick={() => respondToInvitation(invitation, "dismiss")} />
+                  <Button label="Leave group" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "leave")} />
+                </>
+              ) : (
+                <>
+                  <Paragraph>{invitation.invitedBy} invited you to {invitation.groupName}.</Paragraph>
+                  <Button label="Accept" size="sm" onClick={() => respondToInvitation(invitation, "accept")} />
+                  <Button label="Reject" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "reject")} />
+                </>
+              )}
+            </Flex>
+          ))}
+        </Box>
+      )}
+      <Box $marginBottom="lg">
+        <GroupNavigation>
+          <GroupTabs role="tablist" aria-label="Choose a leaderboard">
+            {groups.map((group) => (
+              <GroupTab
+                key={group.id}
+                type="button"
+                role="tab"
+                aria-selected={!showAllUsers && selectedGroupId === group.id}
+                $active={!showAllUsers && selectedGroupId === group.id}
+                onClick={() => { setSelectedGroupId(group.id); setShowAllUsers(false); }}
+              >
+                {group.name}
+              </GroupTab>
+            ))}
+            <GroupTab
+              type="button"
+              role="tab"
+              aria-selected={showAllUsers || (!selectedGroupId && groups.length === 0)}
+              $active={showAllUsers || (!selectedGroupId && groups.length === 0)}
+              onClick={() => setShowAllUsers(true)}
+            >
+              Full leaderboard
+            </GroupTab>
+          </GroupTabs>
+          <AddGroupButton
+            type="button"
+            onClick={() => {
+              setGroupModalMode("create");
+              setNewGroupName("");
+              setGroupStatus("");
+              setIsGroupModalOpen(true);
+            }}
+          >
+            + Add new group
+          </AddGroupButton>
+        </GroupNavigation>
+        {groupsError && <Paragraph>{groupsError}</Paragraph>}
+        {(groupStatus || (groupsLoading && !groupsError)) && <Paragraph>{groupStatus || "Loading groups…"}</Paragraph>}
+      </Box>
+      <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} maxWidth="520px">
+        <Heading size="lg" marginBottom="md">
+          {groupModalMode === "create" ? "Add a new group" : selectedGroup?.name || ''}
+        </Heading>
+        <Flex $direction="column" $alignItems="flex-start" $gap="md">
+          {groupModalMode === "create" && (
+            <Flex $alignItems="flex-end" $gap="sm" style={{ width: "100%" }}>
+              <TextInput label="New group name" value={newGroupName} setValue={setNewGroupName} />
+              <Button label="Create" onClick={createGroup} disabled={!newGroupName.trim()} />
+            </Flex>
+          )}
+          {groupModalMode === "edit" && selectedGroup && (
+            <Box $width="100%">
+              <Heading size="xs" marginBottom="xs">Members:</Heading>
+              {selectedGroup.members.map((member) => (
+                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="md">
+                  <Paragraph>
+                    {member.username}{member.status === "pending" ? " · Pending invitation" : ""}
+                  </Paragraph>
+                  {selectedGroup.isOwner && member.id !== selectedGroup.created_by && (
+                    <Button
+                      label={member.status === "pending" ? "Cancel invite" : "Remove"}
+                      size="sm"
+                      variant="danger"
+                      onClick={() => removeGroupMember(member.id, member.username)}
+                    />
+                  )}
+                </Flex>
+              ))}
+              {selectedGroup.isOwner ? (
+                <GroupSearchArea>
+                  <TextInput
+                    label="Search usernames to invite"
+                    placeholder="Type at least 2 characters"
+                    value={memberSearch}
+                    setValue={setMemberSearch}
+                  />
+                  {searchResults.length > 0 && (
+                    <GroupSearchDropdown role="listbox" aria-label="Username search results">
+                      {searchResults.map((result) => (
+                        <GroupSearchOption
+                          type="button"
+                          key={result.id}
+                          role="option"
+                          onClick={() => inviteUser(result.username)}
+                        >
+                          <span>{result.username}</span>
+                          <span>{result.show_in_leaderboard ? "Invite" : "Invite · hidden profile"}</span>
+                        </GroupSearchOption>
+                      ))}
+                    </GroupSearchDropdown>
+                  )}
+                </GroupSearchArea>
+              ) : (
+                <>
+                  <Paragraph>You are a member of this group.</Paragraph>
+                  <RedLink onClick={leaveGroup}>Leave group</RedLink>
+                </>
+              )}
+              {selectedGroup.isOwner && (
+                <Box $marginTop="md">
+                  <RedLink onClick={deleteGroup}>
+                    Delete group
+                  </RedLink>
+                </Box>
+              )}
+            </Box>
+          )}
+          {groupStatus && <Paragraph>{groupStatus}</Paragraph>}
+          <Button label="Done" variant="secondary" onClick={() => setIsGroupModalOpen(false)} />
+        </Flex>
+      </Modal>
+      {loading || isYearLoading ? (
         <Flex $justifyContent="center" $marginTop="lg">
           <Loader />
         </Flex>
+      ) : leaderboardError ? (
+        <Paragraph>{leaderboardError}</Paragraph>
       ) : (
         <div>
           {usersList?.map((user, i) => {
@@ -220,11 +664,32 @@ export default function Leaderboard({
                 }
                 seen={selectedYear === "all" ? user.seen : undefined}
                 isCurrentUser={user.username === userSettings?.username}
+                isPending={user.pending}
                 rank={i}
               />
             );
           })}
         </div>
+      )}
+      {!groupsLoading && !showAllUsers && selectedGroup && (
+        <Box $marginTop="lg">
+          {selectedGroup.isOwner ? (
+            <Button
+              label="Manage group"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setGroupModalMode("edit");
+                setGroupStatus("");
+                setIsGroupModalOpen(true);
+              }}
+            />
+          ) : (
+            <RedLink type="button" onClick={leaveGroup}>
+              Leave group
+            </RedLink>
+          )}
+        </Box>
       )}
     </Box>
   );

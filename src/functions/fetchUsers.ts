@@ -1,7 +1,6 @@
-import { db } from "@/firebaseConfig";
-import { MovieType, MoviesYearsListType, SeenType } from "@/types";
+import { MoviesYearsListType } from "@/types";
 import { BLOCKED_USERS } from "@/utils";
-import { collection, getDocs } from "@firebase/firestore";
+import { supabase } from "@/supabase";
 
 export type LeaderboardUser = {
   username: string;
@@ -10,83 +9,153 @@ export type LeaderboardUser = {
   percentage: number;
   completed?: string | null;
   seenDuration?: number;
+  pending?: boolean;
 };
 
 export interface LeaderboardType {
   [year: string]: LeaderboardUser[];
 }
 
-export const fetchUsers = async (movies: MoviesYearsListType) => {
-  const usersRef = collection(db, "users");
+export type RacerCountsByYear = Record<string, number>;
 
-  const querySnapshot = await getDocs(usersRef);
+type LeaderboardRow = {
+  year: number;
+  username: string;
+  public_id: string;
+  seen: number;
+  percentage: number;
+  completed: string | null;
+  seen_duration: number;
+};
 
-  const usersArray: LeaderboardType = {};
+type RacerCountRow = { year: number; racer_count: number };
+type LeaderboardUsernamesRow = { usernames: string[] };
 
-  querySnapshot.forEach((doc) => {
-    const userData = doc.data();
-    const username = userData.username || null;
-    const showInLeaderboard =
-      userData.showInLeaderboard == false ? false : true;
+export const fetchUsers = async (_movies?: MoviesYearsListType) => {
+  const { data, error } = await supabase.rpc("get_public_leaderboard");
+  if (error) throw new Error(`Failed to fetch leaderboard: ${error.message}`);
 
-    const obj = doc.data();
+  const usersByYear: LeaderboardType = {};
+  for (const row of (data ?? []) as LeaderboardRow[]) {
+    if (!row.username || BLOCKED_USERS.includes(row.username)) continue;
+    const year = String(row.year);
+    usersByYear[year] ??= [];
+    usersByYear[year].push({
+      username: row.username,
+      id: row.public_id,
+      seen: Number(row.seen),
+      percentage: Number(row.percentage),
+      completed: row.completed ?? null,
+      seenDuration: Number(row.seen_duration ?? 0),
+    });
+  }
+  return usersByYear;
+};
 
-    for (const key in obj) {
-      const year = parseInt(key, 10);
+export const fetchRacerCountsByYear = async (): Promise<RacerCountsByYear> => {
+  const { data, error } = await supabase.rpc("get_racer_counts_by_year");
+  if (error) throw new Error(`Failed to fetch racer counts: ${error.message}`);
 
-      if (!isNaN(year) && year >= 1890) {
-        const yearString = year.toString();
-        if (!usersArray[yearString]) {
-          usersArray[yearString] = [] as LeaderboardUser[];
-        }
+  return Object.fromEntries(
+    ((data ?? []) as RacerCountRow[]).map((row) => [
+      String(row.year),
+      Number(row.racer_count),
+    ]),
+  );
+};
 
-        const seenMovies = obj[key]?.seenMovies || [];
+export const fetchLeaderboardUsernames = async (): Promise<string[]> => {
+  const { data, error } = await supabase.rpc("get_public_leaderboard_usernames");
+  if (error) throw new Error(`Failed to fetch leaderboard usernames: ${error.message}`);
 
-        if (!seenMovies.length) {
-          continue;
-        }
+  const rows = (data ?? []) as LeaderboardUsernamesRow[];
+  return (rows[0]?.usernames ?? []).filter(
+    (username) => !BLOCKED_USERS.includes(username),
+  );
+};
 
-        if (showInLeaderboard === false) {
-          continue;
-        }
+export type PublicUserSeenData = {
+  username: string;
+  years: { year: string; seen: number }[];
+};
 
-        if (BLOCKED_USERS.includes(userData.username)) {
-          continue;
-        }
+type PublicUserSeenRow = {
+  username: string;
+  year: number;
+  seen: number;
+};
 
-        if (!userData.username) {
-          continue;
-        }
-
-        const yearMovies = movies?.find((movie) => movie.year === key)?.movies;
-
-        if (!yearMovies) {
-          continue;
-        }
-
-        const seenMoviesImdbIds = Array.from(
-          new Set(seenMovies.map((movie: SeenType) => movie.imdbId))
-        );
-
-        const filteredSeenMovies = yearMovies.filter((movie: MovieType) => {
-          return seenMoviesImdbIds.includes(movie.imdbId);
-        });
-
-        usersArray[year].push({
-          username,
-          id: username + doc.id.slice(0, 10),
-          seen: filteredSeenMovies.length,
-          seenDuration: filteredSeenMovies.reduce((acc, movie) => {
-            return acc + (movie.duration ?? 0);
-          }, 0),
-          percentage: Math.round(
-            (filteredSeenMovies.length / yearMovies?.length) * 100
-          ),
-          completed: userData[key]?.completed ?? null,
-        });
-      }
-    }
+export const fetchPublicUserSeenData = async (
+  username: string,
+): Promise<PublicUserSeenData | null> => {
+  const { data, error } = await supabase.rpc("get_public_user_seen_by_year", {
+    p_username: username,
   });
+  if (error) throw new Error(`Failed to fetch ${username}'s statistics: ${error.message}`);
 
-  return usersArray;
+  const rows = (data ?? []) as PublicUserSeenRow[];
+  if (rows.length === 0) return null;
+
+  return {
+    username: rows[0].username,
+    years: rows.map((row) => ({
+      year: String(row.year),
+      seen: Number(row.seen),
+    })),
+  };
+};
+
+export const fetchUsersForYear = async (year: number): Promise<LeaderboardUser[]> => {
+  const { data, error } = await supabase.rpc("get_public_leaderboard_year", {
+    p_year: year,
+  });
+  if (error) throw new Error(`Failed to fetch leaderboard for ${year}: ${error.message}`);
+
+  return mapYearRows((data?.[0]?.leaderboard ?? []) as LeaderboardRow[]);
+};
+
+type InitialLeaderboardPayload = {
+  year_leaderboard: LeaderboardRow[];
+  all_time_leaderboard: {
+    username: string;
+    public_id: string;
+    seen: number;
+    percentage: number;
+  }[];
+};
+
+const mapYearRows = (rows: LeaderboardRow[]): LeaderboardUser[] =>
+  rows
+    .filter((row) => row.username && !BLOCKED_USERS.includes(row.username))
+    .map((row) => ({
+      username: row.username,
+      id: row.public_id,
+      seen: Number(row.seen),
+      percentage: Number(row.percentage),
+      completed: row.completed ?? null,
+      seenDuration: Number(row.seen_duration ?? 0),
+    }));
+
+export const fetchLeaderboardInitial = async (year: number) => {
+  const { data, error } = await supabase.rpc("get_public_leaderboard_initial", {
+    p_year: year,
+  });
+  if (error) throw new Error(`Failed to fetch leaderboard: ${error.message}`);
+
+  const payload = data?.[0] as InitialLeaderboardPayload | undefined;
+  const allTimeUsers = (payload?.all_time_leaderboard ?? [])
+    .filter((row) => row.username && !BLOCKED_USERS.includes(row.username))
+    .map((row) => ({
+      id: row.public_id,
+      username: row.username,
+      seen: Number(row.seen),
+      percentage: Number(row.percentage),
+    }))
+    .sort((a, b) => b.seen - a.seen)
+    .slice(0, 100);
+
+  return {
+    yearUsers: mapYearRows(payload?.year_leaderboard ?? []),
+    allTimeUsers,
+  };
 };

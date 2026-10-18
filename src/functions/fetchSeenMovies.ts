@@ -1,49 +1,54 @@
-import { db } from "@/firebaseConfig";
+import { supabase } from "@/supabase";
 import { SeenMoviesType, UserSettingsType } from "@/types";
-import { doc, getDoc } from "@firebase/firestore";
 
 export const fetchSeenMovies = async (userId: string) => {
-  const docRef = doc(db, "users", userId);
+  const [seenResult, progressResult, profileResult] = await Promise.all([
+    supabase
+      .from("seen_movies")
+      .select("year, imdb_id, seen_at")
+      .eq("user_id", userId)
+      .order("year", { ascending: true }),
+    supabase
+      .from("user_year_progress")
+      .select("year, completed_at")
+      .eq("user_id", userId),
+    supabase
+      .from("profiles")
+      .select("username, show_in_leaderboard, percentage_by_watch_time, movie_link_destination")
+      .eq("id", userId)
+      .maybeSingle(),
+  ]);
 
-  function assignIfValidKey(
-    settings: UserSettingsType,
-    key: string,
-    value: any
-  ) {
-    if (key in settings) {
-      (settings as any)[key] = value;
-    }
+  const error = seenResult.error ?? progressResult.error ?? profileResult.error;
+  if (error) throw new Error(`Failed to load your data: ${error.message}`);
+
+  const byYear = new Map<number, SeenMoviesType>();
+  for (const row of seenResult.data ?? []) {
+    const year = Number(row.year);
+    const entry = byYear.get(year) ?? { year: String(year), seenMovies: [] };
+    entry.seenMovies.push({ imdbId: row.imdb_id, date: row.seen_at });
+    byYear.set(year, entry);
   }
 
-  return getDoc(docRef)
-    .then((doc) => {
-      if (doc.exists()) {
-        const currentYear = new Date().getFullYear() + 1;
-        const years: SeenMoviesType[] = [];
-        const settings: UserSettingsType = {
-          showInLeaderboard: false,
-          username: "",
-          percentageByWatchTime: false,
-        };
+  for (const row of progressResult.data ?? []) {
+    const year = Number(row.year);
+    const entry = byYear.get(year) ?? { year: String(year), seenMovies: [] };
+    entry.completed = row.completed_at;
+    byYear.set(year, entry);
+  }
 
-        const obj = doc.data();
+  const profile = profileResult.data;
+  const settings: UserSettingsType = {
+    username: profile?.username ?? "",
+    showInLeaderboard: profile?.show_in_leaderboard ?? true,
+    percentageByWatchTime: profile?.percentage_by_watch_time ?? false,
+    movieLinkDestination: profile?.movie_link_destination ?? "imdb",
+  };
 
-        for (const key in obj) {
-          const year = parseInt(key, 10);
-
-          if (!isNaN(year) && year >= 1890 && year <= currentYear) {
-            years.push({ year: key, seenMovies: obj[key].seenMovies });
-          } else {
-            assignIfValidKey(settings, key, obj[key]);
-          }
-        }
-
-        return { years, settings };
-      } else {
-        throw new Error("An error occurred");
-      }
-    })
-    .catch((error) => {
-      throw new Error("An error occurred");
-    });
+  return {
+    years: Array.from(byYear.values()).sort(
+      (a, b) => Number(a.year) - Number(b.year)
+    ),
+    settings,
+  };
 };

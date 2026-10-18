@@ -148,6 +148,9 @@ export const Button: React.FC<Props> = ({
         type={type}
         onClick={(e) => {
           if (!disabled) {
+            // Let native form submission run when the button has no click
+            // handler. Buttons with an onClick retain the existing behavior.
+            if (type === "submit" && !onClick) return;
             e.preventDefault();
             e.stopPropagation();
             onClick && onClick(e);

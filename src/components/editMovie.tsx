@@ -1,19 +1,31 @@
 import React, { FC, useState } from "react";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
-import { db } from "@/firebaseConfig";
 import { Box } from "@/styles/Box";
 import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
-import { deleteDoc, doc, updateDoc } from "@firebase/firestore";
+import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
 import { Heading } from "./heading";
 import { TextInput } from "./textInput";
 import styled from "styled-components";
+import { PosterPreview } from "./posterPreview";
 
 const Wrapper = styled.div`
   border-top: 1px solid var(--color-neutral-500);
   padding: 16px 0;
   margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  @media (max-width: 480px) {
+    gap: 10px;
+  }
+`;
+
+const MovieDetails = styled.div`
+  min-width: 0;
+  flex: 1;
 `;
 
 const ShowNoms = styled.button`
@@ -96,124 +108,120 @@ const EditMovie: FC<Props> = ({
       wonCategories: wonCategories,
     };
 
-    const movieDoc = doc(db, "movie-collection", selectedYear, "movies", id);
-
-    updateDoc(movieDoc, movieObj)
-      .then(() => {
-        setIsSubmitting(false);
-        showSnackbar("Movie updated successfully", "success");
-      })
-      .catch((error) => {
-        setIsSubmitting(false);
-        showSnackbar(error.message, "error");
-      });
+    adminRequest("/api/admin/movies", "PATCH", {
+      year: selectedYear,
+      imdbId: id,
+      ...movieObj,
+    })
+      .then(() => showSnackbar("Movie updated successfully", "success"))
+      .catch((error) => showSnackbar(error.message, "error"))
+      .finally(() => setIsSubmitting(false));
   };
 
   const handleRemove = async () => {
     setIsSubmitting(true);
 
-    const movieDoc = doc(db, "movie-collection", selectedYear, "movies", id);
-
-    deleteDoc(movieDoc)
-      .then(() => {
-        setIsSubmitting(false);
-        showSnackbar("Movie removed successfully", "success");
-      })
-      .catch((error) => {
-        setIsSubmitting(false);
-        showSnackbar(error.message, "error");
-      });
+    adminRequest("/api/admin/movies", "DELETE", {
+      year: selectedYear,
+      imdbId: id,
+    })
+      .then(() => showSnackbar("Movie removed successfully", "success"))
+      .catch((error) => showSnackbar(error.message, "error"))
+      .finally(() => setIsSubmitting(false));
   };
 
   return (
     <Wrapper>
-      <Heading size="sm" as="h2">
-        {title} <br />
-        {(!showEdit || !showNominations) && (
-          <ShowNoms
-            onClick={() => {
-              setShowNominations(true);
-              setShowEdit(true);
-            }}
-          >
-            Edit
-          </ShowNoms>
-        )}
-      </Heading>
+      <PosterPreview url={posterUrl} title={title} />
+      <MovieDetails>
+        <Heading size="sm" as="h2">
+          {title} <br />
+          {(!showEdit || !showNominations) && (
+            <ShowNoms
+              onClick={() => {
+                setShowNominations(true);
+                setShowEdit(true);
+              }}
+            >
+              Edit
+            </ShowNoms>
+          )}
+        </Heading>
 
-      <Form onSubmit={handleSubmit}>
-        {showEdit && (
-          <Box $marginTop="sm">
-            <TextInput
-              label="Poster URL"
-              value={posterUrl}
-              setValue={(value) => setPosterUrl(value)}
-              placeholder="Poster URL"
-            />
-          </Box>
-        )}
+        <Form onSubmit={handleSubmit}>
+          {showEdit && (
+            <Box $marginTop="sm">
+              <TextInput
+                label="Poster URL"
+                value={posterUrl}
+                setValue={(value) => setPosterUrl(value)}
+                placeholder="Poster URL"
+              />
+            </Box>
+          )}
 
-        {showEdit && (
-          <Box $marginTop="sm">
+          {showEdit && (
+            <Box $marginTop="sm">
+              <Button
+                type="button"
+                label="Remove"
+                onClick={handleRemove}
+                disabled={isSubmitting}
+                variant="primary"
+                size="md"
+                isLoading={isSubmitting}
+              />
+            </Box>
+          )}
+
+          {showNominations && (
+            <Box $marginTop="sm">
+              <p>Nominated Categories</p>
+              <Chips>
+                {CATEGORIES.map((category) => (
+                  <Chip
+                    key={category}
+                    type="button"
+                    $isSelected={nominatedCategories.includes(category)}
+                    onClick={() => handleNominationClick(category)}
+                  >
+                    {category.replace("Best", "")}
+                  </Chip>
+                ))}
+              </Chips>
+            </Box>
+          )}
+
+          {(nominatedCategories.length > 0 || wonCategories.length > 0) && (
+            <Box $marginTop="md">
+              <p>Won Categories</p>
+              <Chips>
+                {nominatedCategories.map((category) => (
+                  <Chip
+                    key={category}
+                    type="button"
+                    $isSelected={wonCategories.includes(category)}
+                    onClick={() => handleWonClick(category)}
+                  >
+                    {category.replace("Best", "")}
+                  </Chip>
+                ))}
+              </Chips>
+            </Box>
+          )}
+          <Box $marginTop="md" $width="100%">
             <Button
-              type="button"
-              label="Remove"
-              onClick={handleRemove}
+              type="submit"
+              label="Save"
+              onClick={handleSubmit}
               disabled={isSubmitting}
               variant="primary"
               size="md"
               isLoading={isSubmitting}
             />
           </Box>
-        )}
-
-        {showNominations && (
-          <Box $marginTop="sm">
-            <p>Nominated Categories</p>
-            <Chips>
-              {CATEGORIES.map((category) => (
-                <Chip
-                  key={category}
-                  type="button"
-                  $isSelected={nominatedCategories.includes(category)}
-                  onClick={() => handleNominationClick(category)}
-                >
-                  {category.replace("Best", "")}
-                </Chip>
-              ))}
-            </Chips>
-          </Box>
-        )}
-
-        {(nominatedCategories.length > 0 || wonCategories.length > 0) && (
-          <Box $marginTop="md">
-            <p>Won Categories</p>
-            <Chips>
-              {nominatedCategories.map((category) => (
-                <Chip
-                  key={category}
-                  type="button"
-                  $isSelected={wonCategories.includes(category)}
-                  onClick={() => handleWonClick(category)}
-                >
-                  {category.replace("Best", "")}
-                </Chip>
-              ))}
-            </Chips>
-          </Box>
-        )}
-        <Box $marginTop="md" $width="100%">
-          <Button
-            type="submit"
-            label="Save"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            variant="primary"
-            size="md"
-            isLoading={isSubmitting}
-          />
-        </Box>
-      </Form>
+        </Form>
+      </MovieDetails>
     </Wrapper>
   );
 };

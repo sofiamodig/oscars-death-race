@@ -11,9 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { fetchSeenMovies } from "@/functions/fetchSeenMovies";
 import { addMovieToSeenFunc } from "@/functions/addMovieToSeen";
 import { SiteInfoContext } from "./siteInfoContext";
-import { doc, getDoc, updateDoc } from "@firebase/firestore";
-import { db } from "@/firebaseConfig";
 import { removeMovieFromSeenFunc } from "@/functions/removeMovieFromSeen";
+import { supabase } from "@/supabase";
 
 type SeenContextType = {
   seenMovies: SeenMoviesType[];
@@ -29,6 +28,8 @@ type SeenContextType = {
   changeShowInLeaderboard: () => void;
   toggleShowSeenDates: () => void;
   togglePercentageByWatchTime: () => void;
+  changeMovieLinkDestination: (destination: "imdb" | "letterboxd" | "simkl") => void;
+  refreshSeenMovies: () => Promise<void>;
   loading: boolean;
 };
 
@@ -42,6 +43,8 @@ export const SeenContext = createContext<SeenContextType>({
   changeShowInLeaderboard: () => {},
   toggleShowSeenDates: () => {},
   togglePercentageByWatchTime: () => {},
+  changeMovieLinkDestination: () => {},
+  refreshSeenMovies: async () => {},
   loading: true,
 });
 
@@ -65,26 +68,33 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
     if (!userId) {
       setSeenMovies([]);
       setUserSettings({} as UserSettingsType);
-      setTimeout(() => {
-        setLoading(false);
-      }, 600);
+      setLoading(false);
     } else {
+      let active = true;
+      setLoading(true);
+      setSeenMovies([]);
       fetchSeenMovies(userId)
         .then((data) => {
+          if (!active) return;
           setSeenMovies(data.years);
-          setUserSettings((prev) => {
-            return {
-              username: data.settings.username,
-              showInLeaderboard: data.settings.showInLeaderboard,
-              hideSeenDates: prev.hideSeenDates,
-              percentageByWatchTime: data.settings.percentageByWatchTime
-            };
-          });
+          setUserSettings((prev) => ({
+            ...data.settings,
+            hideSeenDates: prev.hideSeenDates,
+          }));
+          setShowInLeaderboard(data.settings.showInLeaderboard ?? true);
+          setPercentageByWatchTime(
+            data.settings.percentageByWatchTime ?? false
+          );
           setLoading(false);
         })
         .catch((error) => {
+          if (!active) return;
+          showSnackbar(error.message ?? "Could not load your data", "error");
           setLoading(false);
         });
+      return () => {
+        active = false;
+      };
     }
   }, [userId, showSnackbar]);
 
@@ -128,46 +138,26 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
   const changeSeenDate = (imdbId: string, date: string, year: string) => {
     if (!userId) return;
 
+    const oldSeenMovies = seenMovies;
     setSeenMovies((prev) =>
       prev.map((entry) => ({
         ...entry,
         seenMovies: entry.seenMovies?.map((movie) =>
-          movie.imdbId === imdbId ? { ...movie, date } : movie
+          entry.year === year && movie.imdbId === imdbId
+            ? { ...movie, date }
+            : movie
         ),
       }))
     );
-
-    const docRef = doc(db, "users", userId);
-
-    getDoc(docRef)
-      .then((docSnap) => {
-        if (docSnap.exists()) {
-          // Copy the seenMovies array and make modifications
-          const userData = docSnap.data();
-          const userSeenMovies = userData[year].seenMovies;
-          const movieIndex = [...userSeenMovies].findIndex(
-            (m: any) => m.imdbId === imdbId
-          );
-
-          if (movieIndex !== -1) {
-            // Update the date of the specific movie
-            userSeenMovies[movieIndex].date = date;
-
-            // Update the document with the new seenMovies array
-            return updateDoc(docRef, {
-              [`${year}.seenMovies`]: userSeenMovies,
-            });
-          } else {
-            console.log("Movie not found");
-          }
-        } else {
-          console.log("Document does not exist");
-        }
-      })
-      .then(() => {
-        console.log("Document successfully updated");
-      })
-      .catch((error) => {
+    supabase
+      .from("seen_movies")
+      .update({ seen_at: date })
+      .eq("user_id", userId)
+      .eq("year", Number(year))
+      .eq("imdb_id", imdbId)
+      .then(({ error }) => {
+        if (!error) return;
+        setSeenMovies(oldSeenMovies);
         showSnackbar("An error occurred", "error");
       });
   };
@@ -178,30 +168,61 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
 
   const changeShowInLeaderboard = () => {
     if (!userId) return;
-    setShowInLeaderboard((prev) => !prev);
-
-    const docRef = doc(db, "users", userId);
-
-    updateDoc(docRef, {
-      showInLeaderboard: !showInLeaderboard,
-    }).catch((error) => {
-      showSnackbar(error.message, "error");
-    });
+    const nextValue = !showInLeaderboard;
+    setShowInLeaderboard(nextValue);
+    setUserSettings((prev) => ({ ...prev, showInLeaderboard: nextValue }));
+    supabase
+      .from("profiles")
+      .update({ show_in_leaderboard: nextValue })
+      .eq("id", userId)
+      .then(({ error }) => {
+        if (error) {
+          setShowInLeaderboard(!nextValue);
+          setUserSettings((prev) => ({ ...prev, showInLeaderboard: !nextValue }));
+          showSnackbar(error.message, "error");
+        }
+      });
   };
 
-const togglePercentageByWatchTime = () => {
-  if (!userId) return;
+  const togglePercentageByWatchTime = () => {
+    if (!userId) return;
+    const nextValue = !userSettings.percentageByWatchTime;
+    setPercentageByWatchTime(nextValue);
+    setUserSettings((prev) => ({ ...prev, percentageByWatchTime: nextValue }));
+    supabase
+      .from("profiles")
+      .update({ percentage_by_watch_time: nextValue })
+      .eq("id", userId)
+      .then(({ error }) => {
+        if (error) {
+          setPercentageByWatchTime(!nextValue);
+          setUserSettings((prev) => ({ ...prev, percentageByWatchTime: !nextValue }));
+          showSnackbar(error.message, "error");
+        }
+      });
+  };
 
-  setUserSettings((prev) => {
-    const newValue = !prev.percentageByWatchTime;
+  const changeMovieLinkDestination = (destination: "imdb" | "letterboxd" | "simkl") => {
+    if (!userId) return;
+    const previous = userSettings.movieLinkDestination ?? "imdb";
+    setUserSettings((prev) => ({ ...prev, movieLinkDestination: destination }));
+    supabase
+      .from("profiles")
+      .update({ movie_link_destination: destination })
+      .eq("id", userId)
+      .then(({ error }) => {
+        if (error) {
+          setUserSettings((prev) => ({ ...prev, movieLinkDestination: previous }));
+          showSnackbar(error.message, "error");
+        }
+      });
+  };
 
-    updateDoc(doc(db, "users", userId), {
-      percentageByWatchTime: newValue,
-    }).catch((error) => showSnackbar(error.message, "error"));
-
-    return { ...prev, percentageByWatchTime: newValue };
-  });
-};
+  const refreshSeenMovies = async () => {
+    if (!userId) return;
+    const data = await fetchSeenMovies(userId);
+    setSeenMovies(data.years);
+  };
 
   useEffect(() => {
     if (localStorage.getItem("hideSeenDates")) {
@@ -235,6 +256,8 @@ const togglePercentageByWatchTime = () => {
         changeShowInLeaderboard,
         toggleShowSeenDates,
         togglePercentageByWatchTime,
+        changeMovieLinkDestination,
+        refreshSeenMovies,
         userSettings,
         loading,
       }}

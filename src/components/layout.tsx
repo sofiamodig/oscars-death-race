@@ -26,6 +26,9 @@ export const Layout: FC<Props> = ({ children }) => {
   const { isAdmin } = useAuth();
   const { construction } = useContext(SiteInfoContext);
 
+  console.log('isAdmin', isAdmin)
+  console.log('construction', construction)
+
   useEffect(() => {
     window.onload = () => {
       document.body.style.visibility = "visible";
@@ -38,7 +41,9 @@ export const Layout: FC<Props> = ({ children }) => {
 
   if (construction == undefined) return <></>;
 
-  if (construction && !isAdmin) return <UnderConstruction />;
+  // if (construction && !isAdmin) return <UnderConstruction />;
+
+  return <UnderConstruction />
 
   return (
     <OuterWrapper>

@@ -51,28 +51,6 @@ const Login = () => {
       });
 
       if (error) {
-        // Firebase accounts imported with Supabase's migration utility have
-        // no usable password hash. Verify the old password once with Firebase,
-        // transfer it to Supabase, then establish the normal Supabase session.
-        const migrationResponse = await fetch("/api/auth/migrate-firebase-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim(), password }),
-        });
-
-        if (migrationResponse.ok) {
-          const { error: migratedLoginError } =
-            await supabase.auth.signInWithPassword({
-              email: email.trim(),
-              password,
-            });
-
-          if (!migratedLoginError) {
-            await router.replace("/");
-            return;
-          }
-        }
-
         setErrors({ general: "Invalid email or password." });
         return;
       }

@@ -41,9 +41,7 @@ export const Layout: FC<Props> = ({ children }) => {
 
   if (construction == undefined) return <></>;
 
-  // if (construction && !isAdmin) return <UnderConstruction />;
-
-  return <UnderConstruction />
+  if (construction && !isAdmin) return <UnderConstruction />;
 
   return (
     <OuterWrapper>

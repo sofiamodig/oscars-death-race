@@ -38,3 +38,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+# Repairing movie posters
+
+Run `npm run repair-posters` to scan the movie catalog. It treats empty/`N/A`
+poster URLs and URLs that do not return an image as faulty, then looks up a
+replacement by IMDb ID using OMDb. The default is a dry run; review the proposed
+URLs, then run `npm run repair-posters -- --apply` to write them to Supabase.
+
+The script reads `.env.local` and requires `NEXT_SUPABASE_URL`,
+`NEXT_SUPABASE_SERVICE_ROLE_KEY`, and `OMDB_API_KEY` (it also accepts the
+existing `NEXT_PUBLIC_OMDB_API_KEY`). Movies OMDb cannot match are reported and
+left unchanged.

@@ -7,19 +7,22 @@ import "../assets/fonts/notoSans/fonts.css";
 import "@/styles/globals.css";
 import "react-dropdown/style.css";
 import { CommentsProvider } from "@/contexts/commentsContext";
+import { AuthProvider } from "@/contexts/authContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <SnackbarProvider>
-      <SiteInfoProvider>
-        <SeenProvider>
-          <CommentsProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </CommentsProvider>
-        </SeenProvider>
-      </SiteInfoProvider>
+      <AuthProvider>
+        <SiteInfoProvider>
+          <SeenProvider>
+            <CommentsProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </CommentsProvider>
+          </SeenProvider>
+        </SiteInfoProvider>
+      </AuthProvider>
     </SnackbarProvider>
   );
 }

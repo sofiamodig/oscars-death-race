@@ -13,6 +13,8 @@
     "@supabase/supabase-js": "^2.117.3",
     "chart.js": "^4.4.2",
     "file-saver": "^2.0.5",
+    "firebase": "^11.10.0",
+    "firebase-admin": "^13.10.0",
     "luxon": "^3.4.4",
     "next": "14.0.4",
     "react": "^18",

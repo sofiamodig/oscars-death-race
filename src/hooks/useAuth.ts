@@ -1,60 +1,8 @@
-import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/supabase";
+import { useAuth } from "@/contexts/authContext";
 
-export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    const updateAdminStatus = async (accessToken?: string) => {
-      if (!accessToken) {
-        if (active) setIsAdmin(false);
-        return;
-      }
-      try {
-        const response = await fetch("/api/auth/admin-status", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        const result = response.ok ? await response.json() : null;
-        if (active) setIsAdmin(Boolean(result?.isAdmin));
-      } catch {
-        if (active) setIsAdmin(false);
-      }
-    };
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      const session = data.session;
-      setUser(session?.user ?? null);
-      void updateAdminStatus(session?.access_token);
-      setIsReady(true);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      void updateAdminStatus(session?.access_token);
-      setIsReady(true);
-    });
-
-    return () => {
-      active = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return {
-    user,
-    userId: user?.id,
-    isSignedIn: Boolean(user),
-    isAdmin,
-    isReady,
-  };
-};
+export { useAuth };
+export { AuthProvider } from "@/contexts/authContext";
 
 export const signOutUser = async () => {
   const { error } = await supabase.auth.signOut();

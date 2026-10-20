@@ -245,8 +245,8 @@ export const MovieCard: FC<Props> = ({
 
   const savedComment = comments.find((c) => c.imdbId === data.imdbId);
   const destination = userSettings.movieLinkDestination ?? "imdb";
-  const movieLink = destination === "letterboxd" && data.tmdbId
-    ? { href: `https://letterboxd.com/tmdb/${data.tmdbId}`, label: "GO TO LETTERBOXD" }
+  const movieLink = destination === "letterboxd" && data.letterboxdId
+    ? { href: `https://letterboxd.com/film/${data.letterboxdId}/`, label: "GO TO LETTERBOXD" }
     : destination === "simkl" && data.simklId
       ? { href: `https://simkl.com/movies/${data.simklId}/`, label: "GO TO SIMKL" }
       : { href: `https://imdb.com/title/${data.imdbId}`, label: "GO TO IMDB" };

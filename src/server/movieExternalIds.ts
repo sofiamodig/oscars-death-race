@@ -1,74 +1,96 @@
 interface ExternalMovieIds {
-  tmdbId: string | null;
   simklId: number | null;
+  tmdbId: string | null;
+  letterboxdId: string | null;
   warnings: string[];
 }
 
-const findTmdbId = async (imdbId: string, apiKey: string) => {
-  const url = new URL(`https://api.themoviedb.org/3/find/${encodeURIComponent(imdbId)}`);
-  url.searchParams.set("external_source", "imdb_id");
-  url.searchParams.set("api_key", apiKey);
+const SIMKL_APP_NAME = "oscars-death-race";
+const SIMKL_APP_VERSION = "0.1.0";
 
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("TMDb lookup failed.");
-  const result = await response.json();
-  const id = result.movie_results?.[0]?.id;
-  return Number.isInteger(id) && id > 0 ? String(id) : null;
+const simklApiUrl = (path: string, clientId: string) => {
+  const url = new URL(path, "https://api.simkl.com");
+  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("app-name", SIMKL_APP_NAME);
+  url.searchParams.set("app-version", SIMKL_APP_VERSION);
+  return url;
 };
 
-const findSimklId = async (imdbId: string, clientId: string) => {
-  const url = new URL("https://api.simkl.com/redirect");
+const simklUserAgent = `${SIMKL_APP_NAME}/${SIMKL_APP_VERSION} (https://www.oscarsdeathrace.com)`;
+
+const resolveSimklMovie = async (imdbId: string, clientId: string) => {
+  const url = simklApiUrl("/redirect", clientId);
   url.searchParams.set("to", "simkl");
   url.searchParams.set("imdb", imdbId);
-  url.searchParams.set("client_id", clientId);
-  url.searchParams.set("app-name", "oscars-death-race");
-  url.searchParams.set("app-version", "1.0");
-
   const response = await fetch(url, {
     redirect: "manual",
-    headers: { "User-Agent": "oscars-death-race/1.0" },
+    headers: { "User-Agent": simklUserAgent },
   });
   if (!response.ok && (response.status < 300 || response.status >= 400)) {
-    throw new Error("Simkl lookup failed.");
+    throw new Error(`Simkl lookup failed (HTTP ${response.status}).`);
   }
 
   const location = response.headers.get("location");
   if (!location) return null;
-  const destination = new URL(location, "https://simkl.com");
-  const match = destination.pathname.match(/^\/(?:movie|movies)\/(\d+)(?:\/|$)/i);
-  if (!match) return null;
-  const id = Number(match[1]);
-  return Number.isSafeInteger(id) && id > 0 ? id : null;
+
+  const movieUrl = new URL(location, "https://simkl.com");
+  const match = movieUrl.pathname.match(/^\/movies?\/(\d+)(?:\/|$)/i);
+  const simklId = Number(match?.[1]);
+  if (!Number.isSafeInteger(simklId) || simklId <= 0) return null;
+  return simklId;
 };
 
-export const fetchMovieExternalIds = async (imdbId: string): Promise<ExternalMovieIds> => {
-  const warnings: string[] = [];
-  const tmdbApiKey = process.env.TMDB_API_KEY;
-  const simklClientId = process.env.SIMKL_CLIENT_ID;
-  let tmdbId: string | null = null;
-  let simklId: number | null = null;
+const fetchSimklMovieById = async (simklId: number, clientId: string) => {
+  const url = simklApiUrl(`/movies/${simklId}`, clientId);
+  const response = await fetch(url, {
+    // Simkl's movie summaries are cached catalog data; omit Authorization so
+    // these requests remain eligible for its shared Cloudflare cache.
+    headers: { "User-Agent": simklUserAgent },
+  });
+  if (!response.ok) return null;
+  const result = await response.json();
+  return result?.movie ?? result;
+};
 
-  if (!tmdbApiKey) {
-    warnings.push("TMDB_API_KEY is not configured.");
-  } else {
-    try {
-      tmdbId = await findTmdbId(imdbId, tmdbApiKey);
-      if (!tmdbId) warnings.push("TMDb has no match for this IMDb ID.");
-    } catch {
-      warnings.push("TMDb lookup failed.");
-    }
+export const fetchSimklMovie = async (imdbId: string): Promise<ExternalMovieIds> => {
+  const clientId = process.env.SIMKL_CLIENT_ID;
+  if (!clientId) {
+    return {
+      simklId: null,
+      tmdbId: null,
+      letterboxdId: null,
+      warnings: ["SIMKL_CLIENT_ID is not configured."],
+    };
   }
 
-  if (!simklClientId) {
-    warnings.push("SIMKL_CLIENT_ID is not configured, so no SIMKL ID was looked up.");
-  } else {
-    try {
-      simklId = await findSimklId(imdbId, simklClientId);
-      if (simklId === null) warnings.push("Simkl has no match for this IMDb ID.");
-    } catch {
-      warnings.push("Simkl lookup failed.");
+  try {
+    const simklId = await resolveSimklMovie(imdbId, clientId);
+    if (!simklId) {
+      return {
+        simklId: null,
+        tmdbId: null,
+        letterboxdId: null,
+        warnings: ["Simkl did not find a movie for this IMDb ID."],
+      };
     }
-  }
 
-  return { tmdbId, simklId, warnings };
+    // Simkl recommends resolving external IDs through /redirect, then reading
+    // the cached catalog record. Neither request needs a user access token.
+    const apiMovie = await fetchSimklMovieById(simklId, clientId);
+    return {
+      simklId,
+      tmdbId: apiMovie?.ids?.tmdb != null ? String(apiMovie.ids.tmdb) : null,
+      letterboxdId: typeof apiMovie?.ids?.letterboxd === "string"
+        ? apiMovie.ids.letterboxd
+        : null,
+      warnings: [],
+    };
+  } catch (error) {
+    return {
+      simklId: null,
+      tmdbId: null,
+      letterboxdId: null,
+      warnings: [error instanceof Error ? error.message : "Simkl lookup failed."],
+    };
+  }
 };

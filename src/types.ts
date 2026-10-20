@@ -3,6 +3,7 @@ export type MovieType = {
   title: string;
   imdbId: string;
   tmdbId?: string;
+  letterboxdId?: string;
   simklId?: number;
   cast: string;
   director: string;

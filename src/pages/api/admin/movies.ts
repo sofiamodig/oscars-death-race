@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { authenticateAdmin, getAdminClient } from "@/server/supabaseAdmin";
-import { fetchMovieExternalIds } from "@/server/movieExternalIds";
+import { fetchSimklMovie } from "@/server/movieExternalIds";
 
 const asStringArray = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
@@ -23,28 +23,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const duration = body.duration == null || body.duration === "" ? null : Number(body.duration);
     const { data: existingMovie, error: existingMovieError } = await client
       .from("movies")
-      .select("tmdb_id, simkl_id")
+      .select("tmdb_id, letterboxd_id, simkl_id")
       .eq("year", year)
       .eq("imdb_id", imdbId)
       .maybeSingle();
-    if (existingMovieError) {
-      return res.status(500).json({ error: existingMovieError.message });
-    }
+    if (existingMovieError) return res.status(500).json({ error: existingMovieError.message });
 
-    const externalIds = await fetchMovieExternalIds(imdbId);
-    const tmdbId = externalIds.tmdbId ?? existingMovie?.tmdb_id ?? null;
-    const simklId = externalIds.simklId ?? existingMovie?.simkl_id ?? null;
-    const warnings = externalIds.warnings.filter((warning) =>
-      warning.startsWith("TMDb") || warning.startsWith("TMDB_API_KEY")
-        ? tmdbId === null
-        : simklId === null
-    );
+    const providedSimklId = String(body.simklId ?? "").trim();
+    if (providedSimklId && (!/^\d+$/.test(providedSimklId) || Number(providedSimklId) <= 0)) {
+      return res.status(400).json({ error: "Simkl ID must be a positive integer." });
+    }
+    const hasManualIds = Boolean(providedSimklId && body.tmdbId && body.letterboxdId);
+    const simklResult = hasManualIds
+      ? { simklId: Number(providedSimklId), tmdbId: null, letterboxdId: null, warnings: [] as string[] }
+      : await fetchSimklMovie(imdbId);
+    const simklId = Number.isSafeInteger(simklResult.simklId) && Number(simklResult.simklId) > 0
+      ? Number(simklResult.simklId)
+      : existingMovie?.simkl_id ?? null;
+    const finalSimklId = providedSimklId ? Number(providedSimklId) : simklId;
+    const finalTmdbId = String(body.tmdbId ?? "").trim() || simklResult.tmdbId || existingMovie?.tmdb_id || null;
+    const finalLetterboxdId = String(body.letterboxdId ?? "").trim() || simklResult.letterboxdId || existingMovie?.letterboxd_id || null;
+    const warnings = simklResult.warnings;
     const { error: writeError } = await client.from("movies").upsert(
       {
         year,
         imdb_id: imdbId,
-        tmdb_id: tmdbId,
-        simkl_id: simklId,
+        tmdb_id: finalTmdbId,
+        letterboxd_id: finalLetterboxdId,
+        simkl_id: finalSimklId,
         title,
         director: body.director || null,
         cast_members: typeof body.cast === "string" ? body.cast.split(", ").filter(Boolean) : asStringArray(body.cast),
@@ -56,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { onConflict: "year,imdb_id" }
     );
     if (writeError) return res.status(500).json({ error: writeError.message });
-    return res.status(200).json({ success: true, tmdbId, simklId, warnings });
+    return res.status(200).json({ success: true, tmdbId: finalTmdbId, letterboxdId: finalLetterboxdId, simklId: finalSimklId, warnings });
   }
 
   if (req.method === "PATCH") {

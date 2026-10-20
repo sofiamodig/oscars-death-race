@@ -45,7 +45,10 @@ const Chips = styled.div`
   gap: 8px;
 `;
 
-const ButtonWrapper = styled.div`
+const Ids = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   width: 100%;
 `;
 
@@ -63,6 +66,9 @@ const PosterField = styled.div`
 
 const InitialErrors = {
   imdbId: "",
+  tmdbId: "",
+  letterboxdId: "",
+  simklId: "",
   title: "",
   posterUrl: "",
   director: "",
@@ -73,6 +79,9 @@ const InitialErrors = {
 
 const InitialData = {
   imdbId: "",
+  tmdbId: "",
+  letterboxdId: "",
+  simklId: "",
   title: "",
   posterUrl: "",
   director: "",
@@ -95,6 +104,27 @@ const AddMovie = () => {
 
   if (!isAdmin) return null;
 
+  const lookupSimkl = async (imdbId: string) => {
+    if (!/^tt\d+$/.test(imdbId)) return;
+    setNotFound("");
+    try {
+      const result = await adminRequest("/api/admin/movie-lookup", "POST", { imdbId });
+      setFormData((previous) => ({
+        ...previous,
+        tmdbId: previous.tmdbId || result.tmdbId || "",
+        letterboxdId: previous.letterboxdId || result.letterboxdId || "",
+        simklId: previous.simklId || (result.simklId ? String(result.simklId) : ""),
+      }));
+      if (result.warnings?.length) {
+        setNotFound(result.warnings.join(" "));
+      } else if (!result.simklId && !result.tmdbId && !result.letterboxdId) {
+        setNotFound("Simkl returned no external IDs for this IMDb ID.");
+      }
+    } catch (error) {
+      setNotFound(error instanceof Error ? error.message : "Simkl lookup failed.");
+    }
+  };
+
   const handleSearch = async (isTitle?: boolean) => {
     setNotFound("");
     let apiURL =
@@ -112,6 +142,7 @@ const AddMovie = () => {
           setNotFound("Could not find the movie, try again");
         } else {
           setErrors(InitialErrors);
+          if (isTitle) void lookupSimkl(data.imdbID);
           setFormData((prevState) => ({
             ...prevState,
             imdbId: data.imdbID,
@@ -200,6 +231,9 @@ const AddMovie = () => {
       director: formData.director,
       duration: formData.duration,
       imdbId: formData.imdbId,
+      tmdbId: formData.tmdbId,
+      letterboxdId: formData.letterboxdId,
+      simklId: formData.simklId,
       posterUrl: formData.posterUrl,
       categories: nominatedCategories,
       wonCategories: wonCategories,
@@ -211,7 +245,7 @@ const AddMovie = () => {
         year: formData.year,
       });
       setFormData({ ...InitialData, year: formData.year });
-      const idSummary = `TMDb: ${result.tmdbId ?? "not found"}; Simkl: ${result.simklId ?? "not found"}.`;
+      const idSummary = `TMDb: ${result.tmdbId ?? "not found"}; Letterboxd: ${result.letterboxdId ?? "not found"}; Simkl: ${result.simklId ?? "not found"}.`;
       showSnackbar(
         result.warnings?.length
           ? `Movie added. ${idSummary} ${result.warnings.join(" ")}`
@@ -226,145 +260,153 @@ const AddMovie = () => {
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <>
       {notFound && <p>{notFound}</p>}
-      <SearchInputWrapper>
+      <Form onSubmit={handleSubmit}>
         <TextInput
-          label="Title"
-          placeholder="Title"
+          label="Year"
+          placeholder="Year"
           type="text"
-          value={formData.title}
-          errorMessage={errors.title}
+          value={formData.year}
+          errorMessage={errors.year}
           setValue={(value: string) =>
-            setFormData((prev) => ({ ...prev, title: value }))
+            setFormData((prev) => ({ ...prev, year: value }))
           }
+          width="68px"
         />
-        <button type="button" onClick={() => handleSearch(true)}>
-          <SearchIcon />
-        </button>
-      </SearchInputWrapper>
+        <Ids>
+          <SearchInputWrapper>
+            <TextInput
+              label="Title"
+              placeholder="Title"
+              type="text"
+              value={formData.title}
+              errorMessage={errors.title}
+              setValue={(value: string) =>
+                setFormData((prev) => ({ ...prev, title: value }))
+              }
+            />
+            <button type="button" onClick={() => handleSearch(true)}>
+              <SearchIcon />
+            </button>
+          </SearchInputWrapper>
+          <SearchInputWrapper>
+            <TextInput
+              label="IMDB ID"
+              placeholder="IMDB ID"
+              type="text"
+              errorMessage={errors.imdbId}
+              value={formData.imdbId}
+              onBlur={() => void lookupSimkl(formData.imdbId)}
+              setValue={(value: string) =>
+                setFormData((prev) => ({ ...prev, imdbId: value }))
+              }
+              width="130px"
+            />
+            <button type="button" onClick={() => handleSearch()}>
+              <SearchIcon />
+            </button>
+          </SearchInputWrapper>
+          <TextInput label="TMDb ID" placeholder="TMDb ID" type="text" value={formData.tmdbId} setValue={(value: string) => setFormData((prev) => ({ ...prev, tmdbId: value }))} width="120px" />
+          <TextInput label="Letterboxd ID" placeholder="Letterboxd ID" type="text" value={formData.letterboxdId} setValue={(value: string) => setFormData((prev) => ({ ...prev, letterboxdId: value }))} width="140px" />
+          <TextInput label="Simkl ID" placeholder="Simkl ID" type="text" value={formData.simklId} setValue={(value: string) => setFormData((prev) => ({ ...prev, simklId: value }))} width="120px" />
+        </Ids>
 
-      <SearchInputWrapper>
         <TextInput
-          label="IMDB ID"
-          placeholder="IMDB ID"
+          label="Director"
+          placeholder="Director"
           type="text"
-          errorMessage={errors.imdbId}
-          value={formData.imdbId}
+          value={formData.director}
+          errorMessage={errors.director}
           setValue={(value: string) =>
-            setFormData((prev) => ({ ...prev, imdbId: value }))
+            setFormData((prev) => ({ ...prev, director: value }))
           }
-          width="130px"
-        />
-        <button type="button" onClick={() => handleSearch()}>
-          <SearchIcon />
-        </button>
-      </SearchInputWrapper>
-      <TextInput
-        label="Director"
-        placeholder="Director"
-        type="text"
-        value={formData.director}
-        errorMessage={errors.director}
-        setValue={(value: string) =>
-          setFormData((prev) => ({ ...prev, director: value }))
-        }
-        width="160px"
-      />
-      <TextInput
-        label="Cast"
-        placeholder="Cast"
-        type="text"
-        value={formData.cast}
-        errorMessage={errors.cast}
-        setValue={(value: string) =>
-          setFormData((prev) => ({ ...prev, cast: value }))
-        }
-        style={{ flex: 1 }}
-      />
-      <TextInput
-        label="Duration"
-        placeholder="Duration"
-        type="number"
-        value={formData.duration.toString()}
-        errorMessage={errors.duration}
-        setValue={(value: string) =>
-          setFormData((prev) => ({ ...prev, duration: parseInt(value) }))
-        }
-        width="82px"
-      />
-      <TextInput
-        label="Year"
-        placeholder="Year"
-        type="text"
-        value={formData.year}
-        errorMessage={errors.year}
-        setValue={(value: string) =>
-          setFormData((prev) => ({ ...prev, year: value }))
-        }
-        width="68px"
-      />
-      <PosterField>
-        <PosterPreview
-          url={formData.posterUrl}
-          title={formData.title || "Movie"}
+          width="160px"
         />
         <TextInput
-          label="Poster URL"
-          placeholder="Poster URL"
+          label="Cast"
+          placeholder="Cast"
           type="text"
-          value={formData.posterUrl}
-          errorMessage={errors.posterUrl}
+          value={formData.cast}
+          errorMessage={errors.cast}
           setValue={(value: string) =>
-            setFormData((prev) => ({ ...prev, posterUrl: value }))
+            setFormData((prev) => ({ ...prev, cast: value }))
           }
+          style={{ flex: 1 }}
         />
-      </PosterField>
-      <Box $marginTop="md">
-        <p>Nominated Categories</p>
-        <Chips>
-          {CATEGORIES.map((category) => (
-            <Chip
-              key={category}
-              type="button"
-              $isSelected={nominatedCategories.includes(category)}
-              onClick={() => handleNominationClick(category)}
-            >
-              {category.replace("Best", "")}
-            </Chip>
-          ))}
-        </Chips>
-      </Box>
-
-      {nominatedCategories.length > 0 && (
+        <TextInput
+          label="Duration"
+          placeholder="Duration"
+          type="number"
+          value={formData.duration.toString()}
+          errorMessage={errors.duration}
+          setValue={(value: string) =>
+            setFormData((prev) => ({ ...prev, duration: parseInt(value) }))
+          }
+          width="82px"
+        />
+        <PosterField>
+          <PosterPreview
+            url={formData.posterUrl}
+            title={formData.title || "Movie"}
+          />
+          <TextInput
+            label="Poster URL"
+            placeholder="Poster URL"
+            type="text"
+            value={formData.posterUrl}
+            errorMessage={errors.posterUrl}
+            setValue={(value: string) =>
+              setFormData((prev) => ({ ...prev, posterUrl: value }))
+            }
+          />
+        </PosterField>
         <Box $marginTop="md">
-          <p>Won Categories</p>
+          <p>Nominated Categories</p>
           <Chips>
-            {nominatedCategories.map((category) => (
+            {CATEGORIES.map((category) => (
               <Chip
                 key={category}
                 type="button"
-                $isSelected={wonCategories.includes(category)}
-                onClick={() => handleWonClick(category)}
+                $isSelected={nominatedCategories.includes(category)}
+                onClick={() => handleNominationClick(category)}
               >
                 {category.replace("Best", "")}
               </Chip>
             ))}
           </Chips>
         </Box>
-      )}
-      <Box $marginTop="md">
-        <Button
-          type="submit"
-          label="Add movie"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          variant="primary"
-          size="md"
-          isLoading={isSubmitting}
-        />
-      </Box>
-    </Form>
+
+        {nominatedCategories.length > 0 && (
+          <Box $marginTop="md">
+            <p>Won Categories</p>
+            <Chips>
+              {nominatedCategories.map((category) => (
+                <Chip
+                  key={category}
+                  type="button"
+                  $isSelected={wonCategories.includes(category)}
+                  onClick={() => handleWonClick(category)}
+                >
+                  {category.replace("Best", "")}
+                </Chip>
+              ))}
+            </Chips>
+          </Box>
+        )}
+        <Box $marginTop="md">
+          <Button
+            type="submit"
+            label="Add movie"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            variant="primary"
+            size="md"
+            isLoading={isSubmitting}
+          />
+        </Box>
+      </Form>
+    </>
   );
 };
 

@@ -52,6 +52,7 @@ interface InputProps {
   width?: string;
   style?: CSSProperties;
   disabled?: boolean;
+  onBlur?: () => void;
 }
 
 export const TextInput: React.FC<InputProps> = ({
@@ -64,6 +65,7 @@ export const TextInput: React.FC<InputProps> = ({
   width,
   style,
   disabled,
+  onBlur,
 }) => {
   return (
     <Container width={width} style={style}>
@@ -73,6 +75,7 @@ export const TextInput: React.FC<InputProps> = ({
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onBlur={onBlur}
         $errormessage={Boolean(errorMessage)}
         disabled={disabled}
       />

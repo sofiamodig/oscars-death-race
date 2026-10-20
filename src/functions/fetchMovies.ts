@@ -5,6 +5,7 @@ type MovieRow = {
   year: number;
   imdb_id: string;
   tmdb_id: string | null;
+  letterboxd_id: string | null;
   simkl_id: number | null;
   title: string;
   director: string | null;
@@ -26,7 +27,7 @@ export const fetchMovies = async (): Promise<MoviesYearsListType> => {
     const { data, error } = await supabase
       .from("movies")
       .select(
-        "year, imdb_id, tmdb_id, simkl_id, title, director, duration, poster_url, categories, won_categories, cast_members"
+        "year, imdb_id, tmdb_id, letterboxd_id, simkl_id, title, director, duration, poster_url, categories, won_categories, cast_members"
       )
       .order("year", { ascending: true })
       .order("title", { ascending: true })
@@ -53,6 +54,7 @@ export const fetchMovies = async (): Promise<MoviesYearsListType> => {
       id: row.imdb_id,
       imdbId: row.imdb_id,
       ...(row.tmdb_id ? { tmdbId: row.tmdb_id } : {}),
+      ...(row.letterboxd_id ? { letterboxdId: row.letterboxd_id } : {}),
       ...(row.simkl_id !== null ? { simklId: row.simkl_id } : {}),
       title: row.title,
       director: row.director ?? "",

@@ -16,6 +16,13 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Simkl movie lookup
+
+Set `SIMKL_CLIENT_ID` in `.env.local` and in the production server environment.
+Movie lookup resolves the IMDb ID through Simkl's redirect endpoint and reads
+the matching cached movie record; this catalog lookup does not require a user
+access token.
+
 You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
 
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.

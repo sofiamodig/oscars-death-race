@@ -70,6 +70,40 @@ const DangerAccordion = styled.details`
   }
 `;
 
+const ImportTabs = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-neutral-300);
+`;
+
+const ImportTab = styled.button<{ $active: boolean }>`
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid ${({ $active }) => $active ? "var(--color-primary-500)" : "transparent"};
+  background: transparent;
+  color: ${({ $active }) => $active ? "var(--color-primary-700)" : "inherit"};
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+const ImportInstructions = styled.div`
+  margin: 0 0 16px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+
+  p { margin: 0; }
+
+  a {
+    color: var(--color-primary-700);
+    text-decoration: underline;
+  }
+`;
+
+type ImportSource = "imdb" | "letterboxd" | "simkl";
+
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
 export const getStaticProps = (async () => {
@@ -104,7 +138,8 @@ export default function Settings({
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
-  const [imdbFile, setImdbFile] = useState<File>();
+  const [importSource, setImportSource] = useState<ImportSource>("imdb");
+  const [importFile, setImportFile] = useState<File>();
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState("");
   const { showSnackbar } = useSnackbarContext();
@@ -215,9 +250,9 @@ export default function Settings({
     exportToCsv(seenMovies, movies, "seen_movies");
   };
 
-  const importImdbRatings = async () => {
-    if (!imdbFile) return;
-    if (imdbFile.size > 5 * 1024 * 1024) {
+  const importWatchedMovies = async () => {
+    if (!importFile) return;
+    if (importFile.size > 5 * 1024 * 1024) {
       setImportStatus("Please choose a CSV file smaller than 5 MB.");
       return;
     }
@@ -225,24 +260,24 @@ export default function Settings({
     setImportStatus("");
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Please sign in again to import your ratings.");
-      const response = await fetch("/api/import/imdb-ratings", {
+      if (!session) throw new Error("Please sign in again to import watched movies.");
+      const response = await fetch("/api/import/watched", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ csv: await imdbFile.text() }),
+        body: JSON.stringify({ source: importSource, csv: await importFile.text() }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "Could not import IMDb ratings.");
+      if (!response.ok) throw new Error(result.error ?? "Could not import watched movies.");
       await refreshSeenMovies();
       setImportStatus(
-        `Imported ${result.imported} new movies. ${result.alreadySeen} were already marked seen and left unchanged; ${result.unmatched} were not in the catalog.`
+        `Imported ${result.imported} new movies. ${result.alreadySeen} were already marked seen and left unchanged; ${result.unmatched} were not in the catalog.${result.skipped ? ` ${result.skipped} invalid or non-movie rows were skipped.` : ""}`
       );
-      setImdbFile(undefined);
+      setImportFile(undefined);
     } catch (error) {
-      setImportStatus(error instanceof Error ? error.message : "Could not import IMDb ratings.");
+      setImportStatus(error instanceof Error ? error.message : "Could not import watched movies.");
     } finally {
       setIsImporting(false);
     }
@@ -345,7 +380,7 @@ export default function Settings({
               ))}
             </fieldset>
           </Box>
-          <Box $marginTop="xxxl" $marginBottom="lg">
+          {/* <Box $marginTop="xxxl" $marginBottom="lg">
             <Heading size="lg" marginBottom="md">
               Export your data
             </Heading>
@@ -355,31 +390,66 @@ export default function Settings({
               label="Export"
               variant="secondary"
             />
-          </Box>
+          </Box> */}
 
           <Box $marginTop="xxl" $marginBottom="lg">
             <Heading size="lg" marginBottom="sm">
-              Import IMDb ratings
+              Import watched movies
             </Heading>
             <Paragraph marginBottom="sm">
-              Upload your IMDb ratings CSV. Movies in this catalog will be marked as seen using their IMDb rating date.
+              Import watched dates from IMDb, Letterboxd, or Simkl. Only movies in this catalog are added.
             </Paragraph>
+            <ImportTabs role="tablist" aria-label="Choose import source">
+              {([["imdb", "IMDb"], ["letterboxd", "Letterboxd"], ["simkl", "Simkl"]] as const).map(([source, label]) => (
+                <ImportTab
+                  key={source}
+                  type="button"
+                  role="tab"
+                  aria-selected={importSource === source}
+                  $active={importSource === source}
+                  onClick={() => {
+                    setImportSource(source);
+                    setImportFile(undefined);
+                    setImportStatus("");
+                  }}
+                >
+                  {label}
+                </ImportTab>
+              ))}
+            </ImportTabs>
+            <ImportInstructions>
+              {importSource === "imdb" && (
+                <p>
+                  On IMDb, open your profile, choose <strong>Your Ratings</strong>, then select <strong>Export</strong> near the top of the page. Upload the downloaded CSV. Its <strong>Date Rated</strong> is used as the watched date. See IMDb&apos;s <a href="https://help.imdb.com/article/imdb/track-movies-tv/ratings-faq/G67Y87TFYYP6TWAV" target="_blank" rel="noreferrer">export instructions</a>.
+                </p>
+              )}
+              {importSource === "letterboxd" && (
+                <p>
+                  In Letterboxd, open <strong>Settings → Data → Export your data</strong>, download and unzip the archive, then choose <strong>watched.csv</strong>. The <strong>Date</strong> column is used as the watched date, and each Letterboxd URI is followed to find its film slug. <a href="https://letterboxd.com/user/exportdata/" target="_blank" rel="noreferrer">Export Letterboxd data</a>.
+                </p>
+              )}
+              {importSource === "simkl" && (
+                <p>
+                  On Simkl, open <a href="https://simkl.com/apps/backup/" target="_blank" rel="noreferrer">Apps → Export → Backup</a>. Simkl&apos;s standard CSV backup is PRO-only and does not include individual watch dates, so it cannot be imported here as-is. This importer needs a CSV with <strong>Simkl ID</strong> (or an <strong>IDs</strong> column containing Simkl IDs) and <strong>WatchedDate</strong> or <strong>Last Watched</strong> columns. The JSON backup is not accepted by this CSV importer.
+                </p>
+              )}
+            </ImportInstructions>
             <Flex $direction="column" $gap="sm" $alignItems="flex-start">
               <input
                 type="file"
                 accept=".csv,text/csv"
                 onChange={(event) => {
-                  setImdbFile(event.currentTarget.files?.[0]);
+                  setImportFile(event.currentTarget.files?.[0]);
                   setImportStatus("");
                 }}
-                aria-label="Choose IMDb ratings CSV"
+                aria-label={`Choose ${importSource} watched movies CSV`}
               />
               <Button
                 type="button"
-                onClick={importImdbRatings}
-                label="Import ratings"
+                onClick={importWatchedMovies}
+                label={`Import ${importSource === "imdb" ? "IMDb" : importSource === "letterboxd" ? "Letterboxd" : "Simkl"}`}
                 isLoading={isImporting}
-                disabled={!imdbFile || isImporting}
+                disabled={!importFile || isImporting}
               />
               {importStatus && <Paragraph>{importStatus}</Paragraph>}
             </Flex>

@@ -14,81 +14,13 @@ import { cleanupCategory, prettifyCategory, sortCategories } from "@/utils";
 import { MovieCard } from "@/components/movieCard";
 import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
 import { Toggle } from "@/components/toggle";
-import styled from "styled-components";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
 import { Heading } from "@/components/heading";
 import { TextInput } from "@/components/textInput";
 import { Box } from "@/styles/Box";
 
-const MovieGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-  gap: 24px;
-
-  @media (max-width: 450px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const TitleBox = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 16px;
-
-  @media (min-width: 768px) {
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-`;
-
-const SearchWrapper = styled.div`
-  width: 100%;
-  max-width: 300px;
-`;
-
-const YearWrapper = styled.div<{ small?: boolean }>`
-  padding-bottom: ${(small) => (small ? "24px" : "48px")};
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--color-neutral-300);
-`;
-
-const BarWrapper = styled.div`
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 24px;
-
-  @media (min-width: 768px) {
-    & > div:last-child {
-      margin-left: auto;
-    }
-  }
-`;
-
-const YearTitleWrapper = styled.div`
-  background-color: #efe0af;
-  padding: 8px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-`;
-
-const AllDoneWrapper = styled.div`
-  background-color: #efe0af;
-  padding: 8px;
-  border-radius: 8px;
-  display: flex;
-  flex-flow: column nowrap;
-  justify-content: center;
-  align-items: center;
-`;
+const movieGridClasses = "grid grid-cols-[repeat(auto-fill,minmax(440px,1fr))] gap-6 max-[450px]:grid-cols-1";
 
 type ExtendedMovieType = MovieType & {
   year: string;
@@ -245,7 +177,7 @@ export default function AllTime({
 
   if (loading) {
     return (
-      <MovieGrid>
+      <div className={movieGridClasses}>
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />
@@ -255,7 +187,7 @@ export default function AllTime({
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />
-      </MovieGrid>
+      </div>
     );
   }
 
@@ -301,7 +233,7 @@ export default function AllTime({
       </Head>
       <>
         <div>
-          <TitleBox>
+          <div className="flex flex-col gap-sm md:flex-row md:items-center md:justify-between">
             <Box $marginBottom="lg" $marginTop="md">
               <Heading size="xl" marginBottom="sm">
                 Nominations through the years
@@ -316,16 +248,16 @@ export default function AllTime({
                 </p>
               ) : null}
             </Box>
-            <SearchWrapper>
+            <div className="w-full max-w-[300px]">
               <TextInput
                 setValue={(value) => setSearch(value)}
                 value={search}
                 type="text"
                 placeholder="Search for title, director or cast"
               />
-            </SearchWrapper>
-          </TitleBox>
-          <BarWrapper>
+            </div>
+          </div>
+          <div className="mb-md flex flex-row flex-wrap items-center justify-start gap-xs md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "230px" }}>
               <select onChange={(e) => setSelectedCategory(e.target.value)}>
                 <option value="all">All categories</option>
@@ -352,10 +284,10 @@ export default function AllTime({
                 onToggle={toggleHideSeen}
               />
             )}
-          </BarWrapper>
+          </div>
 
           {search.length > 2 ? (
-            <MovieGrid>
+            <div className={movieGridClasses}>
               {allMovies
                 .filter(
                   (movie) =>
@@ -374,7 +306,7 @@ export default function AllTime({
                     />
                   </LazyMovieCardWrapper>
                 ))}
-            </MovieGrid>
+            </div>
           ) : (
             <>
               {moviesToDisplay?.map((obj) => {
@@ -384,20 +316,20 @@ export default function AllTime({
 
                 if (allWasSeen && hideSeen) {
                   return (
-                    <YearWrapper key={obj.year} small>
-                      <AllDoneWrapper>
+                    <div key={obj.year} className="mb-md border-b border-neutral-300 pb-md">
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-primary-200 p-xs">
                         <Heading size="lg">{obj.year}</Heading>All done!
-                      </AllDoneWrapper>
-                    </YearWrapper>
+                      </div>
+                    </div>
                   );
                 }
 
                 return (
-                  <YearWrapper key={obj.year}>
-                    <YearTitleWrapper>
+                  <div key={obj.year} className="mb-md border-b border-neutral-300 pb-xxl">
+                    <div className="mb-md flex justify-center rounded-lg bg-primary-200 p-xs">
                       <Heading size="lg">{obj.year}</Heading>
-                    </YearTitleWrapper>
-                    <MovieGrid>
+                    </div>
+                    <div className={movieGridClasses}>
                       {obj.movies.map((movie) => {
                         const hasBeenSeen = allSeenMoviesImdbIds?.includes(
                           movie.imdbId
@@ -431,8 +363,8 @@ export default function AllTime({
                           </LazyMovieCardWrapper>
                         );
                       })}
-                    </MovieGrid>
-                  </YearWrapper>
+                    </div>
+                  </div>
                 );
               })}
             </>

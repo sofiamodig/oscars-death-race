@@ -2,7 +2,6 @@ import Head from "next/head";
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { MoviesYearsListType } from "@/types";
-import styled from "styled-components";
 import { useEffect } from "react";
 import SeenLineChart from "@/components/seenLineChart";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,77 +27,6 @@ import {
   getRaceLength,
   getShortestMovieAllTime,
 } from "@/functions/statisticsFunctions";
-
-const Wrapper = styled.div`
-  padding: 24px 24px 0;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 40px;
-  margin-bottom: 16px;
-
-  span {
-    font-size: 24px;
-    font-weight: 400;
-  }
-`;
-
-const ChartWrapper = styled.div`
-  overflow: visible;
-  padding: 24px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-const TableWrapper = styled.div`
-  overflow-x: auto;
-  padding: 24px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 8px;
-
-  thead {
-    tr {
-      background-color: var(--color-neutral-700);
-      color: var(--color-neutral-0);
-    }
-  }
-
-  th {
-    padding: 8px;
-    white-space: nowrap;
-    text-align: left;
-  }
-
-  td {
-    padding: 8px;
-  }
-`;
-
-const TableRow = styled.tr`
-  background-color: var(--color-neutral-200);
-
-  &:nth-child(2n + 1) {
-    background-color: var(--color-neutral-300);
-  }
-`;
-
-const AllTime = styled.div`
-  background-color: var(--color-primary-300);
-  padding: 16px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  max-width: 600px;
-`;
 
 export const getStaticProps = (async () => {
   const [movies, racerCountsByYear, usernames] = await Promise.all([
@@ -170,9 +98,9 @@ export default function Statistics({
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff"></meta>
       </Head>
-      <Wrapper>
-        <PageTitle>Statistics</PageTitle>
-        <AllTime>
+      <div className="mx-auto max-w-[1400px] px-md pt-md">
+        <h1 className="mb-sm text-[40px]">Statistics</h1>
+        <div className="mb-xs max-w-[600px] rounded-lg bg-primary-300 p-sm">
           <p>
             <strong>Most wins:</strong> {mostWins}
           </p>
@@ -216,23 +144,23 @@ export default function Statistics({
             </strong>
             {mostAppearedActor.movies.join(", ")}
           </p>
-        </AllTime>
+        </div>
         <p style={{ fontSize: "12px" }}>
           * Listed in &quot;Stars&quot; on IMDB
         </p>
-      </Wrapper>
+      </div>
 
       {isSignedIn && (
-        <ChartWrapper>
+        <div className="mx-auto w-full max-w-[1400px] overflow-visible p-md">
           <SeenLineChart
             movies={[...movies].reverse()}
             usernames={usernames}
           />
-        </ChartWrapper>
+        </div>
       )}
 
-      <TableWrapper>
-        <Table>
+      <div className="mx-auto w-full max-w-[1400px] overflow-x-auto p-md">
+        <table className="mb-xs w-full border-collapse [&_thead_tr]:bg-neutral-700 [&_thead_tr]:text-neutral-0 [&_th]:whitespace-nowrap [&_th]:p-2 [&_th]:text-left [&_td]:p-2">
           <thead>
             <tr>
               <th>Year</th>
@@ -249,7 +177,7 @@ export default function Statistics({
           <tbody>
             {movies.map((obj) => {
               return (
-                <TableRow key={"statistics-" + obj.year}>
+                <tr key={"statistics-" + obj.year} className="bg-neutral-200 odd:bg-neutral-300">
                   <td>{obj.year}</td>
                   <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
                   <td>{getRaceLength(obj.movies)}</td>
@@ -265,15 +193,15 @@ export default function Statistics({
                   <td style={{ textAlign: "center" }}>
                     {getNrOfRacers(obj.year, racerCountsByYear)}
                   </td>
-                </TableRow>
+                </tr>
               );
             })}
           </tbody>
-        </Table>
+        </table>
         <p style={{ fontSize: "12px" }}>
           * Average movie length excludes short films
         </p>
-      </TableWrapper>
+      </div>
     </>
   );
 }

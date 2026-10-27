@@ -3,17 +3,6 @@ import { Heading } from "@/components/heading";
 import { Paragraph } from "@/components/paragraph";
 import { Flex } from "@/styles/Flex";
 import gif from "../assets/images/notfound.gif";
-import styled from "styled-components";
-
-const GifWrapper = styled.div`
-  width: 95%;
-  max-width: 600px;
-
-  img {
-    width: 100%;
-    height: auto;
-  }
-`;
 
 const NotFound = () => {
   return (
@@ -29,12 +18,12 @@ const NotFound = () => {
       <Paragraph marginBottom="lg" textAlign="center">
         The page you were looking for cannot be found.
       </Paragraph>
-      <GifWrapper>
+      <div className="w-[95%] max-w-[600px] [&_img]:h-auto [&_img]:w-full">
         <Image
           src={gif}
           alt="People at the oscars being confused because they announced the wrong movie as the winner"
         />
-      </GifWrapper>
+      </div>
     </Flex>
   );
 };

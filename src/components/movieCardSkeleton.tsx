@@ -1,23 +1,6 @@
-import styled from "styled-components";
 import SkeletonLoader from "./skeletonLoader";
 import { Content, Wrapper } from "./movieCard";
 import { Flex } from "@/styles/Flex";
-
-const CheckBox = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 48px;
-  width: 48px;
-`;
-
-const LinkWrapper = styled.div`
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  width: 114px;
-  height: 20px;
-`;
 
 export const MovieCardSkeleton = () => {
   const showMultiTitleRows = true;
@@ -27,9 +10,9 @@ export const MovieCardSkeleton = () => {
 
   return (
     <Wrapper>
-      <CheckBox>
+      <div className="absolute right-0 top-0 h-12 w-12">
         <SkeletonLoader width="100%" height="100%" />
-      </CheckBox>
+      </div>
       <SkeletonLoader width="37%" height="100%" />
       <Content>
         <Flex $gap="xs" $direction="column" $alignItems="flex-start">
@@ -48,9 +31,9 @@ export const MovieCardSkeleton = () => {
           <SkeletonLoader width="50%" height="15px" />
         </Flex>
       </Content>
-      <LinkWrapper>
+      <div className="absolute bottom-4 right-4 h-5 w-[114px]">
         <SkeletonLoader width="100%" height="100%" />
-      </LinkWrapper>
+      </div>
     </Wrapper>
   );
 };

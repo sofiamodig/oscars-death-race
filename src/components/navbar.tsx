@@ -6,113 +6,7 @@ import logo from "@/assets/images/oscarslogo.svg";
 import { AccountCircleIcon } from "@/assets/icons/AccountCircleIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./button";
-import styled from "styled-components";
 import { supabase } from "@/supabase";
-
-// Styled components
-const NavbarContainer = styled.nav`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 16px 4px 8px;
-  background-color: var(--color-neutral-0);
-  margin-bottom: 16px;
-
-  @media (min-width: 768px) {
-    margin-bottom: 32px;
-  }
-`;
-
-const Logo = styled(Link)`
-  font-size: 24px;
-  text-decoration: none;
-  color: var(--color-primary-500);
-  display: flex;
-  align-items: center;
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-
-  &:hover {
-    color: var(--color-primary-500);
-  }
-
-  span {
-    @media (max-width: 768px) {
-      display: none;
-    }
-
-    margin-top: 3px;
-    letter-spacing: 0.5px;
-  }
-
-  img {
-    height: 48px;
-    width: 48px;
-
-    @media (min-width: 768px) {
-      height: 64px;
-      width: 64px;
-    }
-  }
-`;
-
-const NavLinks = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-
-  @media (min-width: 768px) {
-    gap: 24px;
-  }
-
-  svg {
-    margin-top: 3px;
-    height: 32px;
-    width: 32px;
-    fill: var(--color-primary-500);
-    transition: fill 0.2s ease-in-out;
-    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-
-    &:hover {
-      fill: var(--color-primary-700);
-    }
-  }
-`;
-
-const NavLink = styled(Link)`
-  color: var(--color-primary-500);
-  transition: color 0.2s ease-in-out;
-  font-size: 14px;
-
-  @media (min-width: 768px) {
-    font-size: 16px;
-  }
-
-  &:hover {
-    color: var(--color-primary-700);
-  }
-`;
-
-const LeaderboardNavLink = styled(NavLink)`
-  position: relative;
-`;
-
-const InvitationBadge = styled.span`
-  position: absolute;
-  top: -9px;
-  right: -12px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  background: var(--color-ui-red, #b42318);
-  font-size: 11px;
-  font-weight: 700;
-`;
 
 // Navbar Component
 const Navbar: React.FC = () => {
@@ -152,25 +46,25 @@ const Navbar: React.FC = () => {
   }, [isSignedIn, router.asPath]);
 
   return (
-    <NavbarContainer>
-      <Logo href="/">
+    <nav className="mb-sm flex items-center justify-between bg-neutral-0 py-1 pl-2 pr-4 md:mb-lg">
+      <Link className="flex items-center text-2xl text-primary-500 no-underline hover:text-primary-500 [-webkit-tap-highlight-color:rgba(255,255,255,0)] [&_img]:h-12 [&_img]:w-12 md:[&_img]:h-16 md:[&_img]:w-16 [&_span]:mt-[3px] [&_span]:tracking-[0.5px]" href="/">
         <Image src={logo} alt="Oscar logo" width={38} height={40} />
-        <span>OSCARS DEATH RACE</span>
-      </Logo>
-      <NavLinks>
-        {isAdmin && <NavLink href="/admin">Admin</NavLink>}
-        <NavLink href="/all-time">All time</NavLink>
-        <NavLink href="/statistics">Statistics</NavLink>
+        <span className="hidden md:inline">OSCARS DEATH RACE</span>
+      </Link>
+      <div className="flex items-center gap-sm [-webkit-tap-highlight-color:rgba(255,255,255,0)] md:gap-md [&_svg]:mt-[3px] [&_svg]:h-8 [&_svg]:w-8 [&_svg]:fill-primary-500 [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-primary-700">
+        {isAdmin && <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/admin">Admin</Link>}
+        <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/all-time">All time</Link>
+        <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/statistics">Statistics</Link>
         {isSignedIn && (
-          <LeaderboardNavLink href="/leaderboard#invitations" aria-label={`Leaderboard${invitationCount ? `, ${invitationCount} invitations` : ""}`}>
+          <Link className="relative text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/leaderboard#invitations" aria-label={`Leaderboard${invitationCount ? `, ${invitationCount} invitations` : ""}`}>
             Leaderboard
-            {invitationCount > 0 && <InvitationBadge>{invitationCount}</InvitationBadge>}
-          </LeaderboardNavLink>
+            {invitationCount > 0 && <span className="absolute right-[-12px] top-[-9px] inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-red px-[5px] text-[11px] font-bold text-white">{invitationCount}</span>}
+          </Link>
         )}
         {!isSignedIn && (
-          <NavLink type="link" href="/login">
+          <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/login">
             Log in
-          </NavLink>
+          </Link>
         )}
         {!isSignedIn && (
           <Button size="sm" type="link" to="/signup" label="Sign up" />
@@ -180,8 +74,8 @@ const Navbar: React.FC = () => {
             <AccountCircleIcon />
           </Link>
         )}
-      </NavLinks>
-    </NavbarContainer>
+      </div>
+    </nav>
   );
 };
 

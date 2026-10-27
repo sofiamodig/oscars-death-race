@@ -1,27 +1,4 @@
 import { useState } from "react";
-import styled from "styled-components";
-
-const Frame = styled.div`
-  width: 112px;
-  aspect-ratio: 2 / 3;
-  flex: 0 0 112px;
-  overflow: hidden;
-  border: 1px solid var(--color-neutral-200);
-  border-radius: 4px;
-  background: var(--color-neutral-100);
-  color: var(--color-neutral-500);
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  text-align: center;
-`;
-
-const Poster = styled.img`
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
 
 export const PosterPreview = ({
   url,
@@ -34,9 +11,10 @@ export const PosterPreview = ({
   const imageUrl = url.trim();
 
   return (
-    <Frame aria-label={`${title} poster preview`}>
+    <div aria-label={`${title} poster preview`} className="grid aspect-[2/3] w-28 flex-[0_0_112px] place-items-center overflow-hidden rounded border border-neutral-200 bg-neutral-100 text-center text-xs text-neutral-500">
       {imageUrl && failedUrl !== imageUrl ? (
-        <Poster
+        <img
+          className="block h-full w-full object-cover"
           key={imageUrl}
           src={imageUrl}
           alt={`${title} poster`}
@@ -46,6 +24,6 @@ export const PosterPreview = ({
       ) : (
         <span>{imageUrl ? "Poster unavailable" : "No poster"}</span>
       )}
-    </Frame>
+    </div>
   );
 };

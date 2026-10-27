@@ -1,11 +1,10 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, HTMLAttributes, useContext, useEffect, useState } from "react";
 
 import { formatCategory, minutesToHours, sortCategories } from "../utils";
 
 import { Calendar } from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import statueImage from "../assets/images/oscar-statue.png";
-import styled from "styled-components";
 import { SeenContext } from "@/contexts/seenContext";
 import { useAuth } from "@/hooks/useAuth";
 import { MovieType, MoviesYearsListType, SeenType } from "@/types";
@@ -22,204 +21,11 @@ import { Flex } from "@/styles/Flex";
 import { Button } from "./button";
 import { useCommentsContext } from "@/contexts/commentsContext";
 
-const OuterWrapper = styled.div`
-  margin-bottom: 16px;
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-flow: column nowrap;
-  height: 100%;
-`;
-
-export const Wrapper = styled.div`
-  border: 1px solid black;
-  display: flex;
-  flex-flow: row wrap;
-  border: none;
-  overflow: hidden;
-  background-color: var(--color-neutral-0);
-  box-shadow: 0 0 20px var(--color-neutral-300);
-  min-height: 250px;
-  position: relative;
-  height: 100%;
-  flex: 1;
-
-  @media (max-width: 450px) {
-    min-height: 0;
-  }
-`;
-
-const ImageWrapper = styled.div`
-  background-size: cover;
-  background-position: center;
-  width: 37%;
-`;
-
-export const Content = styled.div`
-  flex: 1;
-  padding: 16px;
-  display: flex;
-  flex-flow: column nowrap;
-
-  p {
-    font-size: 13px;
-
-    @media (max-width: 450px) {
-      font-size: 12px;
-    }
-  }
-
-  strong {
-    font-weight: 600;
-  }
-`;
-
-const TitleWrapper = styled.div`
-  margin-bottom: 16px;
-`;
-
-const Title = styled.h2`
-  font-size: 20px;
-  margin-bottom: 0;
-  font-weight: 600;
-  padding-right: 40px;
-
-  @media (max-width: 450px) {
-    font-size: 16px;
-  }
-
-  img {
-    margin-bottom: -3px;
-    margin-right: 4px;
-  }
-`;
-
-const MovieLink = styled.a`
-  margin-top: auto;
-  color: var(--color-secondary-500);
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.4px;
-  transition: color 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  align-self: flex-end;
-  margin-right: -4px;
-
-  &:hover {
-    color: var(--color-secondary-700);
-
-    svg {
-      fill: var(--color-secondary-700);
-    }
-  }
-
-  svg {
-    fill: var(--color-secondary-500);
-    transition: fill 0.2s ease-in-out;
-  }
-`;
-
-const Time = styled.div`
-  font-size: 10px;
-`;
-
-const CheckButton = styled.button<{ $checked: boolean }>`
-  border: none;
-  background-color: ${({ $checked }) =>
-    $checked ? "var(--color-ui-green)" : "var(--color-neutral-300)"};
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 48px;
-  width: 48px;
-  transition: background-color 0.2s ease-in-out;
-  display: flex;
-  flex-flow: column nowrap;
-
-  &:hover {
-    background-color: ${({ $checked }) =>
-      $checked ? "var(--color-ui-light-green)" : "var(--color-neutral-400)"};
-  }
-
-  svg {
-    fill: ${({ $checked }) =>
-      $checked ? "var(--color-neutral-0)" : "var(--color-neutral-700)"};
-  }
-
-  span {
-    font-size: 9px;
-    color: var(--color-neutral-0);
-  }
-`;
-
-const Nominations = styled.p`
-  em {
-    font-style: normal;
-    font-weight: 500;
-    color: var(--color-primary-500);
-  }
-
-  span:last-child:after,
-  em:last-child:after {
-    content: "";
-  }
-
-  span:after,
-  em:after {
-    content: ", ";
-  }
-`;
-
-const BottomRow = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: auto;
-  justify-content: space-between;
-  padding-top: 8px;
-`;
-
-const Comment = styled.p`
-  font-size: 12px;
-  width: 100%;
-  background: #bad4f6;
-  padding: 2px 4px;
-  margin: 0;
-`;
-
-const InputField = styled.input`
-  border: 1px solid var(--color-neutral-300);
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 100%;
-  margin-bottom: 16px;
-`;
-
-const PenIconButton = styled.button`
-  all: unset;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-`;
-
-const CommentButtons = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-
-  button:last-child {
-    flex: 1;
-  }
-`;
+const outerWrapperClass = "relative mb-sm flex h-full flex-col overflow-hidden rounded-lg";
+const wrapperClass = "relative flex h-full flex-1 flex-row flex-wrap overflow-hidden bg-neutral-0 shadow-[0_0_20px_var(--color-neutral-300)] min-h-[250px] max-[450px]:min-h-0";
+const contentClass = "flex flex-1 flex-col p-sm [&_p]:text-[13px] max-[450px]:[&_p]:text-xs [&_strong]:font-semibold";
+export const Wrapper: FC<HTMLAttributes<HTMLDivElement>> = ({ className = "", ...props }) => <div className={`${wrapperClass} ${className}`} {...props} />;
+export const Content: FC<HTMLAttributes<HTMLDivElement>> = ({ className = "", ...props }) => <div className={`${contentClass} ${className}`} {...props} />;
 
 interface Props {
   movies: MoviesYearsListType;
@@ -293,11 +99,11 @@ export const MovieCard: FC<Props> = ({
 
   return (
     <>
-      <OuterWrapper>
+      <div className={outerWrapperClass}>
         <Wrapper>
-          <CheckButton
+          <button
+            className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer flex-col items-center justify-center border-0 p-0 transition-colors duration-200 ${seen ? "bg-ui-green hover:bg-ui-light-green [&_svg]:fill-neutral-0" : "bg-neutral-300 hover:bg-neutral-400 [&_svg]:fill-neutral-700"} [&_span]:text-[9px] [&_span]:text-neutral-0`}
             type="button"
-            $checked={Boolean(seen)}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -308,31 +114,36 @@ export const MovieCard: FC<Props> = ({
             {seenDate && !userSettings.hideSeenDates && (
               <span>{seenDate.toFormat("dd/MM-yy")}</span>
             )}
-          </CheckButton>
-          <ImageWrapper
+          </button>
+          <div
+            className="w-[37%] bg-cover bg-center"
             style={{
-              backgroundImage: `url(${
-                posterUrl.length > 0
-                  ? posterUrl
-                  : "https://www.oscarsdeathrace.com/no-poster.png"
-              })`,
+              backgroundImage: `url(${posterUrl.length > 0
+                ? posterUrl
+                : "https://www.oscarsdeathrace.com/no-poster.png"
+                })`,
             }}
           />
           <Content>
-            <TitleWrapper>
-              <Title>
-                {data.wonCategories?.map((cat) => (
-                  <Image
-                    key={cat}
-                    src={statueImage}
-                    height={30}
-                    alt="Oscars statue"
-                  />
-                ))}
+            <div className="mb-sm">
+              <h2 className="m-0 mb-0 pr-10 text-xl font-semibold max-[450px]:text-base [&_img]:mb-[-3px] [&_img]:mr-1">
+                <div className="inline-block">
+                  <div className="flex mr-1">
+
+                    {data.wonCategories?.map((cat) => (
+                      <Image
+                        key={cat}
+                        src={statueImage}
+                        height={30}
+                        alt="Oscars statue"
+                      />
+                    ))}
+                  </div>
+                </div>
                 {data.title}
-              </Title>
-              {data.duration && <Time>{minutesToHours(data.duration)}</Time>}
-            </TitleWrapper>
+              </h2>
+              {data.duration && <div className="text-[10px]">{minutesToHours(data.duration)}</div>}
+            </div>
             <p>
               <strong>Director:</strong> {data.director}
             </p>
@@ -341,7 +152,7 @@ export const MovieCard: FC<Props> = ({
             </p>
 
             {data.categories && data.categories?.length > 0 && (
-              <Nominations>
+              <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-primary-500 [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
                 <strong>Nominations:</strong>{" "}
                 {sortedCategories.map((cat) => {
                   if (data.wonCategories?.includes(cat)) {
@@ -350,26 +161,27 @@ export const MovieCard: FC<Props> = ({
                     return <span key={cat}>{formatCategory(cat)}</span>;
                   }
                 })}
-              </Nominations>
+              </p>
             )}
-            <BottomRow>
+            <div className="mt-auto flex items-center justify-between pt-xs">
               {isSignedIn && (
-                <PenIconButton onClick={() => setShowCommentModal(true)}>
+                <button className="h-6 w-6 cursor-pointer border-0 bg-transparent p-0" onClick={() => setShowCommentModal(true)}>
                   <PenIcon />
-                </PenIconButton>
+                </button>
               )}
-              <MovieLink
+              <a
+                className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-secondary-500 transition-colors duration-200 hover:text-secondary-700 [&_svg]:fill-secondary-500 [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-secondary-700"
                 href={movieLink.href}
                 target="_BLANK"
               >
                 <span>{movieLink.label}</span>
                 <ChevronRightIcon />
-              </MovieLink>
-            </BottomRow>
+              </a>
+            </div>
           </Content>
         </Wrapper>
-        {savedComment && <Comment>{savedComment.comment}</Comment>}
-      </OuterWrapper>
+        {savedComment && <p className="m-0 w-full bg-[#bad4f6] px-1 py-0.5 text-xs">{savedComment.comment}</p>}
+      </div>
 
       <Modal
         isOpen={signInModalOpen}
@@ -402,12 +214,13 @@ export const MovieCard: FC<Props> = ({
         maxWidth="400px"
       >
         <Flex $direction="column" $justifyContent="center" $gap="sm">
-          <InputField
+          <input
+            className="mb-sm w-full rounded border border-neutral-300 p-2 text-base"
             placeholder="Add a personal note"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <CommentButtons>
+          <div className="flex w-full justify-center gap-xs [&>button:last-child]:flex-1">
             {savedComment && (
               <Button
                 label="Remove"
@@ -441,7 +254,7 @@ export const MovieCard: FC<Props> = ({
                 setShowCommentModal(false);
               }}
             />
-          </CommentButtons>
+          </div>
         </Flex>
       </Modal>
 

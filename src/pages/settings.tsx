@@ -19,56 +19,6 @@ import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect } from "react";
 import { supabase } from "@/supabase";
-import styled from "styled-components";
-
-const SettingsHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-
-const LogoutLink = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 0;
-  border: 0;
-  background: none;
-  color: var(--color-secondary-500);
-  font: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--color-secondary-700);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
-
-const DangerAccordion = styled.details`
-  margin: 112px 0 32px;
-  padding-top: 48px;
-  border-top: 1px solid var(--color-neutral-300);
-
-  summary {
-    width: fit-content;
-    color: var(--color-ui-red, #b42318);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  button {
-    margin-top: 12px;
-  }
-`;
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
@@ -250,19 +200,19 @@ export default function Settings({
 
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
-      <SettingsHeader>
+      <div className="mb-lg flex items-center justify-between gap-sm">
         <Heading size="lg">Settings</Heading>
         {userId && (
-          <LogoutLink type="button" onClick={handleSignOut}>
+          <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-secondary-500 underline hover:text-secondary-700 [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M10 17l5-5-5-5" />
               <path d="M15 12H3" />
               <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7" />
             </svg>
             Log out
-          </LogoutLink>
+          </button>
         )}
-      </SettingsHeader>
+      </div>
       {!userId || !userSettings ? (
         <Loader />
       ) : (
@@ -391,7 +341,7 @@ export default function Settings({
       {isAdmin && <AdminSettings />}
 
       {userId && userSettings && (
-        <DangerAccordion>
+        <details className="mt-[112px] mb-lg border-t border-neutral-300 pt-xxl [&_summary]:w-fit [&_summary]:cursor-pointer [&_summary]:text-sm [&_summary]:font-semibold [&_summary]:text-ui-red [&_button]:mt-3">
           <summary>Danger zone</summary>
           <Button
             type="button"
@@ -399,7 +349,7 @@ export default function Settings({
             label="Delete account"
             variant="danger"
           />
-        </DangerAccordion>
+        </details>
       )}
 
       {deleteModal && (

@@ -1,72 +1,6 @@
 import { SeenContext } from "@/contexts/seenContext";
 import { Duration } from "luxon";
 import { FC, useContext } from "react";
-import styled from "styled-components";
-
-const Wrapper = styled.div`
-  position: fixed;
-  bottom: 0;
-  background-color: #fff;
-  width: 100%;
-  height: 24px;
-  left: 0;
-  right: 0;
-  box-shadow: 0 0 20px rgb(44 44 44 / 34%);
-
-  @media all and (display-mode: standalone) {
-    height: 40px;
-  }
-`;
-
-const Progress = styled.div<{ width: number }>`
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(
-    to right,
-    rgb(156 200 156 / 33%) 0%,
-    rgba(156, 200, 156, 1) 100%
-  );
-  width: ${(props) => props.width}%;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 3px 0;
-  box-sizing: border-box;
-  color: #fff;
-  font-size: 14px;
-  transition: width 0.2s ease-in-out;
-
-  @media all and (display-mode: standalone) {
-    height: 48px;
-    align-items: flex-start;
-  }
-`;
-
-const Text = styled.div<{leftPosition: boolean}>`
-  position: absolute;
-  right: ${({leftPosition}) => leftPosition ? 'auto' : '8px'};
-  left: ${({leftPosition}) => leftPosition ? '8px' : 'auto'};
-  font-size: 12px;
-  bottom: 4px;
-  font-weight: bold;
-`;
-
-const Percentage = styled.div`
-  padding: 4px 8px;
-
-  @media all and (display-mode: standalone) {
-    padding: 0 16px;
-  }
-`;
-
-const Numbers = styled.div`
-  position: absolute;
-  right: 10px;
-  bottom: 4px;
-  font-size: 14px;
-  font-weight: 600;
-`;
 
 interface Props {
   nrOfMovies?: number;
@@ -104,15 +38,15 @@ export const ProgressBar: FC<Props> = ({ nrOfMovies, seenNr = 0, seenTotalDurati
       : `${minutes}m left`;
 
   return (
-    <Wrapper>
-          <Text leftPosition={percentage > 60}>
+    <div className="fixed bottom-0 left-0 right-0 h-6 w-full bg-white shadow-[0_0_20px_rgb(44_44_44_/_34%)] [@media(display-mode:standalone)]:h-10">
+          <div className={`absolute bottom-1 text-xs font-bold ${percentage > 60 ? "left-2" : "right-2"}`}>
             {userSettings.percentageByWatchTime
               ? remainingTimeText
               : `${nrOfMovies - seenNr} left to see`}
-          </Text>
-      <Progress width={percentage}>
-        {percentage > 5 && <Percentage>{percentage}%</Percentage>}
-      </Progress>
-    </Wrapper>
+          </div>
+      <div style={{ width: `${percentage}%` }} className="flex h-full flex-row flex-nowrap items-center justify-end bg-[linear-gradient(to_right,rgb(156_200_156_/_33%)_0%,rgba(156,200,156,1)_100%)] py-[3px] text-sm text-white transition-[width] duration-200 [@media(display-mode:standalone)]:h-12 [@media(display-mode:standalone)]:items-start">
+        {percentage > 5 && <div className="px-2 py-1 [@media(display-mode:standalone)]:px-4 [@media(display-mode:standalone)]:py-0">{percentage}%</div>}
+      </div>
+    </div>
   );
 };

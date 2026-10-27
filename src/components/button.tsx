@@ -1,10 +1,8 @@
 import React from "react";
-import styled, { css } from "styled-components";
-import { SpinnerIcon } from "../assets/icons/Spinner";
 import Link from "next/link";
+import { SpinnerIcon } from "../assets/icons/Spinner";
 
 type Size = "sm" | "md" | "lg";
-
 type Variant = "primary" | "secondary" | "danger";
 
 interface Props {
@@ -14,109 +12,22 @@ interface Props {
   onClick?: (e: any) => void;
   disabled?: boolean;
   variant?: Variant;
-  size?: "sm" | "md" | "lg";
+  size?: Size;
   isLoading?: boolean;
   width?: string;
 }
 
-const sharedButtonStyles = css<{
-  $size: Size;
-  $variant: Variant;
-  $isLoading?: boolean;
-  $width?: string;
-}>`
-  padding: ${({ $size }) =>
-    $size === "sm" ? "8px 16px" : $size === "md" ? "8px 24px" : "8px 32px"};
-  height: ${({ $size }) => ($size === "sm" ? "32px" : "48px")};
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  width: ${({ $width }) => $width ?? "auto"};
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-
-  ${({ $variant }) =>
-    $variant === "danger"
-      ? css`
-          background-color: var(--color-ui-red);
-          color: var(--color-neutral-0);
-
-          &:hover {
-            background-color: var(--color-ui-red-darker);
-            color: var(--color-neutral-0);
-          }
-        `
-      : $variant === "primary"
-      ? css`
-          background-color: var(--color-primary-500);
-          color: var(--color-neutral-0);
-
-          &:hover {
-            color: var(--color-neutral-0);
-            background-color: var(--color-primary-700);
-          }
-        `
-      : css`
-          background-color: transparent;
-          color: var(--color-primary-500);
-          border: 1px solid var(--color-primary-500);
-
-          &:hover {
-            color: var(--color-primary-500);
-            border-color: var(--color-primary-700);
-          }
-        `}
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  ${({ $isLoading }) =>
-    $isLoading &&
-    css`
-      span {
-        opacity: 0;
-      }
-    `};
-
-  svg {
-    animation: spinner 0.8s ease infinite;
-    opacity: 0.7;
-    fill: #fff;
-  }
-`;
-
-const Spinner = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  height: 24px;
-  width: 24px;
-`;
-
-const StyledButton = styled.button<{
-  $size: Size;
-  $variant: Variant;
-  $isLoading: boolean;
-  $width?: string;
-}>`
-  ${sharedButtonStyles}
-`;
-
-const StyledLink = styled(Link)<{
-  $size: Size;
-  $variant: Variant;
-  $width?: string;
-}>`
-  ${sharedButtonStyles}
-`;
+const sizeClasses: Record<Size, string> = {
+  sm: "h-8 px-4",
+  md: "h-12 px-6",
+  lg: "h-12 px-8",
+};
+const variantClasses: Record<Variant, string> = {
+  primary: "border border-transparent bg-primary-500 text-neutral-0 hover:bg-primary-700",
+  secondary: "border border-primary-500 bg-transparent text-primary-500 hover:border-primary-700",
+  danger: "border border-transparent bg-ui-red text-neutral-0 hover:bg-ui-red-darker",
+};
+const classes = "relative flex items-center justify-center rounded font-sans text-base transition-colors duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:animate-spinner [&_svg]:fill-white [&_svg]:opacity-70";
 
 export const Button: React.FC<Props> = ({
   type = "button",
@@ -129,46 +40,33 @@ export const Button: React.FC<Props> = ({
   isLoading = false,
   width,
 }) => {
-  if (type === "link") {
-    return (
-      <StyledLink
-        href={to ?? "/"}
-        type={type}
-        onClick={onClick}
-        $variant={variant}
-        $size={size}
-        $width={width}
-      >
-        {label}
-      </StyledLink>
-    );
-  } else {
-    return (
-      <StyledButton
-        type={type}
-        onClick={(e) => {
-          if (!disabled) {
-            // Let native form submission run when the button has no click
-            // handler. Buttons with an onClick retain the existing behavior.
-            if (type === "submit" && !onClick) return;
-            e.preventDefault();
-            e.stopPropagation();
-            onClick && onClick(e);
-          }
-        }}
-        disabled={disabled}
-        $variant={variant}
-        $size={size}
-        $isLoading={isLoading}
-        $width={width}
-      >
-        {isLoading && (
-          <Spinner>
-            <SpinnerIcon />
-          </Spinner>
-        )}
-        <span>{label}</span>
-      </StyledButton>
-    );
-  }
+  const className = `${classes} ${sizeClasses[size]} ${variantClasses[variant]} ${isLoading ? "[&_span]:opacity-0" : ""}`;
+  const style = width ? { width } : undefined;
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
+    if (type === "submit" && !onClick) return;
+    if (type !== "link") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    onClick?.(e);
+  };
+
+  const content = <>
+    {isLoading && <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2"><SpinnerIcon /></span>}
+    <span>{label}</span>
+  </>;
+
+  return type === "link" ? (
+    <Link href={to ?? "/"} onClick={handleClick} className={className} style={style} aria-disabled={disabled}>
+      {content}
+    </Link>
+  ) : (
+    <button type={type} onClick={handleClick} disabled={disabled} className={className} style={style}>
+      {content}
+    </button>
+  );
 };

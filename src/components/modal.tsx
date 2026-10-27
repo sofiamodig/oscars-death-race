@@ -1,33 +1,5 @@
 import React, { ReactNode, useCallback, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import styled from "styled-components";
-
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-`;
-
-const ModalContent = styled.div<{ $maxWidth: string }>`
-  background: var(--color-neutral-100);
-  padding: 24px;
-  border-radius: 5px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  width: 95%;
-  max-width: ${({ $maxWidth }) => $maxWidth};
-  box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    padding: 40px;
-  }
-`;
 
 interface Props {
   children: ReactNode;
@@ -63,11 +35,11 @@ export const Modal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
-    <ModalBackdrop>
-      <ModalContent ref={modalRef} $maxWidth={maxWidth}>
+    <div className="fixed inset-0 z-[1] flex items-center justify-center bg-black/50">
+      <div ref={modalRef} className="w-[95%] rounded-[5px] bg-neutral-100 p-md shadow-[0_5px_15px_rgba(0,0,0,0.3)] md:p-xl" style={{ maxWidth }}>
         {children}
-      </ModalContent>
-    </ModalBackdrop>,
+      </div>
+    </div>,
     document.body
   );
 };

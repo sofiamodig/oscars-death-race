@@ -7,46 +7,7 @@ import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
 import { Heading } from "./heading";
 import { TextInput } from "./textInput";
-import styled from "styled-components";
 import { PosterPreview } from "./posterPreview";
-
-const Wrapper = styled.div`
-  border-top: 1px solid var(--color-neutral-500);
-  padding: 16px 0;
-  margin-top: 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-
-  @media (max-width: 480px) {
-    gap: 10px;
-  }
-`;
-
-const MovieDetails = styled.div`
-  min-width: 0;
-  flex: 1;
-`;
-
-const ShowNoms = styled.button`
-  all: unset;
-  cursor: pointer;
-  color: var(--color-ui-blue);
-  font-size: 12px;
-  font-weight: 600;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-flow: row wrap;
-  gap: 8px;
-`;
-
-const Chips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
 
 interface Props {
   id: string;
@@ -131,24 +92,25 @@ const EditMovie: FC<Props> = ({
   };
 
   return (
-    <Wrapper>
+    <div className="mt-sm flex items-start gap-2.5 border-t border-neutral-500 py-sm sm:gap-sm">
       <PosterPreview url={posterUrl} title={title} />
-      <MovieDetails>
+      <div className="min-w-0 flex-1">
         <Heading size="sm" as="h2">
           {title} <br />
           {(!showEdit || !showNominations) && (
-            <ShowNoms
+            <button
+              className="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-ui-blue"
               onClick={() => {
                 setShowNominations(true);
                 setShowEdit(true);
               }}
             >
               Edit
-            </ShowNoms>
+            </button>
           )}
         </Heading>
 
-        <Form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-xs">
           {showEdit && (
             <Box $marginTop="sm">
               <TextInput
@@ -177,7 +139,7 @@ const EditMovie: FC<Props> = ({
           {showNominations && (
             <Box $marginTop="sm">
               <p>Nominated Categories</p>
-              <Chips>
+              <div className="flex flex-wrap gap-xs">
                 {CATEGORIES.map((category) => (
                   <Chip
                     key={category}
@@ -188,14 +150,14 @@ const EditMovie: FC<Props> = ({
                     {category.replace("Best", "")}
                   </Chip>
                 ))}
-              </Chips>
+              </div>
             </Box>
           )}
 
           {(nominatedCategories.length > 0 || wonCategories.length > 0) && (
             <Box $marginTop="md">
               <p>Won Categories</p>
-              <Chips>
+              <div className="flex flex-wrap gap-xs">
                 {nominatedCategories.map((category) => (
                   <Chip
                     key={category}
@@ -206,7 +168,7 @@ const EditMovie: FC<Props> = ({
                     {category.replace("Best", "")}
                   </Chip>
                 ))}
-              </Chips>
+              </div>
             </Box>
           )}
           <Box $marginTop="md" $width="100%">
@@ -220,9 +182,9 @@ const EditMovie: FC<Props> = ({
               isLoading={isSubmitting}
             />
           </Box>
-        </Form>
-      </MovieDetails>
-    </Wrapper>
+        </form>
+      </div>
+    </div>
   );
 };
 

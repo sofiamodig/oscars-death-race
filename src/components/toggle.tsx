@@ -1,43 +1,5 @@
 import { FC } from "react";
-import styled from "styled-components";
 import { Paragraph } from "./paragraph";
-
-const OuterContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  -webkit-tap-highlight-color: transparent;
-`;
-
-const ToggleContainer = styled.div`
-  display: inline-block;
-`;
-
-const ToggleSlider = styled.div<{ $isOn: boolean }>`
-  background-color: ${({ $isOn }) =>
-    $isOn ? "var(--color-ui-green)" : "var(--color-neutral-300)"};
-  width: 44px;
-  height: 24px;
-  border-radius: 34px;
-  position: relative;
-  transition: background-color 0.2s;
-
-  &::after {
-    content: "";
-    position: absolute;
-    height: 18px;
-    aspect-ratio: 1;
-    top: 3px;
-    left: 3px;
-    bottom: 4px;
-    background-color: white;
-    transition: transform 0.2s;
-    border-radius: 50%;
-    transform: ${({ $isOn }) => ($isOn ? "translateX(20px)" : "none")};
-  }
-`;
 
 interface Props {
   label: string;
@@ -48,13 +10,13 @@ interface Props {
 
 export const Toggle: FC<Props> = ({ label, value, onToggle, size = "xs" }) => {
   return (
-    <OuterContainer onClick={onToggle}>
+    <div onClick={onToggle} className="flex cursor-pointer items-center gap-xs font-medium [-webkit-tap-highlight-color:transparent]">
       <Paragraph as="span" size={size}>
         {label}
       </Paragraph>
-      <ToggleContainer>
-        <ToggleSlider $isOn={value} />
-      </ToggleContainer>
-    </OuterContainer>
+      <span className={`inline-block h-6 w-11 rounded-full transition-colors duration-200 ${value ? "bg-ui-green" : "bg-neutral-300"}`}>
+        <span className={`relative top-[3px] left-[3px] block h-[18px] w-[18px] rounded-full bg-white transition-transform duration-200 ${value ? "translate-x-5" : "translate-x-0"}`} />
+      </span>
+    </div>
   );
 };

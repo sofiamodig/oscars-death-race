@@ -17,48 +17,13 @@ import { ProgressBar } from "@/components/progressBar";
 import { Toggle } from "@/components/toggle";
 import { Box } from "@/styles/Box";
 import { InfoMessage } from "@/styles/Message";
-import styled from "styled-components";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { AllDone } from "@/components/allDone";
 import { SiteInfoContext } from "@/contexts/siteInfoContext";
 
-const Wrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-  gap: 24px;
-
-  @media (max-width: 450px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const BarWrapper = styled.div`
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-
-  @media (min-width: 768px) {
-    & > div:last-child {
-      margin-left: auto;
-    }
-  }
-`;
-
-const SubBarWrapper = styled.div`
-  margin-bottom: 16px;
-
-  @media (min-width: 768px) {
-    p {
-      text-align: right;
-    }
-  }
-`;
+const movieGridClasses = "grid grid-cols-[repeat(auto-fill,minmax(440px,1fr))] gap-6 max-[450px]:grid-cols-1";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
@@ -166,7 +131,7 @@ export default function Home({
 
   if (loading) {
     return (
-      <Wrapper>
+      <div className={movieGridClasses}>
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />
@@ -176,7 +141,7 @@ export default function Home({
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />
-      </Wrapper>
+      </div>
     );
   }
 
@@ -186,11 +151,11 @@ export default function Home({
 
   if (!selectedYear) {
     return (
-      <Wrapper>
+      <div className={movieGridClasses}>
         <MovieCardSkeleton />
         <MovieCardSkeleton />
         <MovieCardSkeleton />
-      </Wrapper>
+      </div>
     );
   }
 
@@ -296,7 +261,7 @@ export default function Home({
               </InfoMessage>
             </Box>
           )}
-          <BarWrapper>
+          <div className="mb-2 flex flex-row flex-wrap items-center justify-start gap-xs md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "90px" }}>
               <select onChange={(e) => setSelectedYear(e.target.value)}>
                 {yearsList.map((year) => (
@@ -391,11 +356,11 @@ export default function Home({
                 onToggle={toggleHideSeen}
               />
             )}
-          </BarWrapper>
-          <SubBarWrapper>
+          </div>
+          <div className="mb-sm md:[&_p]:text-right">
             <Paragraph size="xs">{getNrOfMoviesText()}</Paragraph>
-          </SubBarWrapper>
-          <Wrapper>
+          </div>
+          <div className={movieGridClasses}>
             {moviesToDisplay?.map((movie) => (
               <MovieCard
                 key={movie.imdbId}
@@ -405,7 +370,7 @@ export default function Home({
                 movies={movies}
               />
             ))}
-          </Wrapper>
+          </div>
           {moviesToDisplay?.length === 0 && hideSeen && (
             <AllDone
               inCategories={selectedCategories.length}

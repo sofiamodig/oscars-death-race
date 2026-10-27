@@ -2,24 +2,8 @@ import { Flex } from "@/styles/Flex";
 import { Heading } from "./heading";
 import { Paragraph } from "./paragraph";
 import logo from "@/assets/images/oscarlogo.png";
-import styled from "styled-components";
 import Image from "next/image";
 import { FC } from "react";
-
-const Wrapper = styled.div<{ $autoHeight?: boolean }>`
-  height: ${({ $autoHeight }) => ($autoHeight ? "auto" : "100vh")};
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 32px;
-
-  img {
-    width: 150px;
-    aspect-ratio: 351 / 397;
-    height: auto;
-  }
-`;
 
 interface Props {
   autoHeight?: boolean;
@@ -27,7 +11,7 @@ interface Props {
 
 export const UnderConstruction: FC<Props> = ({ autoHeight }) => {
   return (
-    <Wrapper $autoHeight={autoHeight}>
+    <div className={`flex flex-col items-center justify-center p-lg ${autoHeight ? "h-auto" : "h-screen"} [&_img]:h-auto [&_img]:w-[150px] [&_img]:aspect-[351/397]`}>
       <Flex $justifyContent="center" $direction="column" $gap="sm">
         <Image src={logo} alt="logo" priority />
         <Heading size="xxl" textAlign="center">
@@ -37,6 +21,6 @@ export const UnderConstruction: FC<Props> = ({ autoHeight }) => {
           This page is currently under construction. Please check back later.
         </Paragraph>
       </Flex>
-    </Wrapper>
+    </div>
   );
 };

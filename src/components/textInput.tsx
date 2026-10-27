@@ -1,46 +1,4 @@
 import React, { CSSProperties } from "react";
-import styled from "styled-components";
-
-const Container = styled.div<{ width: string | undefined }>`
-  display: flex;
-  flex-direction: column;
-  width: ${({ width }) => (width ? width : "100%")};
-`;
-
-const Label = styled.label`
-  margin-bottom: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-neutral-700);
-`;
-
-const StyledInput = styled.input<{ $errormessage: boolean }>`
-  border: 1px solid
-    ${({ $errormessage }) =>
-      $errormessage ? "var(--color-error)" : "var(--color-neutral-200)"};
-  padding: 8px 16px;
-  height: 48px;
-  font-size: 16px;
-  border-radius: 4px;
-  outline: none;
-
-  &:focus {
-    border-color: var(--color-neutral-400);
-  }
-
-  &:-webkit-autofill,
-  &:-webkit-autofill:hover,
-  &:-webkit-autofill:focus,
-  &:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: var(--color-error);
-  font-size: 12px;
-  margin-top: 4px;
-`;
 
 interface InputProps {
   label?: string;
@@ -68,18 +26,18 @@ export const TextInput: React.FC<InputProps> = ({
   onBlur,
 }) => {
   return (
-    <Container width={width} style={style}>
-      {label && <Label>{label}</Label>}
-      <StyledInput
+    <div className="flex w-full flex-col" style={{ ...style, width: width ?? style?.width }}>
+      {label && <label className="mb-xxs text-sm font-medium text-neutral-700">{label}</label>}
+      <input
+        className={`h-12 rounded border px-4 py-2 text-base outline-none focus:border-neutral-400 autofill:shadow-[inset_0_0_0_30px_white] ${errorMessage ? "border-error" : "border-neutral-200"}`}
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
-        $errormessage={Boolean(errorMessage)}
         disabled={disabled}
       />
-      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-    </Container>
+      {errorMessage && <div className="mt-xxs text-xs text-error">{errorMessage}</div>}
+    </div>
   );
 };

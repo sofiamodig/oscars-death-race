@@ -1,40 +1,13 @@
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Paragraph } from "./paragraph";
-import styled from "styled-components";
 import Image from "next/image";
-
-const OuterWrapper = styled(Box)`
-  margin-top: auto;
-`;
-
-const Coffee = styled(Flex)`
-  img {
-    height: 48px;
-    transition: transform 0.2s ease-in-out;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
-`;
-
-const ImageWrapper = styled.div`
-  max-width: 200px;
-  aspect-ratio: 545 / 153;
-  width: 100%;
-
-  img {
-    width: 100%;
-    height: 100%;
-  }
-`;
 
 const Footer = () => {
   return (
-    <OuterWrapper $marginLeft="xl" $marginRight="xl" $marginBottom="xxl">
+    <Box className="mt-auto" $marginLeft="xl" $marginRight="xl" $marginBottom="xxl">
       <Box $marginTop="xxxl" $marginBottom="md">
-        <Coffee
+        <Flex
           $justifyContent="center"
           $alignItems="center"
           $direction="column"
@@ -42,8 +15,8 @@ const Footer = () => {
           <Paragraph textAlign="center" marginBottom="sm">
             Do you like this website and want to support it?
           </Paragraph>
-          <a href="https://www.buymeacoffee.com/fordvspurrari" target="_blank">
-            <ImageWrapper>
+          <a className="[&_img]:h-12 [&_img]:transition-transform [&_img]:duration-200 hover:[&_img]:scale-105" href="https://www.buymeacoffee.com/fordvspurrari" target="_blank">
+            <div className="aspect-[545/153] w-full max-w-[200px]">
               <Image
                 src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
                 alt="Buy Me A Coffee"
@@ -51,9 +24,9 @@ const Footer = () => {
                 height={153}
                 priority
               />
-            </ImageWrapper>
+            </div>
           </a>
-        </Coffee>
+        </Flex>
       </Box>
       <Flex
         $direction="column"
@@ -75,7 +48,7 @@ const Footer = () => {
           </a>
         </Paragraph>
       </Flex>
-    </OuterWrapper>
+    </Box>
   );
 };
 

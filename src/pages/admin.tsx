@@ -16,31 +16,6 @@ import { Paragraph } from "@/components/paragraph";
 import { adminRequest } from "@/functions/adminRequest";
 import { BrokenPosterMovie } from "@/components/brokenPosterMovie";
 import type { PosterCandidate } from "@/components/brokenPosterMovie";
-import styled from "styled-components";
-
-const BrokenPosterToggle = styled.label`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  cursor: pointer;
-`;
-
-const PosterSaveBar = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-`;
-
-const PosterActions = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-`;
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
@@ -293,21 +268,21 @@ export default function Admin({
         />
       </Flex>
 
-      <BrokenPosterToggle>
+      <label className="mt-sm inline-flex cursor-pointer items-center gap-xs">
         <input
           type="checkbox"
           checked={showBrokenPostersOnly}
           onChange={(event) => setShowBrokenPostersOnly(event.target.checked)}
         />
         Show only movies with broken poster URLs ({brokenMovies.length})
-      </BrokenPosterToggle>
+      </label>
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && !posterScan.done && (
         <Paragraph>Checking poster URLs for this year…</Paragraph>
       )}
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && posterScan.done && (
-        <PosterActions>
+        <div className="mt-sm flex flex-wrap items-center gap-3">
           <Button
             type="button"
             label={`Find posters for all (${moviesWithoutCandidate.length})`}
@@ -318,11 +293,11 @@ export default function Admin({
             isLoading={isFindingAllPosters}
           />
           {findAllStatus && <Paragraph>{findAllStatus}</Paragraph>}
-        </PosterActions>
+        </div>
       )}
 
       {showBrokenPostersOnly && (stagedPosters.length > 0 || posterSaveStatus) && (
-        <PosterSaveBar>
+        <div className="mt-sm flex flex-wrap items-center gap-3">
           {stagedPosters.length > 0 && (
             <Button
               type="button"
@@ -335,7 +310,7 @@ export default function Admin({
             />
           )}
           {posterSaveStatus && <Paragraph>{posterSaveStatus}</Paragraph>}
-        </PosterSaveBar>
+        </div>
       )}
 
       <Box>

@@ -1,64 +1,6 @@
 import { FC } from "react";
-import styled, { keyframes } from "styled-components";
 
-// Create a keyframe animation for the loading effect
-const shimmer = keyframes`
-  0% {
-    background-position: -500px 0;
-  }
-  100% {
-    background-position: 500px 0;
-  }
-`;
-
-const Wrapper = styled.div<{
-  $width: SizeObj | string;
-  $height: SizeObj | string;
-  $round: boolean;
-}>`
-  animation: ${shimmer} 1.5s infinite linear;
-  background: linear-gradient(
-    to right,
-    var(--color-neutral-100) 4%,
-    var(--color-neutral-200) 25%,
-    var(--color-neutral-100) 36%
-  );
-  background-size: 1000px 100%;
-  height: ${({ $height }) =>
-    typeof $height === "object" ? $height.$sm : $height};
-  width: ${({ $width }) => (typeof $width === "object" ? $width.$sm : $width)};
-  aspect-ratio: ${({ $round }) => ($round ? "1" : "auto")};
-  border-radius: ${({ $round }) => ($round ? "50%" : "2px")};
-
-  @media screen and (min-width: 768px) {
-    height: ${({ $height }) =>
-      typeof $height === "object" ? $height.$md : $height};
-    width: ${({ $width }) =>
-      typeof $width === "object" ? $width.$md : $width};
-  }
-
-  @media screen and (min-width: 1024px) {
-    height: ${({ $height }) =>
-      typeof $height === "object" ? $height.$lg : $height};
-    width: ${({ $width }) =>
-      typeof $width === "object" ? $width.$lg : $width};
-  }
-
-  @media screen and (min-width: 1280px) {
-    height: ${({ $height }) =>
-      typeof $height === "object" ? $height.$xl : $height};
-    width: ${({ $width }) =>
-      typeof $width === "object" ? $width.$xl : $width};
-  }
-`;
-
-type SizeObj = {
-  $sm: string;
-  $md: string;
-  $lg: string;
-  $xl: string;
-};
-
+type SizeObj = { $sm: string; $md: string; $lg: string; $xl: string };
 interface Props {
   width?: SizeObj | string;
   height?: SizeObj | string;
@@ -66,20 +8,21 @@ interface Props {
   className?: string;
 }
 
-const SkeletonLoader: FC<Props> = ({
-  width = "100%",
-  height = "auto",
-  round = false,
-  className,
-}) => {
-  return (
-    <Wrapper
-      $width={width}
-      $height={height}
-      $round={round}
-      className={className}
-    />
-  );
+const SkeletonLoader: FC<Props> = ({ width = "100%", height = "auto", round = false, className = "" }) => {
+  const responsiveValue = (value: SizeObj | string, size: keyof SizeObj) =>
+    typeof value === "string" ? value : value[size];
+  const style = {
+    "--skeleton-width-sm": responsiveValue(width, "$sm"),
+    "--skeleton-width-md": responsiveValue(width, "$md"),
+    "--skeleton-width-lg": responsiveValue(width, "$lg"),
+    "--skeleton-width-xl": responsiveValue(width, "$xl"),
+    "--skeleton-height-sm": responsiveValue(height, "$sm"),
+    "--skeleton-height-md": responsiveValue(height, "$md"),
+    "--skeleton-height-lg": responsiveValue(height, "$lg"),
+    "--skeleton-height-xl": responsiveValue(height, "$xl"),
+  } as React.CSSProperties;
+
+  return <div style={style} className={`animate-shimmer bg-[linear-gradient(to_right,var(--color-neutral-100)_4%,var(--color-neutral-200)_25%,var(--color-neutral-100)_36%)] bg-[length:1000px_100%] h-[var(--skeleton-height-sm)] w-[var(--skeleton-width-sm)] md:h-[var(--skeleton-height-md)] md:w-[var(--skeleton-width-md)] lg:h-[var(--skeleton-height-lg)] lg:w-[var(--skeleton-width-lg)] xl:h-[var(--skeleton-height-xl)] xl:w-[var(--skeleton-width-xl)] ${round ? "aspect-square rounded-full" : "rounded-sm"} ${className}`} />;
 };
 
 export default SkeletonLoader;

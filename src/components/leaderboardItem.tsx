@@ -1,5 +1,4 @@
 import { FC } from "react";
-import styled from "styled-components";
 import { DateTime } from "luxon";
 import trophyImg from "../assets/images/oscar-statue.png";
 import { Flex } from "@/styles/Flex";
@@ -9,82 +8,6 @@ const TROPHY_COLORS: { [key: number]: string } = {
   1: "#b9b8b4",
   2: "#895d23",
 };
-
-const TableItem = styled.div<{ $isCurrentUser: boolean }>`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-
-  &:nth-child(2n + 1) {
-    background-color: var(--color-neutral-200);
-  }
-
-  ${({ $isCurrentUser }) =>
-    $isCurrentUser &&
-    `
-    background-color: var(--color-ui-blue-lighter) !important;
-    color: var(--color-neutral-1000) !important;
-  `}
-
-  &:first-child {
-    background-color: var(--color-primary-500);
-    color: var(--color-neutral-0);
-  }
-`;
-
-const Trophy = styled.div<{ color: string }>`
-  display: inline-block;
-  height: 30px;
-  width: 15px;
-  background-color: ${({ color }) => color};
-  mask-image: url(${trophyImg.src});
-  mask-size: contain;
-  mask-position: center;
-  mask-repeat: no-repeat;
-  -webkit-mask-image: url(${trophyImg.src});
-  -webkit-mask-size: contain;
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-`;
-
-const DateWrapper = styled.span`
-  font-size: 10px;
-  text-align: right;
-
-  @media (min-width: 768px) {
-    font-size: 12px;
-  }
-`;
-
-const Date = styled.em`
-  font-style: normal;
-  display: inline-block;
-`;
-
-const Percentage = styled.div`
-  font-weight: bold;
-  white-space: nowrap;
-`;
-
-const Nr = styled.span`
-  font-weight: bold;
-  min-width: 15px;
-  text-align: center;
-`;
-
-const RightCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0;
-
-  @media (min-width: 768px) {
-    flex-direction: row-reverse;
-    gap: 16px;
-    align-items: center;
-  }
-`;
 
 interface Props {
   username: string;
@@ -106,33 +29,31 @@ export const LeaderboardItem: FC<Props> = ({
   isPending = false,
 }) => {
   return (
-    <TableItem key={username} $isCurrentUser={isCurrentUser}>
+    <div key={username} className={`flex items-center justify-between px-4 py-2 odd:bg-neutral-200 first:bg-primary-500 first:text-neutral-0 ${isCurrentUser ? "!bg-ui-blue-lighter !text-neutral-1000" : ""}`}>
       <Flex $gap="sm" $alignItems="center">
         {rank < 3 && completed ? (
-          <Trophy
-            color={TROPHY_COLORS[rank] ? TROPHY_COLORS[rank] : "transparent"}
-          />
+          <span className="inline-block h-[30px] w-[15px] bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]" style={{ backgroundColor: TROPHY_COLORS[rank] ?? "transparent", maskImage: `url(${trophyImg.src})`, WebkitMaskImage: `url(${trophyImg.src})`, WebkitMaskSize: "contain", WebkitMaskPosition: "center", WebkitMaskRepeat: "no-repeat" }} />
         ) : (
-          <Nr>{rank + 1}</Nr>
+          <span className="min-w-[15px] text-center font-bold">{rank + 1}</span>
         )}
         <div style={{ wordBreak: "break-word" }}>{username}</div>
       </Flex>
-      <RightCol>
+      <div className="flex flex-col items-end gap-0 md:flex-row-reverse md:items-center md:gap-sm">
         {isPending ? (
-          <DateWrapper>Pending invitation</DateWrapper>
+          <span className="text-right text-[10px] md:text-xs">Pending invitation</span>
         ) : (
-          <Percentage>
+          <div className="whitespace-nowrap font-bold">
             {seen && <span style={{ fontWeight: 400 }}>{seen}, </span>}
             {percentage} %
-          </Percentage>
+          </div>
         )}
         {!isPending && completed && percentage == 100 && (
-          <DateWrapper>
+          <span className="text-right text-[10px] md:text-xs">
             Completed: <wbr />
-            <Date>{DateTime.fromISO(completed).toFormat("yyyy-MM-dd")}</Date>
-          </DateWrapper>
+            <em className="inline-block not-italic">{DateTime.fromISO(completed).toFormat("yyyy-MM-dd")}</em>
+          </span>
         )}
-      </RightCol>
-    </TableItem>
+      </div>
+    </div>
   );
 };

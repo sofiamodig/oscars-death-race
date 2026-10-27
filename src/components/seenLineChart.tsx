@@ -4,58 +4,11 @@ import { MoviesYearsListType } from "@/types";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 import { Line } from "react-chartjs-2";
-import styled from "styled-components";
 import {
   fetchPublicUserSeenData,
 } from "@/functions/fetchUsers";
 import type { PublicUserSeenData } from "@/functions/fetchUsers";
 import { TextInput } from "./textInput";
-
-const InnerWrapper = styled.div`
-  height: 400px;
-  min-width: 900px;
-`;
-
-const ChartScrollArea = styled.div`
-  width: 100%;
-  overflow-x: auto;
-`;
-
-const InputWrapper = styled.div`
-  max-width: 500px;
-  margin-top: 8px;
-  position: relative;
-`;
-
-const Suggestions = styled.div`
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  max-height: 240px;
-  overflow-y: auto;
-  border: 1px solid var(--color-neutral-200);
-  border-radius: 4px;
-  background: white;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
-`;
-
-const Suggestion = styled.button`
-  display: block;
-  width: 100%;
-  padding: 8px 16px;
-  border: 0;
-  background: white;
-  text-align: left;
-  cursor: pointer;
-
-  &:hover,
-  &:focus {
-    background: var(--color-neutral-200);
-    outline: none;
-  }
-`;
 
 interface Props {
   movies: MoviesYearsListType;
@@ -226,13 +179,13 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
 
   return (
     <>
-      <ChartScrollArea>
-        <InnerWrapper>
+      <div className="w-full overflow-x-auto">
+        <div className="h-[400px] min-w-[900px]">
           {/* @ts-ignore */}
           <Line options={options} data={data} />
-        </InnerWrapper>
-      </ChartScrollArea>
-      <InputWrapper>
+        </div>
+      </div>
+      <div className="relative mt-xs max-w-[500px]">
         <TextInput
           type="text"
           placeholder="Search username"
@@ -247,22 +200,23 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
           }}
         />
         {filteredUsernames.length > 0 && (
-          <Suggestions role="listbox" aria-label="Username suggestions">
+          <div className="absolute inset-x-0 top-[calc(100%_+_4px)] z-10 max-h-[240px] overflow-y-auto rounded border border-neutral-200 bg-white shadow-[0_4px_12px_rgb(0_0_0_/_12%)]" role="listbox" aria-label="Username suggestions">
             {filteredUsernames.map((username) => (
-              <Suggestion
+              <button
+                className="block w-full cursor-pointer border-0 bg-white px-4 py-2 text-left hover:bg-neutral-200 focus:bg-neutral-200 focus:outline-none"
                 key={username}
                 type="button"
                 role="option"
                 onClick={() => void selectUser(username)}
               >
                 {username}
-              </Suggestion>
+              </button>
             ))}
-          </Suggestions>
+          </div>
         )}
         {isLoadingCompareUser && <p>Loading user data…</p>}
         {compareError && <p role="status">{compareError}</p>}
-      </InputWrapper>
+      </div>
     </>
   );
 };

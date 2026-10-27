@@ -8,61 +8,7 @@ import { CATEGORIES } from "@/utils";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
 import { TextInput } from "./textInput";
-import styled from "styled-components";
 import { PosterPreview } from "./posterPreview";
-
-const SearchInputWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-
-  input {
-    padding-right: 40px;
-  }
-
-  button {
-    background-color: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    display: flex;
-    position: absolute;
-    right: 2px;
-    bottom: 12px;
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-flow: row wrap;
-  gap: 8px;
-`;
-
-const Chips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
-const Ids = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-`;
-
-const PosterField = styled.div`
-  display: flex;
-  flex: 1 0 100%;
-  align-items: flex-start;
-  gap: 12px;
-
-  & > div:nth-child(2) {
-    flex: 1;
-    min-width: 0;
-  }
-`;
 
 const InitialErrors = {
   imdbId: "",
@@ -262,7 +208,7 @@ const AddMovie = () => {
   return (
     <>
       {notFound && <p>{notFound}</p>}
-      <Form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-xs">
         <TextInput
           label="Year"
           placeholder="Year"
@@ -274,8 +220,8 @@ const AddMovie = () => {
           }
           width="68px"
         />
-        <Ids>
-          <SearchInputWrapper>
+        <div className="flex w-full flex-wrap gap-xs">
+          <div className="relative flex items-center justify-between [&_input]:pr-10 [&_button]:absolute [&_button]:right-0.5 [&_button]:bottom-3 [&_button]:flex [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:outline-none">
             <TextInput
               label="Title"
               placeholder="Title"
@@ -289,8 +235,8 @@ const AddMovie = () => {
             <button type="button" onClick={() => handleSearch(true)}>
               <SearchIcon />
             </button>
-          </SearchInputWrapper>
-          <SearchInputWrapper>
+          </div>
+          <div className="relative flex items-center justify-between [&_input]:pr-10 [&_button]:absolute [&_button]:right-0.5 [&_button]:bottom-3 [&_button]:flex [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:outline-none">
             <TextInput
               label="IMDB ID"
               placeholder="IMDB ID"
@@ -306,11 +252,11 @@ const AddMovie = () => {
             <button type="button" onClick={() => handleSearch()}>
               <SearchIcon />
             </button>
-          </SearchInputWrapper>
+          </div>
           <TextInput label="TMDb ID" placeholder="TMDb ID" type="text" value={formData.tmdbId} setValue={(value: string) => setFormData((prev) => ({ ...prev, tmdbId: value }))} width="120px" />
           <TextInput label="Letterboxd ID" placeholder="Letterboxd ID" type="text" value={formData.letterboxdId} setValue={(value: string) => setFormData((prev) => ({ ...prev, letterboxdId: value }))} width="140px" />
           <TextInput label="Simkl ID" placeholder="Simkl ID" type="text" value={formData.simklId} setValue={(value: string) => setFormData((prev) => ({ ...prev, simklId: value }))} width="120px" />
-        </Ids>
+        </div>
 
         <TextInput
           label="Director"
@@ -345,7 +291,7 @@ const AddMovie = () => {
           }
           width="82px"
         />
-        <PosterField>
+        <div className="flex flex-[1_0_100%] items-start gap-3 [&>div:nth-child(2)]:min-w-0 [&>div:nth-child(2)]:flex-1">
           <PosterPreview
             url={formData.posterUrl}
             title={formData.title || "Movie"}
@@ -360,10 +306,10 @@ const AddMovie = () => {
               setFormData((prev) => ({ ...prev, posterUrl: value }))
             }
           />
-        </PosterField>
+        </div>
         <Box $marginTop="md">
           <p>Nominated Categories</p>
-          <Chips>
+          <div className="flex flex-wrap gap-xs">
             {CATEGORIES.map((category) => (
               <Chip
                 key={category}
@@ -374,13 +320,13 @@ const AddMovie = () => {
                 {category.replace("Best", "")}
               </Chip>
             ))}
-          </Chips>
+          </div>
         </Box>
 
         {nominatedCategories.length > 0 && (
           <Box $marginTop="md">
             <p>Won Categories</p>
-            <Chips>
+            <div className="flex flex-wrap gap-xs">
               {nominatedCategories.map((category) => (
                 <Chip
                   key={category}
@@ -391,7 +337,7 @@ const AddMovie = () => {
                   {category.replace("Best", "")}
                 </Chip>
               ))}
-            </Chips>
+            </div>
           </Box>
         )}
         <Box $marginTop="md">
@@ -405,7 +351,7 @@ const AddMovie = () => {
             isLoading={isSubmitting}
           />
         </Box>
-      </Form>
+      </form>
     </>
   );
 };

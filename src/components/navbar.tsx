@@ -46,23 +46,23 @@ const Navbar: React.FC = () => {
   }, [isSignedIn, router.asPath]);
 
   return (
-    <nav className="mb-sm flex items-center justify-between bg-neutral-0 py-1 pl-2 pr-4 md:mb-lg">
-      <Link className="flex items-center text-2xl text-primary-500 no-underline hover:text-primary-500 [-webkit-tap-highlight-color:rgba(255,255,255,0)] [&_img]:h-12 [&_img]:w-12 md:[&_img]:h-16 md:[&_img]:w-16 [&_span]:mt-[3px] [&_span]:tracking-[0.5px]" href="/">
+    <nav className="mb-4 flex items-center justify-between bg-white py-1 pl-2 pr-4 md:mb-8">
+      <Link className="flex items-center text-2xl text-[#bb9c38] no-underline hover:text-[#bb9c38] [-webkit-tap-highlight-color:rgba(255,255,255,0)] [&_img]:h-12 [&_img]:w-12 md:[&_img]:h-16 md:[&_img]:w-16 [&_span]:mt-[3px] [&_span]:tracking-[0.5px]" href="/">
         <Image src={logo} alt="Oscar logo" width={38} height={40} />
         <span className="hidden md:inline">OSCARS DEATH RACE</span>
       </Link>
-      <div className="flex items-center gap-sm [-webkit-tap-highlight-color:rgba(255,255,255,0)] md:gap-md [&_svg]:mt-[3px] [&_svg]:h-8 [&_svg]:w-8 [&_svg]:fill-primary-500 [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-primary-700">
-        {isAdmin && <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/admin">Admin</Link>}
-        <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/all-time">All time</Link>
-        <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/statistics">Statistics</Link>
+      <div className="flex items-center gap-4 [-webkit-tap-highlight-color:rgba(255,255,255,0)] md:gap-6 [&_svg]:mt-[3px] [&_svg]:h-8 [&_svg]:w-8 [&_svg]:fill-[#bb9c38] [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-[#897b2c]">
+        {isAdmin && <Link className="text-sm text-[#bb9c38] transition-colors hover:text-[#897b2c] md:text-base" href="/admin">Admin</Link>}
+        <Link className="text-sm text-[#bb9c38] transition-colors hover:text-[#897b2c] md:text-base" href="/all-time">All time</Link>
+        <Link className="text-sm text-[#bb9c38] transition-colors hover:text-[#897b2c] md:text-base" href="/statistics">Statistics</Link>
         {isSignedIn && (
-          <Link className="relative text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/leaderboard#invitations" aria-label={`Leaderboard${invitationCount ? `, ${invitationCount} invitations` : ""}`}>
+          <Link className="relative text-sm text-[#bb9c38] transition-colors hover:text-[#897b2c] md:text-base" href="/leaderboard#invitations" aria-label={`Leaderboard${invitationCount ? `, ${invitationCount} invitations` : ""}`}>
             Leaderboard
-            {invitationCount > 0 && <span className="absolute right-[-12px] top-[-9px] inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-red px-[5px] text-[11px] font-bold text-white">{invitationCount}</span>}
+            {invitationCount > 0 && <span className="absolute right-[-12px] top-[-9px] inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-[5px] text-[11px] font-bold text-white">{invitationCount}</span>}
           </Link>
         )}
         {!isSignedIn && (
-          <Link className="text-sm text-primary-500 transition-colors hover:text-primary-700 md:text-base" href="/login">
+          <Link className="text-sm text-[#bb9c38] transition-colors hover:text-[#897b2c] md:text-base" href="/login">
             Log in
           </Link>
         )}

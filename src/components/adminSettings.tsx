@@ -20,9 +20,9 @@ export const AdminSettings = () => {
       $maxWidth="600px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="xxxl"
+      $marginTop="16"
     >
-      <Heading size="lg" marginBottom="md">
+      <Heading size="lg" marginBottom="6">
         Admin settings
       </Heading>
       {construction == undefined ? (
@@ -31,8 +31,8 @@ export const AdminSettings = () => {
         <>
           <Flex
             $direction="column"
-            $gap="sm"
-            $marginBottom="md"
+            $gap="4"
+            $marginBottom="6"
             $alignItems="flex-start"
           >
             <Toggle

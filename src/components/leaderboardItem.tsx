@@ -29,8 +29,8 @@ export const LeaderboardItem: FC<Props> = ({
   isPending = false,
 }) => {
   return (
-    <div key={username} className={`flex items-center justify-between px-4 py-2 odd:bg-neutral-200 first:bg-primary-500 first:text-neutral-0 ${isCurrentUser ? "!bg-ui-blue-lighter !text-neutral-1000" : ""}`}>
-      <Flex $gap="sm" $alignItems="center">
+    <div key={username} className={`flex items-center justify-between px-4 py-2 odd:bg-neutral-200 first:bg-[#bb9c38] first:text-white ${isCurrentUser ? "!bg-blue-200 !text-black" : ""}`}>
+      <Flex $gap="4" $alignItems="center">
         {rank < 3 && completed ? (
           <span className="inline-block h-[30px] w-[15px] bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]" style={{ backgroundColor: TROPHY_COLORS[rank] ?? "transparent", maskImage: `url(${trophyImg.src})`, WebkitMaskImage: `url(${trophyImg.src})`, WebkitMaskSize: "contain", WebkitMaskPosition: "center", WebkitMaskRepeat: "no-repeat" }} />
         ) : (
@@ -38,7 +38,7 @@ export const LeaderboardItem: FC<Props> = ({
         )}
         <div style={{ wordBreak: "break-word" }}>{username}</div>
       </Flex>
-      <div className="flex flex-col items-end gap-0 md:flex-row-reverse md:items-center md:gap-sm">
+      <div className="flex flex-col items-end gap-0 md:flex-row-reverse md:items-center md:gap-4">
         {isPending ? (
           <span className="text-right text-[10px] md:text-xs">Pending invitation</span>
         ) : (

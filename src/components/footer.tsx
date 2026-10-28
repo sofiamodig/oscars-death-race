@@ -5,14 +5,14 @@ import Image from "next/image";
 
 const Footer = () => {
   return (
-    <Box className="mt-auto" $marginLeft="xl" $marginRight="xl" $marginBottom="xxl">
-      <Box $marginTop="xxxl" $marginBottom="md">
+    <Box className="mt-auto" $marginLeft="10" $marginRight="10" $marginBottom="12">
+      <Box $marginTop="16" $marginBottom="6">
         <Flex
           $justifyContent="center"
           $alignItems="center"
           $direction="column"
         >
-          <Paragraph textAlign="center" marginBottom="sm">
+          <Paragraph textAlign="center" marginBottom="4">
             Do you like this website and want to support it?
           </Paragraph>
           <a className="[&_img]:h-12 [&_img]:transition-transform [&_img]:duration-200 hover:[&_img]:scale-105" href="https://www.buymeacoffee.com/fordvspurrari" target="_blank">
@@ -32,8 +32,8 @@ const Footer = () => {
         $direction="column"
         $justifyContent="center"
         $alignItems="center"
-        $gap="xs"
-        $marginBottom="md"
+        $gap="2"
+        $marginBottom="6"
       >
         <Paragraph textAlign="center" size="sm">
           Questions or ideas? Contact{" "}

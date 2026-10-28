@@ -11,9 +11,9 @@ export const AllDoneTiny = () => {
       $justifyContent="center"
       $direction="row"
       $alignItems="center"
-      $marginTop="sm"
-      $marginBottom="sm"
-      $gap="sm"
+      $marginTop="4"
+      $marginBottom="4"
+      $gap="4"
     >
       <Image src={oscarsStatue} height={50} alt="Oscar statue" priority />
       <Paragraph size="lg" textAlign="center">

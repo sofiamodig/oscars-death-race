@@ -98,9 +98,9 @@ export default function Statistics({
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff"></meta>
       </Head>
-      <div className="mx-auto max-w-[1400px] px-md pt-md">
-        <h1 className="mb-sm text-[40px]">Statistics</h1>
-        <div className="mb-xs max-w-[600px] rounded-lg bg-primary-300 p-sm">
+      <div className="mx-auto max-w-[1400px] px-6 pt-6">
+        <h1 className="mb-4 text-[40px]">Statistics</h1>
+        <div className="mb-2 max-w-[600px] rounded-lg bg-amber-300 p-4">
           <p>
             <strong>Most wins:</strong> {mostWins}
           </p>
@@ -151,7 +151,7 @@ export default function Statistics({
       </div>
 
       {isSignedIn && (
-        <div className="mx-auto w-full max-w-[1400px] overflow-visible p-md">
+        <div className="mx-auto w-full max-w-[1400px] overflow-visible p-6">
           <SeenLineChart
             movies={[...movies].reverse()}
             usernames={usernames}
@@ -159,8 +159,8 @@ export default function Statistics({
         </div>
       )}
 
-      <div className="mx-auto w-full max-w-[1400px] overflow-x-auto p-md">
-        <table className="mb-xs w-full border-collapse [&_thead_tr]:bg-neutral-700 [&_thead_tr]:text-neutral-0 [&_th]:whitespace-nowrap [&_th]:p-2 [&_th]:text-left [&_td]:p-2">
+      <div className="mx-auto w-full max-w-[1400px] overflow-x-auto p-6">
+        <table className="mb-2 w-full border-collapse [&_thead_tr]:bg-neutral-700 [&_thead_tr]:text-white [&_th]:whitespace-nowrap [&_th]:p-2 [&_th]:text-left [&_td]:p-2">
           <thead>
             <tr>
               <th>Year</th>

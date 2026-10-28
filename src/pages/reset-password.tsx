@@ -46,13 +46,13 @@ const ResetPassword = () => {
       $maxWidth="400px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="md"
+      $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="lg" textAlign="center">
+      <Heading size="xxl" marginBottom="8" textAlign="center">
         Reset password
       </Heading>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -64,7 +64,7 @@ const ResetPassword = () => {
         </Box>
 
         {requestSent && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <InfoMessage>
               <InfoIcon />
               If an account exists for {email.trim()}, password reset
@@ -74,7 +74,7 @@ const ResetPassword = () => {
         )}
 
         {generalError && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <ErrorMessage>{generalError}</ErrorMessage>
           </Box>
         )}

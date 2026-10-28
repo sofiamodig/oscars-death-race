@@ -208,7 +208,7 @@ const AddMovie = () => {
   return (
     <>
       {notFound && <p>{notFound}</p>}
-      <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-xs">
+      <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-2">
         <TextInput
           label="Year"
           placeholder="Year"
@@ -220,7 +220,7 @@ const AddMovie = () => {
           }
           width="68px"
         />
-        <div className="flex w-full flex-wrap gap-xs">
+        <div className="flex w-full flex-wrap gap-2">
           <div className="relative flex items-center justify-between [&_input]:pr-10 [&_button]:absolute [&_button]:right-0.5 [&_button]:bottom-3 [&_button]:flex [&_button]:cursor-pointer [&_button]:border-0 [&_button]:bg-transparent [&_button]:outline-none">
             <TextInput
               label="Title"
@@ -307,9 +307,9 @@ const AddMovie = () => {
             }
           />
         </div>
-        <Box $marginTop="md">
+        <Box $marginTop="6">
           <p>Nominated Categories</p>
-          <div className="flex flex-wrap gap-xs">
+          <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((category) => (
               <Chip
                 key={category}
@@ -324,9 +324,9 @@ const AddMovie = () => {
         </Box>
 
         {nominatedCategories.length > 0 && (
-          <Box $marginTop="md">
+          <Box $marginTop="6">
             <p>Won Categories</p>
-            <div className="flex flex-wrap gap-xs">
+            <div className="flex flex-wrap gap-2">
               {nominatedCategories.map((category) => (
                 <Chip
                   key={category}
@@ -340,7 +340,7 @@ const AddMovie = () => {
             </div>
           </Box>
         )}
-        <Box $marginTop="md">
+        <Box $marginTop="6">
           <Button
             type="submit"
             label="Add movie"

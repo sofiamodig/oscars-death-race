@@ -261,7 +261,7 @@ export default function Home({
               </InfoMessage>
             </Box>
           )}
-          <div className="mb-2 flex flex-row flex-wrap items-center justify-start gap-xs md:[&>div:last-child]:ml-auto">
+          <div className="mb-2 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "90px" }}>
               <select onChange={(e) => setSelectedYear(e.target.value)}>
                 {yearsList.map((year) => (
@@ -357,7 +357,7 @@ export default function Home({
               />
             )}
           </div>
-          <div className="mb-sm md:[&_p]:text-right">
+          <div className="mb-4 md:[&_p]:text-right">
             <Paragraph size="xs">{getNrOfMoviesText()}</Paragraph>
           </div>
           <div className={movieGridClasses}>

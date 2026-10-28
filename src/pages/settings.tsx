@@ -200,10 +200,10 @@ export default function Settings({
 
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
-      <div className="mb-lg flex items-center justify-between gap-sm">
+      <div className="mb-8 flex items-center justify-between gap-4">
         <Heading size="lg">Settings</Heading>
         {userId && (
-          <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-secondary-500 underline hover:text-secondary-700 [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
+          <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-indigo-700 underline hover:text-indigo-900 [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M10 17l5-5-5-5" />
               <path d="M15 12H3" />
@@ -217,7 +217,7 @@ export default function Settings({
         <Loader />
       ) : (
         <>
-          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="lg">
+          <Flex $alignItems="flex-end" $gap="4" $marginBottom="8">
             <TextInput
               label="Username"
               value={username ?? ""}
@@ -229,7 +229,7 @@ export default function Settings({
               isLoading={loading === "username"}
             />
           </Flex>
-          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="lg">
+          <Flex $alignItems="flex-end" $gap="4" $marginBottom="8">
             <TextInput
               label="Change email"
               value={newEmail ?? ""}
@@ -243,8 +243,8 @@ export default function Settings({
           </Flex>
           <Flex
             $direction="column"
-            $gap="md"
-            $marginBottom="lg"
+            $gap="6"
+            $marginBottom="8"
             $alignItems="flex-start"
           >
             <Toggle
@@ -272,8 +272,8 @@ export default function Settings({
               size="sm"
             />
           </Flex>
-          <Box $marginTop="xxl" $marginBottom="lg">
-            <Heading size="md" marginBottom="sm">
+          <Box $marginTop="12" $marginBottom="8">
+            <Heading size="md" marginBottom="4">
               Movie links
             </Heading>
             <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
@@ -295,8 +295,8 @@ export default function Settings({
               ))}
             </fieldset>
           </Box>
-          <Box $marginTop="xxxl" $marginBottom="lg">
-            <Heading size="lg" marginBottom="md">
+          <Box $marginTop="16" $marginBottom="8">
+            <Heading size="lg" marginBottom="6">
               Export your data
             </Heading>
             <Button
@@ -307,14 +307,14 @@ export default function Settings({
             />
           </Box>
 
-          <Box $marginTop="xxl" $marginBottom="lg">
-            <Heading size="lg" marginBottom="sm">
+          <Box $marginTop="12" $marginBottom="8">
+            <Heading size="lg" marginBottom="4">
               Import IMDb ratings
             </Heading>
-            <Paragraph marginBottom="sm">
+            <Paragraph marginBottom="4">
               Upload your IMDb ratings CSV. Movies in this catalog will be marked as seen using their IMDb rating date.
             </Paragraph>
-            <Flex $direction="column" $gap="sm" $alignItems="flex-start">
+            <Flex $direction="column" $gap="4" $alignItems="flex-start">
               <input
                 type="file"
                 accept=".csv,text/csv"
@@ -341,7 +341,7 @@ export default function Settings({
       {isAdmin && <AdminSettings />}
 
       {userId && userSettings && (
-        <details className="mt-[112px] mb-lg border-t border-neutral-300 pt-xxl [&_summary]:w-fit [&_summary]:cursor-pointer [&_summary]:text-sm [&_summary]:font-semibold [&_summary]:text-ui-red [&_button]:mt-3">
+        <details className="mt-[112px] mb-8 border-t border-neutral-300 pt-12 [&_summary]:w-fit [&_summary]:cursor-pointer [&_summary]:text-sm [&_summary]:font-semibold [&_summary]:text-red-600 [&_button]:mt-3">
           <summary>Danger zone</summary>
           <Button
             type="button"
@@ -358,9 +358,9 @@ export default function Settings({
           onClose={() => setDeleteModal(false)}
           maxWidth="400px"
         >
-          <Flex $direction="column" $gap="sm">
+          <Flex $direction="column" $gap="4">
             <Heading size="lg">Delete account</Heading>
-            <Paragraph marginBottom="md" textAlign="center">
+            <Paragraph marginBottom="6" textAlign="center">
               Are you sure you want to delete your account? This action is
               irreversible.
             </Paragraph>

@@ -29,8 +29,8 @@ import {
   updateGroup,
 } from "@/functions/groupRequests";
 
-const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] hover:text-primary-700 ${active ? "border-primary-500 font-semibold text-primary-700" : "border-transparent text-neutral-700"}`;
-const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-ui-red underline hover:text-[#8f1b13] focus-visible:text-[#8f1b13]";
+const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] hover:text-[#897b2c] ${active ? "border-[#bb9c38] font-semibold text-[#897b2c]" : "border-transparent text-neutral-700"}`;
+const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-red-600 underline hover:text-[#8f1b13] focus-visible:text-[#8f1b13]";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
@@ -310,8 +310,8 @@ export default function Leaderboard({
       if (accept) setShowAllUsers(false);
       setGroupStatus(
         action === "accept" ? "You joined the group." :
-        action === "reject" ? "Invitation declined." :
-        action === "leave" ? "You left the group." : "Invitation dismissed."
+          action === "reject" ? "Invitation declined." :
+            action === "leave" ? "You left the group." : "Invitation dismissed."
       );
     } catch (error) {
       setGroupStatus(error instanceof Error ? error.message : "Could not update invitation.");
@@ -358,9 +358,9 @@ export default function Leaderboard({
 
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
-      <Flex $marginBottom="sm" $alignItems="flex-start">
+      <Flex $marginBottom="4" $alignItems="flex-start">
         <div>
-          <Heading as="h1" size="xl" marginBottom="xs">
+          <Heading as="h1" size="xl" marginBottom="2">
             Leaderboard
           </Heading>
           <Paragraph size="sm">
@@ -393,10 +393,10 @@ export default function Leaderboard({
         </div>
       </Flex>
       {invitations.length > 0 && (
-        <Box id="invitations" $marginBottom="lg">
-          <Heading size="md" marginBottom="sm">Group invitations ({invitations.length})</Heading>
+        <Box id="invitations" $marginBottom="8">
+          <Heading size="md" marginBottom="4">Group invitations ({invitations.length})</Heading>
           {invitations.map((invitation) => (
-            <Flex key={invitation.id} $alignItems="center" $gap="sm" $marginBottom="sm">
+            <Flex key={invitation.id} $alignItems="center" $gap="4" $marginBottom="4">
               {invitation.alreadyMember ? (
                 <>
                   <Paragraph>You have been invited to {invitation.groupName}. It is already in your groups.</Paragraph>
@@ -414,9 +414,9 @@ export default function Leaderboard({
           ))}
         </Box>
       )}
-      <Box $marginBottom="lg">
-      <div className="flex items-end gap-xs max-[600px]:flex-col max-[600px]:items-stretch">
-          <div className="mb-sm flex min-w-0 flex-1 items-center gap-1 overflow-x-auto border-b border-neutral-300 max-[600px]:mb-0 max-[600px]:w-full" role="tablist" aria-label="Choose a leaderboard">
+      <Box $marginBottom="8">
+        <div className="flex items-end gap-2 max-[600px]:flex-col max-[600px]:items-stretch">
+          <div className="mb-4 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto border-b border-neutral-300 max-[600px]:mb-0 max-[600px]:w-full" role="tablist" aria-label="Choose a leaderboard">
             {groups.map((group) => (
               <button
                 className={groupTabClasses(!showAllUsers && selectedGroupId === group.id)}
@@ -440,7 +440,7 @@ export default function Leaderboard({
             </button>
           </div>
           <button
-            className="mb-sm flex-[0_0_auto] cursor-pointer whitespace-nowrap rounded border border-primary-500 bg-transparent px-3 py-[7px] text-primary-500 hover:border-primary-700 hover:text-primary-700 max-[600px]:self-start"
+            className="mb-4 flex-[0_0_auto] cursor-pointer whitespace-nowrap rounded border border-[#bb9c38] bg-transparent px-3 py-[7px] text-[#bb9c38] hover:border-[#897b2c] hover:text-[#897b2c] max-[600px]:self-start"
             type="button"
             onClick={() => {
               setGroupModalMode("create");
@@ -456,21 +456,21 @@ export default function Leaderboard({
         {(groupStatus || (groupsLoading && !groupsError)) && <Paragraph>{groupStatus || "Loading groups…"}</Paragraph>}
       </Box>
       <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} maxWidth="520px">
-        <Heading size="lg" marginBottom="md">
+        <Heading size="lg" marginBottom="6">
           {groupModalMode === "create" ? "Add a new group" : selectedGroup?.name || ''}
         </Heading>
-        <Flex $direction="column" $alignItems="flex-start" $gap="md">
+        <Flex $direction="column" $alignItems="flex-start" $gap="6">
           {groupModalMode === "create" && (
-            <Flex $alignItems="flex-end" $gap="sm" style={{ width: "100%" }}>
+            <Flex $alignItems="flex-end" $gap="4" style={{ width: "100%" }}>
               <TextInput label="New group name" value={newGroupName} setValue={setNewGroupName} />
               <Button label="Create" onClick={createGroup} disabled={!newGroupName.trim()} />
             </Flex>
           )}
           {groupModalMode === "edit" && selectedGroup && (
             <Box $width="100%">
-              <Heading size="xs" marginBottom="xs">Members:</Heading>
+              <Heading size="xs" marginBottom="2">Members:</Heading>
               {selectedGroup.members.map((member) => (
-                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="md">
+                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="6">
                   <Paragraph>
                     {member.username}{member.status === "pending" ? " · Pending invitation" : ""}
                   </Paragraph>
@@ -516,7 +516,7 @@ export default function Leaderboard({
                 </>
               )}
               {selectedGroup.isOwner && (
-                <Box $marginTop="md">
+                <Box $marginTop="6">
                   <button className={redLinkClasses} onClick={deleteGroup}>
                     Delete group
                   </button>
@@ -529,7 +529,7 @@ export default function Leaderboard({
         </Flex>
       </Modal>
       {loading || isYearLoading ? (
-        <Flex $justifyContent="center" $marginTop="lg">
+        <Flex $justifyContent="center" $marginTop="8">
           <Loader />
         </Flex>
       ) : leaderboardError ? (
@@ -555,7 +555,7 @@ export default function Leaderboard({
         </div>
       )}
       {!groupsLoading && !showAllUsers && selectedGroup && (
-        <Box $marginTop="lg">
+        <Box $marginTop="8">
           {selectedGroup.isOwner ? (
             <Button
               label="Manage group"

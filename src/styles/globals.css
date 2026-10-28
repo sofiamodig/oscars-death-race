@@ -2,52 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary-200: #efe0af;
-  --color-primary-300: #dfc571;
-  --color-primary-500: #bb9c38;
-  --color-primary-700: #897b2c;
-  --color-secondary-500: #1c1c9a;
-  --color-secondary-700: #070750;
-  --color-neutral-1000: #000000;
-  --color-neutral-900: #0a0a0a;
-  --color-neutral-800: #292929;
-  --color-neutral-700: #3d3d3d;
-  --color-neutral-600: #525252;
-  --color-neutral-500: #adadad;
-  --color-neutral-400: #c2c2c2;
-  --color-neutral-300: #d6d6d6;
-  --color-neutral-200: #ebebeb;
-  --color-neutral-100: #f5f5f5;
-  --color-neutral-0: #ffffff;
-
-  --color-ui-light-green: #8cd29c;
-  --color-ui-green: #57af6b;
-  --color-ui-red: #dc3545;
-  --color-ui-red-darker: #9f212e;
-  --color-ui-yellow: #ffc107;
-  --color-ui-blue-lighter: #aec1e2;
-  --color-ui-blue: #3e72d0;
-
-  /* Contextual */
-  --color-text-primary: var(--color-neutral-1000);
-  --color-text-secondary: var(--color-neutral-700);
-
-  --color-success: var(--color-ui-green);
-  --color-error: var(--color-ui-red);
-  --color-warning: var(--color-ui-yellow);
-  --color-info: var(--color-ui-blue);
-
-  --link-color: blue;
-  --link-color-hover: darkblue;
-
-  --primary-button-color: var(--color-primary-500);
-  --primary-button-color-hover: var(--color-primary-700);
-
-  --secondary-button-color: var(--color-secondary-500);
-  --secondary-button-color-hover: var(--color-secondary-700);
-}
-
 html {
   height: 100%;
 }
@@ -61,8 +15,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: "NotoSans", sans-serif;
-  background-color: var(--color-neutral-100);
-  color: var(--color-text-secondary);
+  @apply bg-neutral-100 text-neutral-700;
   height: 100%;
 }
 
@@ -89,12 +42,12 @@ p {
 }
 
 a {
-  color: var(--link-color);
+  @apply text-blue-700;
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--link-color-hover);
+  @apply text-blue-900;
 }
 
 button {
@@ -106,6 +59,7 @@ button {
     animation-timing-function: cubic-bezier(0.5856, 0.0703, 0.4143, 0.9297);
     transform: rotate(0);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -116,8 +70,8 @@ button {
 }
 
 .Dropdown-control {
-  color: var(--color-neutral-900) !important;
-  border: 1px solid var(--color-neutral-200) !important;
+  @apply text-neutral-900;
+  border: 1px solid theme('colors.neutral.200') !important;
   border-radius: 4px !important;
   cursor: pointer !important;
 }
@@ -135,7 +89,7 @@ button {
 .react-calendar {
   border: none !important;
   border-radius: 4px !important;
-  box-shadow: 0 0 16px var(--color-neutral-200) !important;
+  box-shadow: 0 0 16px theme('colors.neutral.200') !important;
 }
 
 abbr[title] {
@@ -159,8 +113,7 @@ abbr[title] {
 .react-calendar__tile--active,
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  background: var(--color-primary-500) !important;
-  color: var(--color-neutral-0) !important;
+  @apply bg-[#bb9c38] text-white;
 }
 
 .react-calendar__tile:disabled {
@@ -174,29 +127,42 @@ abbr[title] {
 
 /* Base styling for the select element */
 select {
-  appearance: none; /* Removes default styling provided by the browser */
-  background-color: #fff; /* Light grey background */
+  appearance: none;
+  /* Removes default styling provided by the browser */
+  background-color: #fff;
+  /* Light grey background */
   color: #000;
-  border: 1px solid #ddd; /* Light grey border */
-  padding: 10px 32px 10px 12px; /* Padding for text */
-  border-radius: 5px; /* Rounded corners */
-  font-size: 16px; /* Text size */
-  cursor: pointer; /* Changes the cursor to a pointer */
-  outline: none; /* Removes the outline */
-  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  border: 1px solid #ddd;
+  /* Light grey border */
+  padding: 10px 32px 10px 12px;
+  /* Padding for text */
+  border-radius: 5px;
+  /* Rounded corners */
+  font-size: 16px;
+  /* Text size */
+  cursor: pointer;
+  /* Changes the cursor to a pointer */
+  outline: none;
+  /* Removes the outline */
+  transition: all 0.3s ease;
+  /* Smooth transition for hover effects */
   width: 100%;
 }
 
 /* Styling for the select element on hover */
 select:hover {
-  background-color: #f9f9f9; /* Slightly darker background on hover */
-  border-color: #ccc; /* Slightly darker border on hover */
+  background-color: #f9f9f9;
+  /* Slightly darker background on hover */
+  border-color: #ccc;
+  /* Slightly darker border on hover */
 }
 
 /* Styling for the select element on focus */
 select:focus {
-  border-color: #aaa; /* Even darker border on focus */
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow around the select */
+  border-color: #aaa;
+  /* Even darker border on focus */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  /* Adds a subtle shadow around the select */
 }
 
 /* Since we can't style the dropdown arrow of select directly with CSS,
@@ -208,14 +174,17 @@ select:focus {
 }
 
 .custom-select-wrapper::after {
-  content: "▼"; /* Custom arrow */
+  content: "▼";
+  /* Custom arrow */
   position: absolute;
   right: 12px;
   font-size: 12px;
   top: 50%;
   transform: translateY(-50%) scaleY(0.7);
-  pointer-events: none; /* Ensures the pseudo-element doesn't interfere with click events */
-  transition: transform 0.3s ease; /* Smooth transition for arrow rotation */
+  pointer-events: none;
+  /* Ensures the pseudo-element doesn't interfere with click events */
+  transition: transform 0.3s ease;
+  /* Smooth transition for arrow rotation */
 }
 
 /* Rotate the custom arrow on select open - requires JavaScript to toggle a class */

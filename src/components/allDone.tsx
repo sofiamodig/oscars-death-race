@@ -16,11 +16,11 @@ export const AllDone: FC<Props> = ({ inCategories, isPredictions }) => {
       $justifyContent="center"
       $direction="column"
       $alignItems="center"
-      $marginTop="xxl"
-      $marginBottom="xxl"
+      $marginTop="12"
+      $marginBottom="12"
     >
       <Image src={oscarsStatue} height={150} alt="Oscar statue" priority />
-      <Heading size="lg" as="h2" marginTop="sm" marginBottom="xs">
+      <Heading size="lg" as="h2" marginTop="4" marginBottom="2">
         All done!
       </Heading>
       <Paragraph size="lg" textAlign="center">

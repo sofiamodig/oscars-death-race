@@ -110,13 +110,13 @@ const Signup = () => {
       $maxWidth="400px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="md"
+      $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="lg" textAlign="center">
+      <Heading size="xxl" marginBottom="8" textAlign="center">
         Sign up
       </Heading>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             value={username}
             setValue={setUsername}
@@ -125,11 +125,11 @@ const Signup = () => {
             placeholder="Username"
             errorMessage={errors?.username}
           />
-          <Paragraph size="xs" color="var(--color-text-secondary)">
+          <Paragraph size="xs" color="#404040">
             This username will show up in the leaderboard. Spaces are allowed.
           </Paragraph>
         </Box>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -139,7 +139,7 @@ const Signup = () => {
             errorMessage={errors?.email}
           />
         </Box>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             setValue={setPassword}
             label="Password"
@@ -150,7 +150,7 @@ const Signup = () => {
           />
         </Box>
 
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <Checkbox
             label="I accept that my information will be saved to be used on this site."
             checked={acceptedTerms}
@@ -162,7 +162,7 @@ const Signup = () => {
         </Box>
 
         {errors?.general && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <ErrorMessage>
               <ErrorIcon />
               {errors.general}
@@ -171,7 +171,7 @@ const Signup = () => {
         )}
 
         {successMessage && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <InfoMessage>
               <InfoIcon />
               {successMessage}

@@ -185,7 +185,7 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
           <Line options={options} data={data} />
         </div>
       </div>
-      <div className="relative mt-xs max-w-[500px]">
+      <div className="relative mt-2 max-w-[500px]">
         <TextInput
           type="text"
           placeholder="Search username"

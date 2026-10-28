@@ -94,38 +94,7 @@ export const checkLatestYear = (year: string, movies: MoviesYearsListType) => {
   return year === latestYear;
 };
 
-export type SpacingSize =
-  | "xxs"
-  | "xs"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "xxl"
-  | "xxxl";
-
-export const spacingToPixels = (size?: SpacingSize) => {
-  switch (size) {
-    case "xxs":
-      return "4px";
-    case "xs":
-      return "8px";
-    case "sm":
-      return "16px";
-    case "md":
-      return "24px";
-    case "lg":
-      return "32px";
-    case "xl":
-      return "40px";
-    case "xxl":
-      return "48px";
-    case "xxxl":
-      return "64px";
-    default:
-      return "0px";
-  }
-};
+export type SpacingSize = "1" | "2" | "4" | "6" | "8" | "10" | "12" | "16";
 
 export const getYearsList = (movies: MoviesYearsListType) => {
   const list = Object.values(movies)

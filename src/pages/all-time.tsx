@@ -233,9 +233,9 @@ export default function AllTime({
       </Head>
       <>
         <div>
-          <div className="flex flex-col gap-sm md:flex-row md:items-center md:justify-between">
-            <Box $marginBottom="lg" $marginTop="md">
-              <Heading size="xl" marginBottom="sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <Box $marginBottom="8" $marginTop="6">
+              <Heading size="xl" marginBottom="4">
                 Nominations through the years
               </Heading>
               {!loading && allSeenMovies.length ? (
@@ -257,7 +257,7 @@ export default function AllTime({
               />
             </div>
           </div>
-          <div className="mb-md flex flex-row flex-wrap items-center justify-start gap-xs md:[&>div:last-child]:ml-auto">
+          <div className="mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "230px" }}>
               <select onChange={(e) => setSelectedCategory(e.target.value)}>
                 <option value="all">All categories</option>
@@ -316,8 +316,8 @@ export default function AllTime({
 
                 if (allWasSeen && hideSeen) {
                   return (
-                    <div key={obj.year} className="mb-md border-b border-neutral-300 pb-md">
-                      <div className="flex flex-col items-center justify-center rounded-lg bg-primary-200 p-xs">
+                    <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-6">
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-[#efe0af] p-2">
                         <Heading size="lg">{obj.year}</Heading>All done!
                       </div>
                     </div>
@@ -325,8 +325,8 @@ export default function AllTime({
                 }
 
                 return (
-                  <div key={obj.year} className="mb-md border-b border-neutral-300 pb-xxl">
-                    <div className="mb-md flex justify-center rounded-lg bg-primary-200 p-xs">
+                  <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-12">
+                    <div className="mb-6 flex justify-center rounded-lg bg-[#efe0af] p-2">
                       <Heading size="lg">{obj.year}</Heading>
                     </div>
                     <div className={movieGridClasses}>

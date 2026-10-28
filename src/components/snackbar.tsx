@@ -42,7 +42,7 @@ const Snackbar: React.FC<Props> = ({
   }, [message, duration]);
 
   return ReactDOM.createPortal(
-    <div className={`fixed bottom-6 right-6 z-[1000] flex items-center justify-center rounded-lg bg-neutral-0 px-4 py-2 text-center text-sm shadow-[0_0_10px_var(--color-neutral-400)] transition-opacity duration-300 ${isVisible ? "visible opacity-100" : "invisible opacity-0"} ${type === "success" ? "text-success [&_svg]:fill-success" : type === "error" ? "text-error [&_svg]:fill-error" : "text-neutral-900 [&_svg]:fill-info"} [&_svg]:mr-2`}>
+    <div className={`fixed bottom-6 right-6 z-[1000] flex items-center justify-center rounded-lg bg-white px-4 py-2 text-center text-sm shadow-[0_0_10px_#a3a3a3] transition-opacity duration-300 ${isVisible ? "visible opacity-100" : "invisible opacity-0"} ${type === "success" ? "text-green-600 [&_svg]:fill-green-600" : type === "error" ? "text-red-600 [&_svg]:fill-red-600" : "text-neutral-900 [&_svg]:fill-blue-600"} [&_svg]:mr-2`}>
       {Icon(type)}
       {message}
     </div>,

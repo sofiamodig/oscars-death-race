@@ -9,13 +9,13 @@ const NotFound = () => {
     <Flex
       $direction="column"
       $justifyContent="center"
-      $marginTop="xxl"
-      $marginBottom="xxl"
+      $marginTop="12"
+      $marginBottom="12"
     >
-      <Heading size="xxl" marginBottom="xs">
+      <Heading size="xxl" marginBottom="2">
         Oh no!
       </Heading>
-      <Paragraph marginBottom="lg" textAlign="center">
+      <Paragraph marginBottom="8" textAlign="center">
         The page you were looking for cannot be found.
       </Paragraph>
       <div className="w-[95%] max-w-[600px] [&_img]:h-auto [&_img]:w-full">

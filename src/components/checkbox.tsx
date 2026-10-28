@@ -21,10 +21,10 @@ export const Checkbox: FC<Props> = ({ label, checked, onChange }) => {
         onChange={handleInputChange}
         className="absolute z-[-1] opacity-0"
       />
-      <div className="h-6 min-w-6 rounded border border-neutral-500 bg-neutral-0" onClick={() => onChange(!checked)}>
+      <div className="h-6 min-w-6 rounded border border-neutral-500 bg-white" onClick={() => onChange(!checked)}>
         {checked && <CheckIcon />}
       </div>
-      <label className="ml-xs cursor-pointer text-sm" htmlFor={label}>{label}</label>
+      <label className="ml-2 cursor-pointer text-sm" htmlFor={label}>{label}</label>
     </div>
   );
 };

@@ -22,7 +22,7 @@ const SkeletonLoader: FC<Props> = ({ width = "100%", height = "auto", round = fa
     "--skeleton-height-xl": responsiveValue(height, "$xl"),
   } as React.CSSProperties;
 
-  return <div style={style} className={`animate-shimmer bg-[linear-gradient(to_right,var(--color-neutral-100)_4%,var(--color-neutral-200)_25%,var(--color-neutral-100)_36%)] bg-[length:1000px_100%] h-[var(--skeleton-height-sm)] w-[var(--skeleton-width-sm)] md:h-[var(--skeleton-height-md)] md:w-[var(--skeleton-width-md)] lg:h-[var(--skeleton-height-lg)] lg:w-[var(--skeleton-width-lg)] xl:h-[var(--skeleton-height-xl)] xl:w-[var(--skeleton-width-xl)] ${round ? "aspect-square rounded-full" : "rounded-sm"} ${className}`} />;
+  return <div style={style} className={`animate-shimmer bg-[linear-gradient(to_right,#f5f5f5_4%,#e5e5e5_25%,#f5f5f5_36%)] bg-[length:1000px_100%] h-[var(--skeleton-height-sm)] w-[var(--skeleton-width-sm)] md:h-[var(--skeleton-height-md)] md:w-[var(--skeleton-width-md)] lg:h-[var(--skeleton-height-lg)] lg:w-[var(--skeleton-width-lg)] xl:h-[var(--skeleton-height-xl)] xl:w-[var(--skeleton-width-xl)] ${round ? "aspect-square rounded-full" : "rounded-sm"} ${className}`} />;
 };
 
 export default SkeletonLoader;

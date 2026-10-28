@@ -70,13 +70,13 @@ const Login = () => {
       $maxWidth="400px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="md"
+      $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="lg" textAlign="center">
+      <Heading size="xxl" marginBottom="8" textAlign="center">
         Log in
       </Heading>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -86,7 +86,7 @@ const Login = () => {
             errorMessage={errors?.email}
           />
         </Box>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             setValue={setPassword}
             label="Password"
@@ -98,7 +98,7 @@ const Login = () => {
         </Box>
 
         {errors?.general && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <ErrorMessage>
               <ErrorIcon />
               {errors.general}
@@ -112,7 +112,7 @@ const Login = () => {
           isLoading={loading}
           width="100%"
         />
-        <Box $marginTop="sm">
+        <Box $marginTop="4">
           <Paragraph size="sm" textAlign="right">
             <Link href="/reset-password">Forgot password?</Link>
           </Paragraph>

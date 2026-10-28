@@ -15,14 +15,14 @@ type BoxProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const spacingClasses: Record<SpacingSize, { pt: string; pb: string; pl: string; pr: string; mt: string; mb: string; ml: string; mr: string }> = {
-  xxs: { pt: "pt-xxs", pb: "pb-xxs", pl: "pl-xxs", pr: "pr-xxs", mt: "mt-xxs", mb: "mb-xxs", ml: "ml-xxs", mr: "mr-xxs" },
-  xs: { pt: "pt-xs", pb: "pb-xs", pl: "pl-xs", pr: "pr-xs", mt: "mt-xs", mb: "mb-xs", ml: "ml-xs", mr: "mr-xs" },
-  sm: { pt: "pt-sm", pb: "pb-sm", pl: "pl-sm", pr: "pr-sm", mt: "mt-sm", mb: "mb-sm", ml: "ml-sm", mr: "mr-sm" },
-  md: { pt: "pt-md", pb: "pb-md", pl: "pl-md", pr: "pr-md", mt: "mt-md", mb: "mb-md", ml: "ml-md", mr: "mr-md" },
-  lg: { pt: "pt-lg", pb: "pb-lg", pl: "pl-lg", pr: "pr-lg", mt: "mt-lg", mb: "mb-lg", ml: "ml-lg", mr: "mr-lg" },
-  xl: { pt: "pt-xl", pb: "pb-xl", pl: "pl-xl", pr: "pr-xl", mt: "mt-xl", mb: "mb-xl", ml: "ml-xl", mr: "mr-xl" },
-  xxl: { pt: "pt-xxl", pb: "pb-xxl", pl: "pl-xxl", pr: "pr-xxl", mt: "mt-xxl", mb: "mb-xxl", ml: "ml-xxl", mr: "mr-xxl" },
-  xxxl: { pt: "pt-xxxl", pb: "pb-xxxl", pl: "pl-xxxl", pr: "pr-xxxl", mt: "mt-xxxl", mb: "mb-xxxl", ml: "ml-xxxl", mr: "mr-xxxl" },
+  "1": { pt: "pt-1", pb: "pb-1", pl: "pl-1", pr: "pr-1", mt: "mt-1", mb: "mb-1", ml: "ml-1", mr: "mr-1" },
+  "2": { pt: "pt-2", pb: "pb-2", pl: "pl-2", pr: "pr-2", mt: "mt-2", mb: "mb-2", ml: "ml-2", mr: "mr-2" },
+  "4": { pt: "pt-4", pb: "pb-4", pl: "pl-4", pr: "pr-4", mt: "mt-4", mb: "mb-4", ml: "ml-4", mr: "mr-4" },
+  "6": { pt: "pt-6", pb: "pb-6", pl: "pl-6", pr: "pr-6", mt: "mt-6", mb: "mb-6", ml: "ml-6", mr: "mr-6" },
+  "8": { pt: "pt-8", pb: "pb-8", pl: "pl-8", pr: "pr-8", mt: "mt-8", mb: "mb-8", ml: "ml-8", mr: "mr-8" },
+  "10": { pt: "pt-10", pb: "pb-10", pl: "pl-10", pr: "pr-10", mt: "mt-10", mb: "mb-10", ml: "ml-10", mr: "mr-10" },
+  "12": { pt: "pt-12", pb: "pb-12", pl: "pl-12", pr: "pr-12", mt: "mt-12", mb: "mb-12", ml: "ml-12", mr: "mr-12" },
+  "16": { pt: "pt-16", pb: "pb-16", pl: "pl-16", pr: "pr-16", mt: "mt-16", mb: "mb-16", ml: "ml-16", mr: "mr-16" },
 };
 
 export const Box = React.forwardRef<HTMLDivElement, BoxProps>(function Box(

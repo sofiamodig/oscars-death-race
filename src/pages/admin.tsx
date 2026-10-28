@@ -239,7 +239,7 @@ export default function Admin({
 
   return (
     <div>
-      <Box $marginBottom="xl">
+      <Box $marginBottom="10">
         <Button
           type="button"
           label="Trigger deploy"
@@ -253,7 +253,7 @@ export default function Admin({
       <AddMovie />
 
       <Flex
-        $marginTop="xl"
+        $marginTop="10"
         $justifyContent="space-between"
         $alignItems="center"
       >
@@ -268,7 +268,7 @@ export default function Admin({
         />
       </Flex>
 
-      <label className="mt-sm inline-flex cursor-pointer items-center gap-xs">
+      <label className="mt-4 inline-flex cursor-pointer items-center gap-2">
         <input
           type="checkbox"
           checked={showBrokenPostersOnly}
@@ -282,7 +282,7 @@ export default function Admin({
       )}
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && posterScan.done && (
-        <div className="mt-sm flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button
             type="button"
             label={`Find posters for all (${moviesWithoutCandidate.length})`}
@@ -297,7 +297,7 @@ export default function Admin({
       )}
 
       {showBrokenPostersOnly && (stagedPosters.length > 0 || posterSaveStatus) && (
-        <div className="mt-sm flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           {stagedPosters.length > 0 && (
             <Button
               type="button"

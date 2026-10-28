@@ -92,14 +92,14 @@ const EditMovie: FC<Props> = ({
   };
 
   return (
-    <div className="mt-sm flex items-start gap-2.5 border-t border-neutral-500 py-sm sm:gap-sm">
+    <div className="mt-4 flex items-start gap-2.5 border-t border-neutral-500 py-4 sm:gap-4">
       <PosterPreview url={posterUrl} title={title} />
       <div className="min-w-0 flex-1">
         <Heading size="sm" as="h2">
           {title} <br />
           {(!showEdit || !showNominations) && (
             <button
-              className="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-ui-blue"
+              className="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-blue-600"
               onClick={() => {
                 setShowNominations(true);
                 setShowEdit(true);
@@ -110,9 +110,9 @@ const EditMovie: FC<Props> = ({
           )}
         </Heading>
 
-        <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-xs">
+        <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-2">
           {showEdit && (
-            <Box $marginTop="sm">
+            <Box $marginTop="4">
               <TextInput
                 label="Poster URL"
                 value={posterUrl}
@@ -123,7 +123,7 @@ const EditMovie: FC<Props> = ({
           )}
 
           {showEdit && (
-            <Box $marginTop="sm">
+            <Box $marginTop="4">
               <Button
                 type="button"
                 label="Remove"
@@ -137,9 +137,9 @@ const EditMovie: FC<Props> = ({
           )}
 
           {showNominations && (
-            <Box $marginTop="sm">
+            <Box $marginTop="4">
               <p>Nominated Categories</p>
-              <div className="flex flex-wrap gap-xs">
+              <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((category) => (
                   <Chip
                     key={category}
@@ -155,9 +155,9 @@ const EditMovie: FC<Props> = ({
           )}
 
           {(nominatedCategories.length > 0 || wonCategories.length > 0) && (
-            <Box $marginTop="md">
+            <Box $marginTop="6">
               <p>Won Categories</p>
-              <div className="flex flex-wrap gap-xs">
+              <div className="flex flex-wrap gap-2">
                 {nominatedCategories.map((category) => (
                   <Chip
                     key={category}
@@ -171,7 +171,7 @@ const EditMovie: FC<Props> = ({
               </div>
             </Box>
           )}
-          <Box $marginTop="md" $width="100%">
+          <Box $marginTop="6" $width="100%">
             <Button
               type="submit"
               label="Save"

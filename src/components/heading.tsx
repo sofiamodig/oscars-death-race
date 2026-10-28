@@ -33,20 +33,20 @@ const elementBySize: Record<Size, keyof JSX.IntrinsicElements> = {
   xxxl: "h1",
 };
 const spacingClasses: Record<SpacingSize, { mt: string; mb: string }> = {
-  xxs: { mt: "mt-xxs", mb: "mb-xxs" },
-  xs: { mt: "mt-xs", mb: "mb-xs" },
-  sm: { mt: "mt-sm", mb: "mb-sm" },
-  md: { mt: "mt-md", mb: "mb-md" },
-  lg: { mt: "mt-lg", mb: "mb-lg" },
-  xl: { mt: "mt-xl", mb: "mb-xl" },
-  xxl: { mt: "mt-xxl", mb: "mb-xxl" },
-  xxxl: { mt: "mt-xxxl", mb: "mb-xxxl" },
+  "1": { mt: "mt-1", mb: "mb-1" },
+  "2": { mt: "mt-2", mb: "mb-2" },
+  "4": { mt: "mt-4", mb: "mb-4" },
+  "6": { mt: "mt-6", mb: "mb-6" },
+  "8": { mt: "mt-8", mb: "mb-8" },
+  "10": { mt: "mt-10", mb: "mb-10" },
+  "12": { mt: "mt-12", mb: "mb-12" },
+  "16": { mt: "mt-16", mb: "mb-16" },
 };
 
 export const Heading: React.FC<TypographyProps> = ({
   as,
   size = "md",
-  color = "var(--color-text-primary)",
+  color = "#000000",
   marginTop,
   marginBottom,
   textAlign = "left",

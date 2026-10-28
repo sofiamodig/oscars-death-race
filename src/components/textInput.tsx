@@ -27,9 +27,9 @@ export const TextInput: React.FC<InputProps> = ({
 }) => {
   return (
     <div className="flex w-full flex-col" style={{ ...style, width: width ?? style?.width }}>
-      {label && <label className="mb-xxs text-sm font-medium text-neutral-700">{label}</label>}
+      {label && <label className="mb-1 text-sm font-medium text-neutral-700">{label}</label>}
       <input
-        className={`h-12 rounded border px-4 py-2 text-base outline-none focus:border-neutral-400 autofill:shadow-[inset_0_0_0_30px_white] ${errorMessage ? "border-error" : "border-neutral-200"}`}
+        className={`h-12 rounded border px-4 py-2 text-base outline-none focus:border-neutral-400 autofill:shadow-[inset_0_0_0_30px_white] ${errorMessage ? "border-red-600" : "border-neutral-200"}`}
         type={type}
         placeholder={placeholder}
         value={value}
@@ -37,7 +37,7 @@ export const TextInput: React.FC<InputProps> = ({
         onBlur={onBlur}
         disabled={disabled}
       />
-      {errorMessage && <div className="mt-xxs text-xs text-error">{errorMessage}</div>}
+      {errorMessage && <div className="mt-1 text-xs text-red-600">{errorMessage}</div>}
     </div>
   );
 };

@@ -12,7 +12,6 @@ import {
 } from "@/utils";
 import { MovieCard } from "@/components/movieCard";
 import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
-import { Paragraph } from "@/components/paragraph";
 import { ProgressBar } from "@/components/progressBar";
 import { Toggle } from "@/components/toggle";
 import { Box } from "@/styles/Box";
@@ -203,13 +202,11 @@ export default function Home({
     });
 
     if (selectedCategories.length) {
-      return `${seenMoviesInCategory?.length ?? 0} / ${
-        filteredMovies?.length
-      } movies`;
+      return `${seenMoviesInCategory?.length ?? 0} / ${filteredMovies?.length
+        } movies`;
     } else {
-      return `${seenMoviesList?.length ?? 0} / ${
-        filteredMovies?.length
-      } movies`;
+      return `${seenMoviesList?.length ?? 0} / ${filteredMovies?.length
+        } movies`;
     }
   };
 
@@ -273,9 +270,8 @@ export default function Home({
             </div>
             {(!isLatestYear || (isLatestYear && !predictions)) && (
               <div
-                className={`custom-multiselect ${
-                  categoriesOptionsOpen ? "open" : ""
-                }`}
+                className={`custom-multiselect ${categoriesOptionsOpen ? "open" : ""
+                  }`}
                 style={{ width: "230px" }}
                 tabIndex={0}
                 onBlur={(e) => {
@@ -295,21 +291,21 @@ export default function Home({
                   title={
                     selectedCategories.length
                       ? sortCategories(selectedCategories)
-                          .map(
-                            (v) =>
-                              categoriesList.find((c) => c.value === v)?.label
-                          )
-                          .join(", ")
-                      : "All categories"
-                  }
-                >
-                  {selectedCategories.length
-                    ? sortCategories(selectedCategories)
                         .map(
                           (v) =>
                             categoriesList.find((c) => c.value === v)?.label
                         )
                         .join(", ")
+                      : "All categories"
+                  }
+                >
+                  {selectedCategories.length
+                    ? sortCategories(selectedCategories)
+                      .map(
+                        (v) =>
+                          categoriesList.find((c) => c.value === v)?.label
+                      )
+                      .join(", ")
                     : "All categories"}
                 </div>
 
@@ -358,7 +354,7 @@ export default function Home({
             )}
           </div>
           <div className="mb-4 md:[&_p]:text-right">
-            <Paragraph size="xs">{getNrOfMoviesText()}</Paragraph>
+            <p className="text-xs">{getNrOfMoviesText()}</p>
           </div>
           <div className={movieGridClasses}>
             {moviesToDisplay?.map((movie) => (

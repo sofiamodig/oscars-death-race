@@ -1,6 +1,4 @@
 import { Flex } from "@/styles/Flex";
-import { Heading } from "./heading";
-import { Paragraph } from "./paragraph";
 import logo from "@/assets/images/oscarlogo.png";
 import Image from "next/image";
 import { FC } from "react";
@@ -14,12 +12,12 @@ export const UnderConstruction: FC<Props> = ({ autoHeight }) => {
     <div className={`flex flex-col items-center justify-center p-8 ${autoHeight ? "h-auto" : "h-screen"} [&_img]:h-auto [&_img]:w-[150px] [&_img]:aspect-[351/397]`}>
       <Flex $justifyContent="center" $direction="column" $gap="4">
         <Image src={logo} alt="logo" priority />
-        <Heading size="xxl" textAlign="center">
+        <h1 className="heading text-3xl text-center">
           Under construction
-        </Heading>
-        <Paragraph size="lg" textAlign="center">
+        </h1>
+        <p className="text-xl text-center">
           This page is currently under construction. Please check back later.
-        </Paragraph>
+        </p>
       </Flex>
     </div>
   );

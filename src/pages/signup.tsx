@@ -5,8 +5,6 @@ import { ErrorIcon } from "@/assets/icons/ErrorIcon";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
 import { Checkbox } from "@/components/checkbox";
-import { Heading } from "@/components/heading";
-import { Paragraph } from "@/components/paragraph";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -112,9 +110,9 @@ const Signup = () => {
       $marginRight="auto"
       $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="8" textAlign="center">
+      <h1 className="heading text-3xl !mb-8 text-center">
         Sign up
-      </Heading>
+      </h1>
       <form onSubmit={handleForm}>
         <Box $marginBottom="6">
           <TextInput
@@ -125,9 +123,9 @@ const Signup = () => {
             placeholder="Username"
             errorMessage={errors?.username}
           />
-          <Paragraph size="xs" color="#404040">
+          <p className="text-xs">
             This username will show up in the leaderboard. Spaces are allowed.
-          </Paragraph>
+          </p>
         </Box>
         <Box $marginBottom="6">
           <TextInput

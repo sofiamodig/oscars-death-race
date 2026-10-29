@@ -1,6 +1,5 @@
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
-import { Paragraph } from "./paragraph";
 import Image from "next/image";
 
 const Footer = () => {
@@ -12,9 +11,9 @@ const Footer = () => {
           $alignItems="center"
           $direction="column"
         >
-          <Paragraph textAlign="center" marginBottom="4">
+          <p className=" !mb-4 text-center">
             Do you like this website and want to support it?
-          </Paragraph>
+          </p>
           <a className="[&_img]:h-12 [&_img]:transition-transform [&_img]:duration-200 hover:[&_img]:scale-105" href="https://www.buymeacoffee.com/fordvspurrari" target="_blank">
             <div className="aspect-[545/153] w-full max-w-[200px]">
               <Image
@@ -35,18 +34,18 @@ const Footer = () => {
         $gap="2"
         $marginBottom="6"
       >
-        <Paragraph textAlign="center" size="sm">
+        <p className="text-sm text-center">
           Questions or ideas? Contact{" "}
           <a href="https://www.reddit.com/user/fordvspurrari/" target="_BLANK">
             @fordvspurrari
           </a>{" "}
           on reddit
-        </Paragraph>
-        <Paragraph size="sm">
+        </p>
+        <p className="text-sm">
           <a href="https://www.reddit.com/r/oscarsdeathrace/" target="_BLANK">
             r/oscarsdeathrace
           </a>
-        </Paragraph>
+        </p>
       </Flex>
     </Box>
   );

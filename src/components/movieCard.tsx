@@ -3,6 +3,7 @@ import { FC, HTMLAttributes, useContext, useEffect, useState } from "react";
 import { formatCategory, minutesToHours, sortCategories } from "../utils";
 
 import { Calendar } from "react-calendar";
+//@ts-ignore
 import "react-calendar/dist/Calendar.css";
 import statueImage from "../assets/images/oscar-statue.png";
 import { SeenContext } from "@/contexts/seenContext";
@@ -14,8 +15,6 @@ import { PenIcon } from "@/assets/icons/PenIcon";
 import Image from "next/image";
 import { ChevronRightIcon } from "@/assets/icons/ChevronRightIcon";
 import { Modal } from "./modal";
-import { Heading } from "./heading";
-import { Paragraph } from "./paragraph";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Button } from "./button";
@@ -127,19 +126,20 @@ export const MovieCard: FC<Props> = ({
           <Content>
             <div className="mb-4">
               <h2 className="m-0 mb-0 pr-10 text-xl font-semibold max-[450px]:text-base [&_img]:mb-[-3px] [&_img]:mr-1">
-                <div className="inline-block">
-                  <div className="flex mr-1">
-
-                    {data.wonCategories?.map((cat) => (
-                      <Image
-                        key={cat}
-                        src={statueImage}
-                        height={30}
-                        alt="Oscars statue"
-                      />
-                    ))}
+                {data.wonCategories && data.wonCategories.length > 0 && (
+                  <div className="inline-block">
+                    <div className="flex mr-1">
+                      {data.wonCategories?.map((cat) => (
+                        <Image
+                          key={cat}
+                          src={statueImage}
+                          height={30}
+                          alt="Oscars statue"
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
                 {data.title}
               </h2>
               {data.duration && <div className="text-[10px]">{minutesToHours(data.duration)}</div>}
@@ -188,13 +188,13 @@ export const MovieCard: FC<Props> = ({
         onClose={() => setSignInModalOpen(false)}
         maxWidth="400px"
       >
-        <Heading size="lg" as="h2" marginBottom="4" textAlign="center">
+        <h2 className="heading text-2xl !mb-4 text-center">
           You need to log in
-        </Heading>
-        <Paragraph textAlign="center">
+        </h2>
+        <p className=" text-center">
           You need to sign in to add movies to your seen list. If you don&apos;t
           have an account you can create one for.
-        </Paragraph>
+        </p>
         <Box $marginTop="6">
           <Flex $gap="4" $justifyContent="center">
             <Button

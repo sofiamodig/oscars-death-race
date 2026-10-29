@@ -2,7 +2,6 @@ import { useSiteInfoContext } from "@/contexts/siteInfoContext";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
-import { Heading } from "./heading";
 import { Toggle } from "./toggle";
 
 export const AdminSettings = () => {
@@ -22,9 +21,9 @@ export const AdminSettings = () => {
       $marginRight="auto"
       $marginTop="16"
     >
-      <Heading size="lg" marginBottom="6">
+      <h2 className="heading text-2xl !mb-6">
         Admin settings
-      </Heading>
+      </h2>
       {construction == undefined ? (
         <Loader />
       ) : (

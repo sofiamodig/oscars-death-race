@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
-import { Heading } from "./heading";
 import { PosterPreview } from "./posterPreview";
 import { TextInput } from "./textInput";
 
@@ -49,7 +48,7 @@ export const BrokenPosterMovie = ({
     <div className="mt-4 flex items-start gap-2.5 border-t border-neutral-500 py-4 sm:gap-4">
       <PosterPreview url={candidate?.posterUrl ?? currentPosterUrl} title={title} />
       <div className="min-w-0 flex-1">
-        <Heading size="sm" as="h2">{title}</Heading>
+        <h2 className="heading">{title}</h2>
         <p className="my-2 text-sm">IMDb: {id}</p>
         {candidate && <p className="my-2 text-sm">OMDb match: {candidate.title || title}</p>}
         {candidate && (

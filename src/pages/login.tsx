@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { ErrorIcon } from "@/assets/icons/ErrorIcon";
 import { Button } from "@/components/button";
-import { Heading } from "@/components/heading";
-import { Paragraph } from "@/components/paragraph";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,9 +70,9 @@ const Login = () => {
       $marginRight="auto"
       $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="8" textAlign="center">
+      <h1 className="heading text-3xl !mb-8 text-center">
         Log in
-      </Heading>
+      </h1>
       <form onSubmit={handleForm}>
         <Box $marginBottom="6">
           <TextInput
@@ -113,9 +111,9 @@ const Login = () => {
           width="100%"
         />
         <Box $marginTop="4">
-          <Paragraph size="sm" textAlign="right">
+          <p className="text-sm text-right">
             <Link href="/reset-password">Forgot password?</Link>
-          </Paragraph>
+          </p>
         </Box>
       </form>
     </Box>

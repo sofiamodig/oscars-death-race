@@ -149,11 +149,11 @@ export const minutesToHours = (minutes: number) => {
   const remainingMinutes = minutes % 60;
 
   if (Math.round(remainingMinutes) === 60) {
-    return `${hours + 1}h 0min`;
+    return `${hours + 1}h 0 min`;
   } else if (hours < 1) {
-    return `${remainingMinutes}min`;
+    return `${remainingMinutes} min`;
   } else {
-    return `${hours}h ${Math.round(remainingMinutes)}min`;
+    return `${hours}h ${Math.round(remainingMinutes)} min`;
   }
 };
 

@@ -5,7 +5,6 @@ import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
-import { Heading } from "./heading";
 import { TextInput } from "./textInput";
 import { PosterPreview } from "./posterPreview";
 
@@ -95,7 +94,7 @@ const EditMovie: FC<Props> = ({
     <div className="mt-4 flex items-start gap-2.5 border-t border-neutral-500 py-4 sm:gap-4">
       <PosterPreview url={posterUrl} title={title} />
       <div className="min-w-0 flex-1">
-        <Heading size="sm" as="h2">
+        <h2 className="heading">
           {title} <br />
           {(!showEdit || !showNominations) && (
             <button
@@ -108,7 +107,7 @@ const EditMovie: FC<Props> = ({
               Edit
             </button>
           )}
-        </Heading>
+        </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-2">
           {showEdit && (

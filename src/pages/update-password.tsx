@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ErrorIcon } from "@/assets/icons/ErrorIcon";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
-import { Heading } from "@/components/heading";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { Box } from "@/styles/Box";
@@ -78,9 +77,9 @@ const UpdatePassword = () => {
       $marginRight="auto"
       $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="8" textAlign="center">
+      <h1 className="heading text-3xl !mb-8 text-center">
         Choose a new password
-      </Heading>
+      </h1>
 
       {checkingSession ? (
         <InfoMessage>Checking your password reset link…</InfoMessage>

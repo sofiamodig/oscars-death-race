@@ -1,9 +1,7 @@
 import { AdminSettings } from "@/components/adminSettings";
 import { Button } from "@/components/button";
 import exportToCsv from "@/components/exportToCSV";
-import { Heading } from "@/components/heading";
 import { Modal } from "@/components/modal";
-import { Paragraph } from "@/components/paragraph";
 import { TextInput } from "@/components/textInput";
 import { Toggle } from "@/components/toggle";
 import { useSeenContext } from "@/contexts/seenContext";
@@ -201,7 +199,7 @@ export default function Settings({
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
       <div className="mb-8 flex items-center justify-between gap-4">
-        <Heading size="lg">Settings</Heading>
+        <h2 className="heading text-2xl">Settings</h2>
         {userId && (
           <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-indigo-700 underline hover:text-indigo-900 [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -251,7 +249,6 @@ export default function Settings({
               label="Hide seen dates in the movie list"
               value={userSettings.hideSeenDates ?? false}
               onToggle={toggleShowSeenDates}
-              size="sm"
             />
             <Toggle
               label="Show your user in the leaderboard"
@@ -260,7 +257,6 @@ export default function Settings({
                 setShowInLeaderboard((prev) => !prev);
                 changeShowInLeaderboard();
               }}
-              size="sm"
             />
             <Toggle
               label="Progress by watchtime instead of movie count"
@@ -269,13 +265,12 @@ export default function Settings({
                 setPercentageByWatchTime((prev) => !prev);
                 togglePercentageByWatchTime();
               }}
-              size="sm"
             />
           </Flex>
           <Box $marginTop="12" $marginBottom="8">
-            <Heading size="md" marginBottom="4">
+            <h3 className="heading text-lg !mb-4">
               Movie links
-            </Heading>
+            </h3>
             <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
               <legend>Open movies with:</legend>
               {([
@@ -296,9 +291,9 @@ export default function Settings({
             </fieldset>
           </Box>
           <Box $marginTop="16" $marginBottom="8">
-            <Heading size="lg" marginBottom="6">
+            <h2 className="heading text-2xl !mb-6">
               Export your data
-            </Heading>
+            </h2>
             <Button
               type="button"
               onClick={handleExport}
@@ -308,12 +303,12 @@ export default function Settings({
           </Box>
 
           <Box $marginTop="12" $marginBottom="8">
-            <Heading size="lg" marginBottom="4">
+            <h2 className="heading text-2xl !mb-4">
               Import IMDb ratings
-            </Heading>
-            <Paragraph marginBottom="4">
+            </h2>
+            <p className="!mb-4">
               Upload your IMDb ratings CSV. Movies in this catalog will be marked as seen using their IMDb rating date.
-            </Paragraph>
+            </p>
             <Flex $direction="column" $gap="4" $alignItems="flex-start">
               <input
                 type="file"
@@ -331,7 +326,7 @@ export default function Settings({
                 isLoading={isImporting}
                 disabled={!imdbFile || isImporting}
               />
-              {importStatus && <Paragraph>{importStatus}</Paragraph>}
+              {importStatus && <p className="">{importStatus}</p>}
             </Flex>
           </Box>
 
@@ -359,11 +354,11 @@ export default function Settings({
           maxWidth="400px"
         >
           <Flex $direction="column" $gap="4">
-            <Heading size="lg">Delete account</Heading>
-            <Paragraph marginBottom="6" textAlign="center">
+            <h2 className="heading text-2xl">Delete account</h2>
+            <p className=" !mb-6 text-center">
               Are you sure you want to delete your account? This action is
               irreversible.
-            </Paragraph>
+            </p>
             <Box>
               <Button
                 onClick={deleteUserData}

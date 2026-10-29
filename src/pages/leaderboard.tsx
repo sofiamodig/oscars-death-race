@@ -4,7 +4,6 @@ import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { MoviesYearsListType } from "@/types";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { useSeenContext } from "@/contexts/seenContext";
-import { Heading } from "@/components/heading";
 import { LeaderboardItem } from "@/components/leaderboardItem";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
@@ -16,7 +15,6 @@ import {
   fetchLeaderboardInitial,
   fetchUsersForYear,
 } from "@/functions/fetchUsers";
-import { Paragraph } from "@/components/paragraph";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/textInput";
 import { Modal } from "@/components/modal";
@@ -360,22 +358,22 @@ export default function Leaderboard({
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
       <Flex $marginBottom="4" $alignItems="flex-start">
         <div>
-          <Heading as="h1" size="xl" marginBottom="2">
+          <h1 className="heading text-3xl !mb-2">
             Leaderboard
-          </Heading>
-          <Paragraph size="sm">
+          </h1>
+          <p className="text-sm">
             The leaderboard is updated once per day. The interval is shortened
             closer to the oscars.
-          </Paragraph>
-          {/* <Paragraph size="sm">
+          </p>
+          {/* <p className="text-sm">
             The leaderboard is updated every 20 minutes.
-          </Paragraph> */}
+          </p> */}
           {selectedYear === "all" && (
-            <Paragraph size="sm">
+            <p className="text-sm">
               All years are combined to the ultimate race! 🏆 In total there are{" "}
               {movies.map((year) => year.movies).flat().length} movies to watch.
               This list shows the top 100 users.
-            </Paragraph>
+            </p>
           )}
         </div>
         <div
@@ -394,18 +392,18 @@ export default function Leaderboard({
       </Flex>
       {invitations.length > 0 && (
         <Box id="invitations" $marginBottom="8">
-          <Heading size="md" marginBottom="4">Group invitations ({invitations.length})</Heading>
+          <h3 className="heading text-lg !mb-4">Group invitations ({invitations.length})</h3>
           {invitations.map((invitation) => (
             <Flex key={invitation.id} $alignItems="center" $gap="4" $marginBottom="4">
               {invitation.alreadyMember ? (
                 <>
-                  <Paragraph>You have been invited to {invitation.groupName}. It is already in your groups.</Paragraph>
+                  <p className="">You have been invited to {invitation.groupName}. It is already in your groups.</p>
                   <Button label="Got it" size="sm" onClick={() => respondToInvitation(invitation, "dismiss")} />
                   <Button label="Leave group" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "leave")} />
                 </>
               ) : (
                 <>
-                  <Paragraph>{invitation.invitedBy} invited you to {invitation.groupName}.</Paragraph>
+                  <p className="">{invitation.invitedBy} invited you to {invitation.groupName}.</p>
                   <Button label="Accept" size="sm" onClick={() => respondToInvitation(invitation, "accept")} />
                   <Button label="Reject" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "reject")} />
                 </>
@@ -452,13 +450,13 @@ export default function Leaderboard({
             + Add new group
           </button>
         </div>
-        {groupsError && <Paragraph>{groupsError}</Paragraph>}
-        {(groupStatus || (groupsLoading && !groupsError)) && <Paragraph>{groupStatus || "Loading groups…"}</Paragraph>}
+        {groupsError && <p className="">{groupsError}</p>}
+        {(groupStatus || (groupsLoading && !groupsError)) && <p className="">{groupStatus || "Loading groups…"}</p>}
       </Box>
       <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} maxWidth="520px">
-        <Heading size="lg" marginBottom="6">
+        <h2 className="heading text-2xl !mb-6">
           {groupModalMode === "create" ? "Add a new group" : selectedGroup?.name || ''}
-        </Heading>
+        </h2>
         <Flex $direction="column" $alignItems="flex-start" $gap="6">
           {groupModalMode === "create" && (
             <Flex $alignItems="flex-end" $gap="4" style={{ width: "100%" }}>
@@ -468,12 +466,12 @@ export default function Leaderboard({
           )}
           {groupModalMode === "edit" && selectedGroup && (
             <Box $width="100%">
-              <Heading size="xs" marginBottom="2">Members:</Heading>
+              <h5 className="heading text-lg !mb-2">Members:</h5>
               {selectedGroup.members.map((member) => (
                 <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="6">
-                  <Paragraph>
+                  <p className="">
                     {member.username}{member.status === "pending" ? " · Pending invitation" : ""}
-                  </Paragraph>
+                  </p>
                   {selectedGroup.isOwner && member.id !== selectedGroup.created_by && (
                     <Button
                       label={member.status === "pending" ? "Cancel invite" : "Remove"}
@@ -511,7 +509,7 @@ export default function Leaderboard({
                 </div>
               ) : (
                 <>
-                  <Paragraph>You are a member of this group.</Paragraph>
+                  <p className="">You are a member of this group.</p>
                   <button className={redLinkClasses} onClick={leaveGroup}>Leave group</button>
                 </>
               )}
@@ -524,7 +522,7 @@ export default function Leaderboard({
               )}
             </Box>
           )}
-          {groupStatus && <Paragraph>{groupStatus}</Paragraph>}
+          {groupStatus && <p className="">{groupStatus}</p>}
           <Button label="Done" variant="secondary" onClick={() => setIsGroupModalOpen(false)} />
         </Flex>
       </Modal>
@@ -533,7 +531,7 @@ export default function Leaderboard({
           <Loader />
         </Flex>
       ) : leaderboardError ? (
-        <Paragraph>{leaderboardError}</Paragraph>
+        <p className="">{leaderboardError}</p>
       ) : (
         <div>
           {usersList?.map((user, i) => {

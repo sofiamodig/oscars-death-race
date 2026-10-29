@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import EditMovie from "@/components/editMovie";
 import AddMovie from "@/components/addMovie";
-import { Heading } from "@/components/heading";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
@@ -12,7 +11,6 @@ import { getYearsList } from "@/utils";
 import Dropdown from "react-dropdown";
 import NotFound from "./404";
 import { Button } from "@/components/button";
-import { Paragraph } from "@/components/paragraph";
 import { adminRequest } from "@/functions/adminRequest";
 import { BrokenPosterMovie } from "@/components/brokenPosterMovie";
 import type { PosterCandidate } from "@/components/brokenPosterMovie";
@@ -248,7 +246,7 @@ export default function Admin({
           variant="secondary"
           size="md"
         />
-        {<Paragraph>{status}</Paragraph>}
+        {<p className="">{status}</p>}
       </Box>
       <AddMovie />
 
@@ -257,7 +255,7 @@ export default function Admin({
         $justifyContent="space-between"
         $alignItems="center"
       >
-        <Heading size="lg">Edit movies</Heading>
+        <h2 className="heading text-2xl">Edit movies</h2>
         <Dropdown
           options={yearsList}
           onChange={(option) => {
@@ -278,7 +276,7 @@ export default function Admin({
       </label>
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && !posterScan.done && (
-        <Paragraph>Checking poster URLs for this year…</Paragraph>
+        <p className="">Checking poster URLs for this year…</p>
       )}
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && posterScan.done && (
@@ -292,7 +290,7 @@ export default function Admin({
             size="md"
             isLoading={isFindingAllPosters}
           />
-          {findAllStatus && <Paragraph>{findAllStatus}</Paragraph>}
+          {findAllStatus && <p className="">{findAllStatus}</p>}
         </div>
       )}
 
@@ -309,7 +307,7 @@ export default function Admin({
               isLoading={isSavingPosters}
             />
           )}
-          {posterSaveStatus && <Paragraph>{posterSaveStatus}</Paragraph>}
+          {posterSaveStatus && <p className="">{posterSaveStatus}</p>}
         </div>
       )}
 
@@ -317,18 +315,18 @@ export default function Admin({
         {selectedYear && showBrokenPostersOnly
           ? brokenMovies.length > 0
             ? brokenMovies.map((movie) => (
-                <BrokenPosterMovie
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  currentPosterUrl={movie.posterUrl}
-                  candidate={posterCandidates[`${selectedYear}:${movie.id}`]}
-                  onCandidate={stagePosterCandidate}
-                  disabled={isSavingPosters || isFindingAllPosters}
-                />
-              ))
+              <BrokenPosterMovie
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                currentPosterUrl={movie.posterUrl}
+                candidate={posterCandidates[`${selectedYear}:${movie.id}`]}
+                onCandidate={stagePosterCandidate}
+                disabled={isSavingPosters || isFindingAllPosters}
+              />
+            ))
             : posterScan.year === selectedYear && posterScan.done
-              ? <Paragraph>No broken poster URLs found for this year.</Paragraph>
+              ? <p className="">No broken poster URLs found for this year.</p>
               : null
           : selectedYear && yearMovies.map((movie) => (
             <EditMovie

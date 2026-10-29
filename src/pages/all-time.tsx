@@ -16,7 +16,6 @@ import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
 import { Toggle } from "@/components/toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
-import { Heading } from "@/components/heading";
 import { TextInput } from "@/components/textInput";
 import { Box } from "@/styles/Box";
 
@@ -235,9 +234,9 @@ export default function AllTime({
         <div>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <Box $marginBottom="8" $marginTop="6">
-              <Heading size="xl" marginBottom="4">
+              <h1 className="heading text-3xl !mb-4">
                 Nominations through the years
-              </Heading>
+              </h1>
               {!loading && allSeenMovies.length ? (
                 <p>
                   You have seen{" "}
@@ -318,7 +317,7 @@ export default function AllTime({
                   return (
                     <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-6">
                       <div className="flex flex-col items-center justify-center rounded-lg bg-[#efe0af] p-2">
-                        <Heading size="lg">{obj.year}</Heading>All done!
+                        <h2 className="heading text-2xl">{obj.year}</h2>All done!
                       </div>
                     </div>
                   );
@@ -327,7 +326,7 @@ export default function AllTime({
                 return (
                   <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-12">
                     <div className="mb-6 flex justify-center rounded-lg bg-[#efe0af] p-2">
-                      <Heading size="lg">{obj.year}</Heading>
+                      <h2 className="heading text-2xl">{obj.year}</h2>
                     </div>
                     <div className={movieGridClasses}>
                       {obj.movies.map((movie) => {

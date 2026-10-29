@@ -17,7 +17,7 @@ type CommentsContextType = {
   deleteComment: (id: string) => void;
 };
 
-export const CommentsContext = createContext<CommentsContextType>({
+const CommentsContext = createContext<CommentsContextType>({
   comments: [],
   addComment: () => {},
   updateComment: () => {},

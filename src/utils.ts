@@ -81,13 +81,6 @@ export const formatCategory = (category: string) => {
   return category.charAt(0).toUpperCase() + category.slice(1);
 };
 
-export const modifyCategories = (categories: string[]) => {
-  const sortedCategories = sortCategories(categories);
-  return sortedCategories.map((category) => {
-    return formatCategory(category);
-  });
-};
-
 export const checkLatestYear = (year: string, movies: MoviesYearsListType) => {
   if (!movies.length) return false;
   const latestYear = movies[movies.length - 1].year;

@@ -15,7 +15,7 @@ import { MoviesYearsListType } from "@/types";
 import { validateEmail, validateUsername } from "@/utils";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
-import { useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/supabase";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";

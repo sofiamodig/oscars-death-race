@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useRef } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 
 interface Props {

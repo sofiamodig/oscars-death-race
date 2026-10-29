@@ -16,7 +16,7 @@ export type GroupInvitation = {
   alreadyMember: boolean;
 };
 
-export type GroupUserSearchResult = {
+type GroupUserSearchResult = {
   id: string;
   username: string;
   show_in_leaderboard: boolean;

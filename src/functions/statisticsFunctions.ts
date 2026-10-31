@@ -17,7 +17,7 @@ export const getRaceLength = (yearMovies: MovieType[]) => {
   const hours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
 
-  if (hours < 40) {
+  if (hours < 26) {
     return "No data";
   }
   return `${hours}h ${remainingMinutes}min`;

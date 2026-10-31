@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
-import { MoviesYearsListType } from "@/types";
-import { fetchMovies } from "@/functions/fetchMovies";
 import { useSeenContext } from "@/contexts/seenContext";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
+import { readMovieCatalog } from "@/functions/readMovieCatalog";
 import { LeaderboardItem } from "@/components/leaderboardItem";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
@@ -31,7 +31,7 @@ const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whi
 const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-red-600 underline hover:text-red-800 focus-visible:text-red-800 dark:text-red-400 dark:hover:text-red-300 dark:focus-visible:text-red-300";
 
 export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
+  const movies = await readMovieCatalog();
   const totalNrOfMovies = movies.map((year) => year.movies).flat().length;
   const latestYear = Number(movies.at(-1)?.year);
   if (!latestYear) throw new Error("No movie years are available for the leaderboard.");
@@ -42,7 +42,6 @@ export const getStaticProps = (async () => {
 
   return {
     props: {
-      movies,
       leaderboard,
       allUsers,
       totalNrOfMovies: totalNrOfMovies,
@@ -50,7 +49,6 @@ export const getStaticProps = (async () => {
     revalidate: 86400,
   };
 }) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
   leaderboard: LeaderboardType;
   allUsers: {
     id: string;
@@ -62,10 +60,11 @@ export const getStaticProps = (async () => {
 }>;
 
 export default function Leaderboard({
-  movies,
   leaderboard,
   allUsers,
+  totalNrOfMovies,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const { movies, error: movieCatalogError } = useMovieCatalog();
   const [selectedYear, setSelectedYear] = useState<string>();
   const [yearLeaderboard, setYearLeaderboard] = useState<LeaderboardUser[]>();
   const [usersList, setUsersList] = useState<LeaderboardUser[]>();
@@ -73,7 +72,7 @@ export default function Leaderboard({
   const [leaderboardError, setLeaderboardError] = useState<string>();
   const leaderboardCache = useRef(leaderboard);
   const { seenMovies, userSettings, loading } = useSeenContext();
-  const { yearsList } = getYearsList(movies);
+  const { yearsList } = getYearsList(movies ?? []);
   const [groups, setGroups] = useState<LeaderboardGroup[]>([]);
   const [invitations, setInvitations] = useState<GroupInvitation[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(true);
@@ -192,12 +191,12 @@ export default function Leaderboard({
   }, [selectedYear, allUsers, showAllUsers, selectedGroupId]);
 
   const yearMovies = useMemo(
-    () => movies.find((movie) => movie.year === selectedYear)?.movies ?? [],
+    () => movies?.find((movie) => movie.year === selectedYear)?.movies ?? [],
     [movies, selectedYear]
   );
 
   useEffect(() => {
-    if (!selectedYear) {
+    if (!selectedYear && yearsList.length > 0) {
       setSelectedYear(yearsList[0].value);
     }
   }, [yearsList, selectedYear]);
@@ -354,6 +353,10 @@ export default function Leaderboard({
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
 
+  if (!movies) {
+    return movieCatalogError ? <p role="alert">{movieCatalogError}</p> : <Loader />;
+  }
+
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
       <Flex $marginBottom="4" $alignItems="flex-start">
@@ -371,7 +374,7 @@ export default function Leaderboard({
           {selectedYear === "all" && (
             <p className="text-sm">
               All years are combined to the ultimate race! 🏆 In total there are{" "}
-              {movies.map((year) => year.movies).flat().length} movies to watch.
+              {totalNrOfMovies} movies to watch.
               This list shows the top 100 users.
             </p>
           )}

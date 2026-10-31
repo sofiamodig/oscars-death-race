@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/generate-movies-json.mjs",
     "build": "next build",
+    "prebuild": "node scripts/generate-movies-json.mjs",
     "start": "next start",
     "lint": "next lint",
     "repair-posters": "node scripts/repair-posters.mjs"

@@ -101,7 +101,7 @@ export default function Statistics({
       </Head>
       <div className="mx-auto max-w-[1400px] px-6 pt-6">
         <h1 className="mb-4 text-[40px]">Statistics</h1>
-        <div className="mb-2 max-w-[600px] rounded-lg bg-amber-300 p-4 dark:bg-[#968242] dark:text-amber-100">
+        <div className="mb-2 max-w-[600px] rounded-lg bg-[#e2cd7a] p-4 dark:bg-[#968242] dark:text-neutral-800">
           <p>
             <strong>Most wins:</strong> {mostWins}
           </p>

@@ -27,7 +27,7 @@ import {
   updateGroup,
 } from "@/functions/groupRequests";
 
-const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] text-neutral-700 hover:text-amber-800 dark:text-neutral-300 dark:hover:text-amber-300 ${active ? "border-amber-600 font-semibold text-amber-800 dark:border-amber-400 dark:text-amber-300" : "border-transparent"}`;
+const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] text-neutral-700 hover:text-nautral-800 dark:text-neutral-300 dark:hover:text-neutral-300 ${active ? "border-[#b39930] font-semibold text-[#897b2c]" : "border-transparent"}`;
 const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-red-600 underline hover:text-red-800 focus-visible:text-red-800 dark:text-red-400 dark:hover:text-red-300 dark:focus-visible:text-red-300";
 
 export const getStaticProps = (async () => {
@@ -438,7 +438,7 @@ export default function Leaderboard({
             </button>
           </div>
           <button
-            className="mb-4 flex-[0_0_auto] cursor-pointer whitespace-nowrap rounded border border-amber-600 bg-transparent px-3 py-[7px] text-amber-700 hover:border-amber-800 hover:text-amber-800 dark:border-amber-400 dark:text-amber-300 dark:hover:border-amber-300 dark:hover:text-amber-200 max-[600px]:self-start"
+            className="mb-4 flex-[0_0_auto] cursor-pointer whitespace-nowrap rounded border border-[#b39930] bg-transparent px-3 py-[7px] text-amber-700 hover:border-amber-800 hover:text-amber-800 dark:border-amber-400 dark:text-amber-300 dark:hover:border-amber-300 dark:hover:text-amber-200 max-[600px]:self-start"
             type="button"
             onClick={() => {
               setGroupModalMode("create");

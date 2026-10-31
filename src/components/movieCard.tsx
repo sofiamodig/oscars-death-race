@@ -153,7 +153,7 @@ export const MovieCard: FC<Props> = ({
               </p>
 
               {data.categories && data.categories?.length > 0 && (
-                <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-amber-700 dark:[&_em]:text-amber-300 [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
+                <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-[#b39930] dark:[&_em]:text-[#968242] [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
                   <strong>Nominations:</strong>{" "}
                   {sortedCategories.map((cat) => {
                     if (data.wonCategories?.includes(cat)) {

@@ -317,7 +317,7 @@ export default function AllTime({
                 if (allWasSeen && hideSeen) {
                   return (
                     <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-6">
-                      <div className="flex flex-col items-center justify-center rounded-lg bg-amber-100 p-2 dark:bg-[#968242] dark:text-amber-100">
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-neutral-100">
                         <h2 className="heading text-2xl">{obj.year}</h2>All done!
                       </div>
                     </div>
@@ -326,7 +326,7 @@ export default function AllTime({
 
                 return (
                   <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-12">
-                    <div className="mb-6 flex justify-center rounded-lg bg-amber-100 p-2 dark:bg-[#968242] dark:text-amber-100">
+                    <div className="mb-6 flex justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-nautral-100">
                       <h2 className="heading text-2xl">{obj.year}</h2>
                     </div>
                     <div className={movieGridClasses}>

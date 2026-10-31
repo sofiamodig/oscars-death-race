@@ -5,6 +5,7 @@ function MyDocument() {
     <Html>
       <Head />
       <body>
+        <script src="/theme-init.js" />
         <Main />
         <NextScript />
       </body>

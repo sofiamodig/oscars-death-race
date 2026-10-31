@@ -25,14 +25,13 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
   const { seenMovies } = useContext(SeenContext);
 
   useEffect(() => {
-    const preference = window.matchMedia("(prefers-color-scheme: dark)");
-    const updatePreference = (event: MediaQueryList | MediaQueryListEvent) => {
-      setIsDarkMode(event.matches);
+    const updatePreference = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
     };
-
-    updatePreference(preference);
-    preference.addEventListener("change", updatePreference);
-    return () => preference.removeEventListener("change", updatePreference);
+    const observer = new MutationObserver(updatePreference);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    updatePreference();
+    return () => observer.disconnect();
   }, []);
   const flattenedSeenMoviesImdbIds = seenMovies.flatMap((seenYear) =>
     seenYear.seenMovies?.map((movie) => movie.imdbId)

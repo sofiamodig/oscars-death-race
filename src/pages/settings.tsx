@@ -17,6 +17,8 @@ import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/supabase";
+import { useThemePreference } from "@/contexts/themeContext";
+import type { ThemePreference } from "@/contexts/themeContext";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 
@@ -56,6 +58,7 @@ export default function Settings({
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState("");
   const { showSnackbar } = useSnackbarContext();
+  const { themePreference, setThemePreference } = useThemePreference();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -201,7 +204,7 @@ export default function Settings({
       <div className="mb-8 flex items-center justify-between gap-4">
         <h2 className="heading text-2xl">Settings</h2>
         {userId && (
-          <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-indigo-700 underline hover:text-indigo-900 [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
+          <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-indigo-700 underline hover:text-indigo-900 dark:text-white dark:hover:no-underline [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M10 17l5-5-5-5" />
               <path d="M15 12H3" />
@@ -211,6 +214,20 @@ export default function Settings({
           </button>
         )}
       </div>
+      <section className="mb-8 border-b border-neutral-300 pb-6 dark:border-neutral-700">
+        <label className="block text-sm font-medium" htmlFor="theme-preference">Theme</label>
+        <div className="custom-select-wrapper mt-2" style={{ width: "220px" }}>
+          <select
+            id="theme-preference"
+            value={themePreference}
+            onChange={(event) => setThemePreference(event.currentTarget.value as ThemePreference)}
+          >
+            <option value="system">Use system setting</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+      </section>
       {!userId || !userSettings ? (
         <Loader />
       ) : (

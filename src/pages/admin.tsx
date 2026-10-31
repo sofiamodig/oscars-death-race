@@ -17,7 +17,7 @@ import type { PosterCandidate } from "@/components/brokenPosterMovie";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
-  return { props: { movies }, revalidate: 60 };
+  return { props: { movies } };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
 }>;

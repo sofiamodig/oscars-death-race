@@ -27,7 +27,7 @@ import {
   updateGroup,
 } from "@/functions/groupRequests";
 
-const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] text-neutral-700 hover:text-nautral-800 dark:text-neutral-300 dark:hover:text-neutral-300 ${active ? "border-[#b39930] font-semibold text-[#897b2c]" : "border-transparent"}`;
+const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] hover:text-nautral-800 dark:text-neutral-300 dark:hover:text-neutral-30 font-semibold ${active ? "border-[#b39930] text-[#897b2c]" : "border-transparent"}`;
 const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-red-600 underline hover:text-red-800 focus-visible:text-red-800 dark:text-red-400 dark:hover:text-red-300 dark:focus-visible:text-red-300";
 
 export const getStaticProps = (async () => {
@@ -437,18 +437,19 @@ export default function Leaderboard({
               Full leaderboard
             </button>
           </div>
-          <button
-            className="mb-4 flex-[0_0_auto] cursor-pointer whitespace-nowrap rounded border border-[#b39930] bg-transparent px-3 py-[7px] text-amber-700 hover:border-amber-800 hover:text-amber-800 dark:border-amber-400 dark:text-amber-300 dark:hover:border-amber-300 dark:hover:text-amber-200 max-[600px]:self-start"
-            type="button"
-            onClick={() => {
-              setGroupModalMode("create");
-              setNewGroupName("");
-              setGroupStatus("");
-              setIsGroupModalOpen(true);
-            }}
-          >
-            + Add new group
-          </button>
+          <div className="mb-4 flex-[0_0_auto] whitespace-nowrap max-[600px]:self-start">
+            <Button
+              label="+ Add new group"
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setGroupModalMode("create");
+                setNewGroupName("");
+                setGroupStatus("");
+                setIsGroupModalOpen(true);
+              }}
+            />
+          </div>
         </div>
         {groupsError && <p className="">{groupsError}</p>}
         {(groupStatus || (groupsLoading && !groupsError)) && <p className="">{groupStatus || "Loading groups…"}</p>}
@@ -491,10 +492,10 @@ export default function Leaderboard({
                     setValue={setMemberSearch}
                   />
                   {searchResults.length > 0 && (
-                    <div className="absolute inset-x-0 top-[calc(100%_+_4px)] z-[3] max-h-[220px] overflow-y-auto rounded border border-neutral-300 bg-white shadow-[0_4px_12px_rgb(0_0_0_/_12%)] dark:border-neutral-700 dark:bg-neutral-700 dark:shadow-[0_4px_12px_rgb(0_0_0_/_45%)]" role="listbox" aria-label="Username search results">
+                    <div className="absolute inset-x-0 top-[calc(100%_+_4px)] z-[3] max-h-[220px] overflow-y-auto rounded border border-neutral-300 bg-white shadow-[0_4px_12px_rgb(0_0_0_/_12%)] dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-[0_4px_12px_rgb(0_0_0_/_45%)]" role="listbox" aria-label="Username search results">
                       {searchResults.map((result) => (
                         <button
-                          className="flex w-full cursor-pointer items-center justify-between border-0 bg-white px-3 py-2.5 text-left text-neutral-900 hover:bg-neutral-200 focus:bg-neutral-200 focus:outline-none dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                          className="flex w-full cursor-pointer items-center justify-between border-0 bg-white px-3 py-2.5 text-left text-neutral-900 hover:bg-neutral-200 focus:bg-neutral-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-900 dark:focus:bg-neutral-800"
                           type="button"
                           key={result.id}
                           role="option"

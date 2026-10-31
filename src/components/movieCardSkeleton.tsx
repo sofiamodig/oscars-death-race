@@ -15,14 +15,14 @@ export const MovieCardSkeleton = () => {
       </div>
       <SkeletonLoader width="37%" height="100%" />
       <Content>
-        <Flex $gap="xs" $direction="column" $alignItems="flex-start">
+        <Flex $gap="2" $direction="column" $alignItems="flex-start">
           <SkeletonLoader width={randomTitleWidth + "%"} height="20px" />
           {showMultiTitleRows && <SkeletonLoader width="40%" height="20px" />}
           <SkeletonLoader width="40px" height="10px" />
         </Flex>
         <Flex
-          $gap="sm"
-          $marginTop="sm"
+          $gap="4"
+          $marginTop="4"
           $direction="column"
           $alignItems="flex-start"
         >

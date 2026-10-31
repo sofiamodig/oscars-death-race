@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
-import { Heading } from "./heading";
 import { PosterPreview } from "./posterPreview";
 import { TextInput } from "./textInput";
 
@@ -46,12 +45,12 @@ export const BrokenPosterMovie = ({
   };
 
   return (
-    <div className="mt-sm flex items-start gap-2.5 border-t border-neutral-500 py-sm sm:gap-sm">
+    <div className="mt-4 flex items-start gap-2.5 border-t border-neutral-500 py-4 sm:gap-4">
       <PosterPreview url={candidate?.posterUrl ?? currentPosterUrl} title={title} />
       <div className="min-w-0 flex-1">
-        <Heading size="sm" as="h2">{title}</Heading>
-        <p className="my-xs text-sm">IMDb: {id}</p>
-        {candidate && <p className="my-xs text-sm">OMDb match: {candidate.title || title}</p>}
+        <h2 className="heading">{title}</h2>
+        <p className="my-2 text-sm">IMDb: {id}</p>
+        {candidate && <p className="my-2 text-sm">OMDb match: {candidate.title || title}</p>}
         {candidate && (
           <TextInput
             label="Review or edit poster URL"
@@ -60,7 +59,7 @@ export const BrokenPosterMovie = ({
             disabled={disabled}
           />
         )}
-        {errorMessage && <p className="my-xs text-sm" role="alert">{errorMessage}</p>}
+        {errorMessage && <p className="my-2 text-sm" role="alert">{errorMessage}</p>}
         <Button
           type="button"
           label={candidate ? "Search again" : "Find poster"}

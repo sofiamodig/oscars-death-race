@@ -14,6 +14,10 @@ const nextConfig = {
       },
     ],
   },
+  outputFileTracingIncludes: {
+    "/leaderboard": ["./public/movies.json"],
+    "/statistics": ["./public/movies.json"],
+  },
 };
 
 module.exports = nextConfig;

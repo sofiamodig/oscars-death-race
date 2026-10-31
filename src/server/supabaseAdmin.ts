@@ -15,7 +15,7 @@ export const getAdminClient = () => {
   return adminClient;
 };
 
-export const getBearerToken = (req: NextApiRequest) => {
+const getBearerToken = (req: NextApiRequest) => {
   const authorization = req.headers.authorization;
   return authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
 };

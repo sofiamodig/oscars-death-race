@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
-import { MoviesYearsListType } from "@/types";
-import { fetchMovies } from "@/functions/fetchMovies";
 import { useSeenContext } from "@/contexts/seenContext";
-import { Heading } from "@/components/heading";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
+import { readMovieCatalog } from "@/functions/readMovieCatalog";
 import { LeaderboardItem } from "@/components/leaderboardItem";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
@@ -16,7 +15,6 @@ import {
   fetchLeaderboardInitial,
   fetchUsersForYear,
 } from "@/functions/fetchUsers";
-import { Paragraph } from "@/components/paragraph";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/textInput";
 import { Modal } from "@/components/modal";
@@ -29,11 +27,11 @@ import {
   updateGroup,
 } from "@/functions/groupRequests";
 
-const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] hover:text-primary-700 ${active ? "border-primary-500 font-semibold text-primary-700" : "border-transparent text-neutral-700"}`;
-const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-ui-red underline hover:text-[#8f1b13] focus-visible:text-[#8f1b13]";
+const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] hover:text-nautral-800 dark:text-neutral-300 dark:hover:text-neutral-30 font-semibold ${active ? "border-[#b39930] text-[#897b2c]" : "border-transparent"}`;
+const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-red-600 underline hover:text-red-800 focus-visible:text-red-800 dark:text-red-400 dark:hover:text-red-300 dark:focus-visible:text-red-300";
 
 export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
+  const movies = await readMovieCatalog();
   const totalNrOfMovies = movies.map((year) => year.movies).flat().length;
   const latestYear = Number(movies.at(-1)?.year);
   if (!latestYear) throw new Error("No movie years are available for the leaderboard.");
@@ -44,7 +42,6 @@ export const getStaticProps = (async () => {
 
   return {
     props: {
-      movies,
       leaderboard,
       allUsers,
       totalNrOfMovies: totalNrOfMovies,
@@ -52,7 +49,6 @@ export const getStaticProps = (async () => {
     revalidate: 86400,
   };
 }) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
   leaderboard: LeaderboardType;
   allUsers: {
     id: string;
@@ -64,10 +60,11 @@ export const getStaticProps = (async () => {
 }>;
 
 export default function Leaderboard({
-  movies,
   leaderboard,
   allUsers,
+  totalNrOfMovies,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const { movies, error: movieCatalogError } = useMovieCatalog();
   const [selectedYear, setSelectedYear] = useState<string>();
   const [yearLeaderboard, setYearLeaderboard] = useState<LeaderboardUser[]>();
   const [usersList, setUsersList] = useState<LeaderboardUser[]>();
@@ -75,7 +72,7 @@ export default function Leaderboard({
   const [leaderboardError, setLeaderboardError] = useState<string>();
   const leaderboardCache = useRef(leaderboard);
   const { seenMovies, userSettings, loading } = useSeenContext();
-  const { yearsList } = getYearsList(movies);
+  const { yearsList } = getYearsList(movies ?? []);
   const [groups, setGroups] = useState<LeaderboardGroup[]>([]);
   const [invitations, setInvitations] = useState<GroupInvitation[]>([]);
   const [groupsLoading, setGroupsLoading] = useState(true);
@@ -194,12 +191,12 @@ export default function Leaderboard({
   }, [selectedYear, allUsers, showAllUsers, selectedGroupId]);
 
   const yearMovies = useMemo(
-    () => movies.find((movie) => movie.year === selectedYear)?.movies ?? [],
+    () => movies?.find((movie) => movie.year === selectedYear)?.movies ?? [],
     [movies, selectedYear]
   );
 
   useEffect(() => {
-    if (!selectedYear) {
+    if (!selectedYear && yearsList.length > 0) {
       setSelectedYear(yearsList[0].value);
     }
   }, [yearsList, selectedYear]);
@@ -310,8 +307,8 @@ export default function Leaderboard({
       if (accept) setShowAllUsers(false);
       setGroupStatus(
         action === "accept" ? "You joined the group." :
-        action === "reject" ? "Invitation declined." :
-        action === "leave" ? "You left the group." : "Invitation dismissed."
+          action === "reject" ? "Invitation declined." :
+            action === "leave" ? "You left the group." : "Invitation dismissed."
       );
     } catch (error) {
       setGroupStatus(error instanceof Error ? error.message : "Could not update invitation.");
@@ -356,26 +353,30 @@ export default function Leaderboard({
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
 
+  if (!movies) {
+    return movieCatalogError ? <p role="alert">{movieCatalogError}</p> : <Loader />;
+  }
+
   return (
     <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
-      <Flex $marginBottom="sm" $alignItems="flex-start">
+      <Flex $marginBottom="4" $alignItems="flex-start">
         <div>
-          <Heading as="h1" size="xl" marginBottom="xs">
+          <h1 className="heading text-3xl !mb-2">
             Leaderboard
-          </Heading>
-          <Paragraph size="sm">
+          </h1>
+          <p className="text-sm">
             The leaderboard is updated once per day. The interval is shortened
             closer to the oscars.
-          </Paragraph>
-          {/* <Paragraph size="sm">
+          </p>
+          {/* <p className="text-sm">
             The leaderboard is updated every 20 minutes.
-          </Paragraph> */}
+          </p> */}
           {selectedYear === "all" && (
-            <Paragraph size="sm">
+            <p className="text-sm">
               All years are combined to the ultimate race! 🏆 In total there are{" "}
-              {movies.map((year) => year.movies).flat().length} movies to watch.
+              {totalNrOfMovies} movies to watch.
               This list shows the top 100 users.
-            </Paragraph>
+            </p>
           )}
         </div>
         <div
@@ -393,19 +394,19 @@ export default function Leaderboard({
         </div>
       </Flex>
       {invitations.length > 0 && (
-        <Box id="invitations" $marginBottom="lg">
-          <Heading size="md" marginBottom="sm">Group invitations ({invitations.length})</Heading>
+        <Box id="invitations" $marginBottom="8">
+          <h3 className="heading text-lg !mb-4">Group invitations ({invitations.length})</h3>
           {invitations.map((invitation) => (
-            <Flex key={invitation.id} $alignItems="center" $gap="sm" $marginBottom="sm">
+            <Flex key={invitation.id} $alignItems="center" $gap="4" $marginBottom="4">
               {invitation.alreadyMember ? (
                 <>
-                  <Paragraph>You have been invited to {invitation.groupName}. It is already in your groups.</Paragraph>
+                  <p className="">You have been invited to {invitation.groupName}. It is already in your groups.</p>
                   <Button label="Got it" size="sm" onClick={() => respondToInvitation(invitation, "dismiss")} />
                   <Button label="Leave group" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "leave")} />
                 </>
               ) : (
                 <>
-                  <Paragraph>{invitation.invitedBy} invited you to {invitation.groupName}.</Paragraph>
+                  <p className="">{invitation.invitedBy} invited you to {invitation.groupName}.</p>
                   <Button label="Accept" size="sm" onClick={() => respondToInvitation(invitation, "accept")} />
                   <Button label="Reject" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "reject")} />
                 </>
@@ -414,9 +415,9 @@ export default function Leaderboard({
           ))}
         </Box>
       )}
-      <Box $marginBottom="lg">
-      <div className="flex items-end gap-xs max-[600px]:flex-col max-[600px]:items-stretch">
-          <div className="mb-sm flex min-w-0 flex-1 items-center gap-1 overflow-x-auto border-b border-neutral-300 max-[600px]:mb-0 max-[600px]:w-full" role="tablist" aria-label="Choose a leaderboard">
+      <Box $marginBottom="8">
+        <div className="flex items-end gap-2 max-[600px]:flex-col max-[600px]:items-stretch">
+          <div className="mb-4 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto border-b border-neutral-300 max-[600px]:mb-0 max-[600px]:w-full" role="tablist" aria-label="Choose a leaderboard">
             {groups.map((group) => (
               <button
                 className={groupTabClasses(!showAllUsers && selectedGroupId === group.id)}
@@ -439,41 +440,42 @@ export default function Leaderboard({
               Full leaderboard
             </button>
           </div>
-          <button
-            className="mb-sm flex-[0_0_auto] cursor-pointer whitespace-nowrap rounded border border-primary-500 bg-transparent px-3 py-[7px] text-primary-500 hover:border-primary-700 hover:text-primary-700 max-[600px]:self-start"
-            type="button"
-            onClick={() => {
-              setGroupModalMode("create");
-              setNewGroupName("");
-              setGroupStatus("");
-              setIsGroupModalOpen(true);
-            }}
-          >
-            + Add new group
-          </button>
+          <div className="mb-4 flex-[0_0_auto] whitespace-nowrap max-[600px]:self-start">
+            <Button
+              label="+ Add new group"
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setGroupModalMode("create");
+                setNewGroupName("");
+                setGroupStatus("");
+                setIsGroupModalOpen(true);
+              }}
+            />
+          </div>
         </div>
-        {groupsError && <Paragraph>{groupsError}</Paragraph>}
-        {(groupStatus || (groupsLoading && !groupsError)) && <Paragraph>{groupStatus || "Loading groups…"}</Paragraph>}
+        {groupsError && <p className="">{groupsError}</p>}
+        {(groupStatus || (groupsLoading && !groupsError)) && <p className="">{groupStatus || "Loading groups…"}</p>}
       </Box>
       <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} maxWidth="520px">
-        <Heading size="lg" marginBottom="md">
+        <h2 className="heading text-2xl !mb-6">
           {groupModalMode === "create" ? "Add a new group" : selectedGroup?.name || ''}
-        </Heading>
-        <Flex $direction="column" $alignItems="flex-start" $gap="md">
+        </h2>
+        <Flex $direction="column" $alignItems="flex-start" $gap="6">
           {groupModalMode === "create" && (
-            <Flex $alignItems="flex-end" $gap="sm" style={{ width: "100%" }}>
+            <Flex $alignItems="flex-end" $gap="4" style={{ width: "100%" }}>
               <TextInput label="New group name" value={newGroupName} setValue={setNewGroupName} />
               <Button label="Create" onClick={createGroup} disabled={!newGroupName.trim()} />
             </Flex>
           )}
           {groupModalMode === "edit" && selectedGroup && (
             <Box $width="100%">
-              <Heading size="xs" marginBottom="xs">Members:</Heading>
+              <h5 className="heading text-lg !mb-2">Members:</h5>
               {selectedGroup.members.map((member) => (
-                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="md">
-                  <Paragraph>
+                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="6">
+                  <p className="">
                     {member.username}{member.status === "pending" ? " · Pending invitation" : ""}
-                  </Paragraph>
+                  </p>
                   {selectedGroup.isOwner && member.id !== selectedGroup.created_by && (
                     <Button
                       label={member.status === "pending" ? "Cancel invite" : "Remove"}
@@ -493,10 +495,10 @@ export default function Leaderboard({
                     setValue={setMemberSearch}
                   />
                   {searchResults.length > 0 && (
-                    <div className="absolute inset-x-0 top-[calc(100%_+_4px)] z-[3] max-h-[220px] overflow-y-auto rounded border border-neutral-300 bg-white shadow-[0_4px_12px_rgb(0_0_0_/_12%)]" role="listbox" aria-label="Username search results">
+                    <div className="absolute inset-x-0 top-[calc(100%_+_4px)] z-[3] max-h-[220px] overflow-y-auto rounded border border-neutral-300 bg-white shadow-[0_4px_12px_rgb(0_0_0_/_12%)] dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-[0_4px_12px_rgb(0_0_0_/_45%)]" role="listbox" aria-label="Username search results">
                       {searchResults.map((result) => (
                         <button
-                          className="flex w-full cursor-pointer items-center justify-between border-0 bg-white px-3 py-2.5 text-left text-neutral-900 hover:bg-neutral-200 focus:bg-neutral-200 focus:outline-none"
+                          className="flex w-full cursor-pointer items-center justify-between border-0 bg-white px-3 py-2.5 text-left text-neutral-900 hover:bg-neutral-200 focus:bg-neutral-200 focus:outline-none dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-900 dark:focus:bg-neutral-800"
                           type="button"
                           key={result.id}
                           role="option"
@@ -511,12 +513,12 @@ export default function Leaderboard({
                 </div>
               ) : (
                 <>
-                  <Paragraph>You are a member of this group.</Paragraph>
+                  <p className="">You are a member of this group.</p>
                   <button className={redLinkClasses} onClick={leaveGroup}>Leave group</button>
                 </>
               )}
               {selectedGroup.isOwner && (
-                <Box $marginTop="md">
+                <Box $marginTop="6">
                   <button className={redLinkClasses} onClick={deleteGroup}>
                     Delete group
                   </button>
@@ -524,16 +526,16 @@ export default function Leaderboard({
               )}
             </Box>
           )}
-          {groupStatus && <Paragraph>{groupStatus}</Paragraph>}
+          {groupStatus && <p className="">{groupStatus}</p>}
           <Button label="Done" variant="secondary" onClick={() => setIsGroupModalOpen(false)} />
         </Flex>
       </Modal>
       {loading || isYearLoading ? (
-        <Flex $justifyContent="center" $marginTop="lg">
+        <Flex $justifyContent="center" $marginTop="8">
           <Loader />
         </Flex>
       ) : leaderboardError ? (
-        <Paragraph>{leaderboardError}</Paragraph>
+        <p className="">{leaderboardError}</p>
       ) : (
         <div>
           {usersList?.map((user, i) => {
@@ -555,7 +557,7 @@ export default function Leaderboard({
         </div>
       )}
       {!groupsLoading && !showAllUsers && selectedGroup && (
-        <Box $marginTop="lg">
+        <Box $marginTop="8">
           {selectedGroup.isOwner ? (
             <Button
               label="Manage group"

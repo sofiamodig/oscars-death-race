@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useRef } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 
 interface Props {
@@ -36,7 +36,7 @@ export const Modal: React.FC<Props> = ({
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[1] flex items-center justify-center bg-black/50">
-      <div ref={modalRef} className="w-[95%] rounded-[5px] bg-neutral-100 p-md shadow-[0_5px_15px_rgba(0,0,0,0.3)] md:p-xl" style={{ maxWidth }}>
+      <div ref={modalRef} className="w-[95%] rounded-[5px] bg-neutral-100 p-6 text-neutral-900 shadow-[0_5px_15px_rgba(0,0,0,0.3)] dark:bg-neutral-800 dark:text-neutral-100 md:p-10" style={{ maxWidth }}>
         {children}
       </div>
     </div>,

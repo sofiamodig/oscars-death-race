@@ -1,4 +1,4 @@
-export type ImdbRatingRow = { imdbId: string; date: string };
+type ImdbRatingRow = { imdbId: string; date: string };
 
 // IMDb exports use RFC 4180 style quoting; titles may contain commas and quotes.
 export const parseImdbRatingsCsv = (csv: string) => {

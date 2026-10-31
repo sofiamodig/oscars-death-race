@@ -12,7 +12,6 @@ import {
 } from "@/utils";
 import { MovieCard } from "@/components/movieCard";
 import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
-import { Paragraph } from "@/components/paragraph";
 import { ProgressBar } from "@/components/progressBar";
 import { Toggle } from "@/components/toggle";
 import { Box } from "@/styles/Box";
@@ -203,13 +202,11 @@ export default function Home({
     });
 
     if (selectedCategories.length) {
-      return `${seenMoviesInCategory?.length ?? 0} / ${
-        filteredMovies?.length
-      } movies`;
+      return `${seenMoviesInCategory?.length ?? 0} / ${filteredMovies?.length
+        } movies`;
     } else {
-      return `${seenMoviesList?.length ?? 0} / ${
-        filteredMovies?.length
-      } movies`;
+      return `${seenMoviesList?.length ?? 0} / ${filteredMovies?.length
+        } movies`;
     }
   };
 
@@ -239,7 +236,8 @@ export default function Home({
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
-        <meta name="theme-color" content="#ffffff"></meta>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
       </Head>
       <main>
         <>
@@ -261,7 +259,7 @@ export default function Home({
               </InfoMessage>
             </Box>
           )}
-          <div className="mb-2 flex flex-row flex-wrap items-center justify-start gap-xs md:[&>div:last-child]:ml-auto">
+          <div className="mb-2 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "90px" }}>
               <select onChange={(e) => setSelectedYear(e.target.value)}>
                 {yearsList.map((year) => (
@@ -273,9 +271,8 @@ export default function Home({
             </div>
             {(!isLatestYear || (isLatestYear && !predictions)) && (
               <div
-                className={`custom-multiselect ${
-                  categoriesOptionsOpen ? "open" : ""
-                }`}
+                className={`custom-multiselect ${categoriesOptionsOpen ? "open" : ""
+                  }`}
                 style={{ width: "230px" }}
                 tabIndex={0}
                 onBlur={(e) => {
@@ -295,21 +292,21 @@ export default function Home({
                   title={
                     selectedCategories.length
                       ? sortCategories(selectedCategories)
-                          .map(
-                            (v) =>
-                              categoriesList.find((c) => c.value === v)?.label
-                          )
-                          .join(", ")
-                      : "All categories"
-                  }
-                >
-                  {selectedCategories.length
-                    ? sortCategories(selectedCategories)
                         .map(
                           (v) =>
                             categoriesList.find((c) => c.value === v)?.label
                         )
                         .join(", ")
+                      : "All categories"
+                  }
+                >
+                  {selectedCategories.length
+                    ? sortCategories(selectedCategories)
+                      .map(
+                        (v) =>
+                          categoriesList.find((c) => c.value === v)?.label
+                      )
+                      .join(", ")
                     : "All categories"}
                 </div>
 
@@ -357,8 +354,8 @@ export default function Home({
               />
             )}
           </div>
-          <div className="mb-sm md:[&_p]:text-right">
-            <Paragraph size="xs">{getNrOfMoviesText()}</Paragraph>
+          <div className="mb-4 md:[&_p]:text-right">
+            <p className="text-xs">{getNrOfMoviesText()}</p>
           </div>
           <div className={movieGridClasses}>
             {moviesToDisplay?.map((movie) => (

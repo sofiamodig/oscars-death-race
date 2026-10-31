@@ -16,7 +16,6 @@ import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
 import { Toggle } from "@/components/toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
-import { Heading } from "@/components/heading";
 import { TextInput } from "@/components/textInput";
 import { Box } from "@/styles/Box";
 
@@ -229,15 +228,16 @@ export default function AllTime({
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
-        <meta name="theme-color" content="#ffffff"></meta>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
       </Head>
       <>
         <div>
-          <div className="flex flex-col gap-sm md:flex-row md:items-center md:justify-between">
-            <Box $marginBottom="lg" $marginTop="md">
-              <Heading size="xl" marginBottom="sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <Box $marginBottom="8" $marginTop="6">
+              <h1 className="heading text-3xl !mb-4">
                 Nominations through the years
-              </Heading>
+              </h1>
               {!loading && allSeenMovies.length ? (
                 <p>
                   You have seen{" "}
@@ -257,7 +257,7 @@ export default function AllTime({
               />
             </div>
           </div>
-          <div className="mb-md flex flex-row flex-wrap items-center justify-start gap-xs md:[&>div:last-child]:ml-auto">
+          <div className="mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "230px" }}>
               <select onChange={(e) => setSelectedCategory(e.target.value)}>
                 <option value="all">All categories</option>
@@ -316,18 +316,18 @@ export default function AllTime({
 
                 if (allWasSeen && hideSeen) {
                   return (
-                    <div key={obj.year} className="mb-md border-b border-neutral-300 pb-md">
-                      <div className="flex flex-col items-center justify-center rounded-lg bg-primary-200 p-xs">
-                        <Heading size="lg">{obj.year}</Heading>All done!
+                    <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-6">
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-neutral-100">
+                        <h2 className="heading text-2xl">{obj.year}</h2>All done!
                       </div>
                     </div>
                   );
                 }
 
                 return (
-                  <div key={obj.year} className="mb-md border-b border-neutral-300 pb-xxl">
-                    <div className="mb-md flex justify-center rounded-lg bg-primary-200 p-xs">
-                      <Heading size="lg">{obj.year}</Heading>
+                  <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-12">
+                    <div className="mb-6 flex justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-nautral-100">
+                      <h2 className="heading text-2xl">{obj.year}</h2>
                     </div>
                     <div className={movieGridClasses}>
                       {obj.movies.map((movie) => {

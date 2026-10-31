@@ -2,7 +2,6 @@ import { useSiteInfoContext } from "@/contexts/siteInfoContext";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
-import { Heading } from "./heading";
 import { Toggle } from "./toggle";
 
 export const AdminSettings = () => {
@@ -20,19 +19,19 @@ export const AdminSettings = () => {
       $maxWidth="600px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="xxxl"
+      $marginTop="16"
     >
-      <Heading size="lg" marginBottom="md">
+      <h2 className="heading text-2xl !mb-6">
         Admin settings
-      </Heading>
+      </h2>
       {construction == undefined ? (
         <Loader />
       ) : (
         <>
           <Flex
             $direction="column"
-            $gap="sm"
-            $marginBottom="md"
+            $gap="4"
+            $marginBottom="6"
             $alignItems="flex-start"
           >
             <Toggle

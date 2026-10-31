@@ -3,6 +3,7 @@ import { FC, HTMLAttributes, useContext, useEffect, useState } from "react";
 import { formatCategory, minutesToHours, sortCategories } from "../utils";
 
 import { Calendar } from "react-calendar";
+//@ts-ignore
 import "react-calendar/dist/Calendar.css";
 import statueImage from "../assets/images/oscar-statue.png";
 import { SeenContext } from "@/contexts/seenContext";
@@ -14,16 +15,14 @@ import { PenIcon } from "@/assets/icons/PenIcon";
 import Image from "next/image";
 import { ChevronRightIcon } from "@/assets/icons/ChevronRightIcon";
 import { Modal } from "./modal";
-import { Heading } from "./heading";
-import { Paragraph } from "./paragraph";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Button } from "./button";
 import { useCommentsContext } from "@/contexts/commentsContext";
 
-const outerWrapperClass = "relative mb-sm flex h-full flex-col overflow-hidden rounded-lg";
-const wrapperClass = "relative flex h-full flex-1 flex-row flex-wrap overflow-hidden bg-neutral-0 shadow-[0_0_20px_var(--color-neutral-300)] min-h-[250px] max-[450px]:min-h-0";
-const contentClass = "flex flex-1 flex-col p-sm [&_p]:text-[13px] max-[450px]:[&_p]:text-xs [&_strong]:font-semibold";
+const outerWrapperClass = "relative mb-4 flex h-full flex-col overflow-hidden rounded-lg";
+const wrapperClass = "relative flex h-full flex-1 flex-row flex-wrap overflow-hidden bg-white shadow-[0_0_20px_#d4d4d4] dark:bg-neutral-700 dark:shadow-[0_0_20px_rgb(0_0_0_/_35%)] min-h-[250px] max-[450px]:min-h-0";
+const contentClass = "flex flex-1 flex-col p-4 [&_p]:text-[13px] max-[450px]:[&_p]:text-xs [&_strong]:font-semibold";
 export const Wrapper: FC<HTMLAttributes<HTMLDivElement>> = ({ className = "", ...props }) => <div className={`${wrapperClass} ${className}`} {...props} />;
 export const Content: FC<HTMLAttributes<HTMLDivElement>> = ({ className = "", ...props }) => <div className={`${contentClass} ${className}`} {...props} />;
 
@@ -102,7 +101,7 @@ export const MovieCard: FC<Props> = ({
       <div className={outerWrapperClass}>
         <Wrapper>
           <button
-            className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer flex-col items-center justify-center border-0 p-0 transition-colors duration-200 ${seen ? "bg-ui-green hover:bg-ui-light-green [&_svg]:fill-neutral-0" : "bg-neutral-300 hover:bg-neutral-400 [&_svg]:fill-neutral-700"} [&_span]:text-[9px] [&_span]:text-neutral-0`}
+            className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer flex-col items-center justify-center border-0 p-0 transition-colors duration-200 ${seen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"} [&_span]:text-[9px] [&_span]:text-white`}
             type="button"
             onClick={(e) => {
               e.preventDefault();
@@ -125,52 +124,56 @@ export const MovieCard: FC<Props> = ({
             }}
           />
           <Content>
-            <div className="mb-sm">
+            <div className="mb-4">
               <h2 className="m-0 mb-0 pr-10 text-xl font-semibold max-[450px]:text-base [&_img]:mb-[-3px] [&_img]:mr-1">
-                <div className="inline-block">
-                  <div className="flex mr-1">
-
-                    {data.wonCategories?.map((cat) => (
-                      <Image
-                        key={cat}
-                        src={statueImage}
-                        height={30}
-                        alt="Oscars statue"
-                      />
-                    ))}
+                {data.wonCategories && data.wonCategories.length > 0 && (
+                  <div className="inline-block">
+                    <div className="flex mr-1">
+                      {data.wonCategories?.map((cat) => (
+                        <Image
+                          key={cat}
+                          src={statueImage}
+                          height={30}
+                          alt="Oscars statue"
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
                 {data.title}
               </h2>
               {data.duration && <div className="text-[10px]">{minutesToHours(data.duration)}</div>}
             </div>
-            <p>
-              <strong>Director:</strong> {data.director}
-            </p>
-            <p>
-              <strong>Cast:</strong> {data.cast}
-            </p>
-
-            {data.categories && data.categories?.length > 0 && (
-              <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-primary-500 [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
-                <strong>Nominations:</strong>{" "}
-                {sortedCategories.map((cat) => {
-                  if (data.wonCategories?.includes(cat)) {
-                    return <em key={cat}>{formatCategory(cat)}</em>;
-                  } else {
-                    return <span key={cat}>{formatCategory(cat)}</span>;
-                  }
-                })}
+            <div className="flex flex-col gap-2">
+              <p>
+                <strong>Director:</strong> {data.director}
               </p>
-            )}
-            <div className="mt-auto flex items-center justify-between pt-xs">
+              <p>
+                <strong>Cast:</strong> {data.cast}
+              </p>
+
+              {data.categories && data.categories?.length > 0 && (
+                <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-[#b39930] dark:[&_em]:text-[#968242] [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
+                  <strong>Nominations:</strong>{" "}
+                  {sortedCategories.map((cat) => {
+                    if (data.wonCategories?.includes(cat)) {
+                      return <em key={cat}>{formatCategory(cat)}</em>;
+                    } else {
+                      return <span key={cat}>{formatCategory(cat)}</span>;
+                    }
+                  })}
+                </p>
+              )}
+
+            </div>
+            <div className="mt-auto flex items-center justify-between pt-2">
               {isSignedIn && (
                 <button className="h-6 w-6 cursor-pointer border-0 bg-transparent p-0" onClick={() => setShowCommentModal(true)}>
                   <PenIcon />
                 </button>
               )}
               <a
-                className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-secondary-500 transition-colors duration-200 hover:text-secondary-700 [&_svg]:fill-secondary-500 [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-secondary-700"
+                className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline"
                 href={movieLink.href}
                 target="_BLANK"
               >
@@ -180,7 +183,7 @@ export const MovieCard: FC<Props> = ({
             </div>
           </Content>
         </Wrapper>
-        {savedComment && <p className="m-0 w-full bg-[#bad4f6] px-1 py-0.5 text-xs">{savedComment.comment}</p>}
+        {savedComment && <p className="m-0 w-full bg-blue-100 px-1 py-0.5 text-xs dark:bg-neutral-500 dark:text-neutral-200">{savedComment.comment}</p>}
       </div>
 
       <Modal
@@ -188,15 +191,15 @@ export const MovieCard: FC<Props> = ({
         onClose={() => setSignInModalOpen(false)}
         maxWidth="400px"
       >
-        <Heading size="lg" as="h2" marginBottom="sm" textAlign="center">
+        <h2 className="heading text-2xl !mb-4 text-center">
           You need to log in
-        </Heading>
-        <Paragraph textAlign="center">
+        </h2>
+        <p className=" text-center">
           You need to sign in to add movies to your seen list. If you don&apos;t
           have an account you can create one for.
-        </Paragraph>
-        <Box $marginTop="md">
-          <Flex $gap="sm" $justifyContent="center">
+        </p>
+        <Box $marginTop="6">
+          <Flex $gap="4" $justifyContent="center">
             <Button
               to="/signup"
               type="link"
@@ -213,14 +216,14 @@ export const MovieCard: FC<Props> = ({
         onClose={() => setShowCommentModal(false)}
         maxWidth="400px"
       >
-        <Flex $direction="column" $justifyContent="center" $gap="sm">
+        <Flex $direction="column" $justifyContent="center" $gap="4">
           <input
-            className="mb-sm w-full rounded border border-neutral-300 p-2 text-base"
+            className="mb-4 w-full rounded border border-neutral-300 p-2 text-base"
             placeholder="Add a personal note"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <div className="flex w-full justify-center gap-xs [&>button:last-child]:flex-1">
+          <div className="flex w-full justify-center gap-2 [&>button:last-child]:flex-1">
             {savedComment && (
               <Button
                 label="Remove"
@@ -263,7 +266,7 @@ export const MovieCard: FC<Props> = ({
         onClose={() => setShowCalendar(false)}
         maxWidth="400px"
       >
-        <Flex $direction="column" $justifyContent="center" $gap="sm">
+        <Flex $direction="column" $justifyContent="center" $gap="4">
           <Calendar
             value={seenDate?.toISODate()}
             onChange={(value) => onDateChange(value?.toString())}

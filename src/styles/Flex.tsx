@@ -11,14 +11,14 @@ type FlexProps = React.ComponentProps<typeof Box> & {
 };
 
 const gapClasses: Record<SpacingSize, string> = {
-  xxs: "gap-xxs",
-  xs: "gap-xs",
-  sm: "gap-sm",
-  md: "gap-md",
-  lg: "gap-lg",
-  xl: "gap-xl",
-  xxl: "gap-xxl",
-  xxxl: "gap-xxxl",
+  "1": "gap-1",
+  "2": "gap-2",
+  "4": "gap-4",
+  "6": "gap-6",
+  "8": "gap-8",
+  "10": "gap-10",
+  "12": "gap-12",
+  "16": "gap-16",
 };
 
 export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(function Flex(

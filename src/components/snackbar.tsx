@@ -42,7 +42,7 @@ const Snackbar: React.FC<Props> = ({
   }, [message, duration]);
 
   return ReactDOM.createPortal(
-    <div className={`fixed bottom-6 right-6 z-[1000] flex items-center justify-center rounded-lg bg-white px-4 py-2 text-center text-sm shadow-[0_0_10px_#a3a3a3] transition-opacity duration-300 ${isVisible ? "visible opacity-100" : "invisible opacity-0"} ${type === "success" ? "text-green-600 [&_svg]:fill-green-600" : type === "error" ? "text-red-600 [&_svg]:fill-red-600" : "text-neutral-900 [&_svg]:fill-blue-600"} [&_svg]:mr-2`}>
+    <div className={`fixed bottom-6 right-6 z-[1000] flex items-center justify-center rounded-lg bg-white px-4 py-2 text-center text-sm text-neutral-900 shadow-[0_0_10px_#a3a3a3] transition-opacity duration-300 dark:bg-neutral-700 dark:text-neutral-100 dark:shadow-[0_0_16px_rgb(0_0_0_/_45%)] ${isVisible ? "visible opacity-100" : "invisible opacity-0"} ${type === "success" ? "text-green-600 dark:text-green-400 [&_svg]:fill-green-600 dark:[&_svg]:fill-green-400" : type === "error" ? "text-red-600 dark:text-red-400 [&_svg]:fill-red-600 dark:[&_svg]:fill-red-400" : "text-neutral-900 dark:text-blue-300 [&_svg]:fill-blue-600 dark:[&_svg]:fill-blue-300"} [&_svg]:mr-2`}>
       {Icon(type)}
       {message}
     </div>,

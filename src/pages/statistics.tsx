@@ -96,11 +96,12 @@ export default function Statistics({
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
-        <meta name="theme-color" content="#ffffff"></meta>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
       </Head>
       <div className="mx-auto max-w-[1400px] px-6 pt-6">
         <h1 className="mb-4 text-[40px]">Statistics</h1>
-        <div className="mb-2 max-w-[600px] rounded-lg bg-amber-300 p-4">
+        <div className="mb-2 max-w-[600px] rounded-lg bg-amber-300 p-4 dark:bg-[#968242] dark:text-amber-100">
           <p>
             <strong>Most wins:</strong> {mostWins}
           </p>
@@ -160,7 +161,7 @@ export default function Statistics({
       )}
 
       <div className="mx-auto w-full max-w-[1400px] overflow-x-auto p-6">
-        <table className="mb-2 w-full border-collapse [&_thead_tr]:bg-neutral-700 [&_thead_tr]:text-white [&_th]:whitespace-nowrap [&_th]:p-2 [&_th]:text-left [&_td]:p-2">
+        <table className="mb-2 w-full border-collapse [&_thead_tr]:bg-neutral-700 [&_thead_tr]:text-white dark:[&_thead_tr]:bg-neutral-950 [&_th]:whitespace-nowrap [&_th]:p-2 [&_th]:text-left [&_td]:p-2">
           <thead>
             <tr>
               <th>Year</th>
@@ -177,7 +178,7 @@ export default function Statistics({
           <tbody>
             {movies.map((obj) => {
               return (
-                <tr key={"statistics-" + obj.year} className="bg-neutral-200 odd:bg-neutral-300">
+                <tr key={"statistics-" + obj.year} className="bg-neutral-200 odd:bg-neutral-300 dark:bg-neutral-700 dark:odd:bg-neutral-700">
                   <td>{obj.year}</td>
                   <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
                   <td>{getRaceLength(obj.movies)}</td>

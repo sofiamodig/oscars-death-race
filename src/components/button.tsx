@@ -23,9 +23,9 @@ const sizeClasses: Record<Size, string> = {
   lg: "h-12 px-8",
 };
 const variantClasses: Record<Variant, string> = {
-  primary: "border border-transparent bg-[#bb9c38] text-white hover:bg-[#897b2c]",
-  secondary: "border border-[#bb9c38] bg-transparent text-[#bb9c38] hover:border-[#897b2c]",
-  danger: "border border-transparent bg-red-600 text-white hover:bg-red-800",
+  primary: "border border-transparent bg-amber-600 text-white hover:bg-amber-700 dark:bg-[#968242] dark:hover:bg-amber-600",
+  secondary: "border border-amber-600 bg-transparent text-amber-700 hover:border-amber-800 dark:border-amber-400 dark:text-amber-300 dark:hover:border-amber-300",
+  danger: "border border-transparent bg-red-600 text-white hover:bg-red-800 dark:bg-red-700 dark:hover:bg-red-600",
 };
 const classes = "relative flex items-center justify-center rounded font-sans text-base transition-colors duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:animate-spinner [&_svg]:fill-white [&_svg]:opacity-70";
 

@@ -21,7 +21,7 @@ import { Button } from "./button";
 import { useCommentsContext } from "@/contexts/commentsContext";
 
 const outerWrapperClass = "relative mb-4 flex h-full flex-col overflow-hidden rounded-lg";
-const wrapperClass = "relative flex h-full flex-1 flex-row flex-wrap overflow-hidden bg-white shadow-[0_0_20px_#d4d4d4] min-h-[250px] max-[450px]:min-h-0";
+const wrapperClass = "relative flex h-full flex-1 flex-row flex-wrap overflow-hidden bg-white shadow-[0_0_20px_#d4d4d4] dark:bg-neutral-700 dark:shadow-[0_0_20px_rgb(0_0_0_/_35%)] min-h-[250px] max-[450px]:min-h-0";
 const contentClass = "flex flex-1 flex-col p-4 [&_p]:text-[13px] max-[450px]:[&_p]:text-xs [&_strong]:font-semibold";
 export const Wrapper: FC<HTMLAttributes<HTMLDivElement>> = ({ className = "", ...props }) => <div className={`${wrapperClass} ${className}`} {...props} />;
 export const Content: FC<HTMLAttributes<HTMLDivElement>> = ({ className = "", ...props }) => <div className={`${contentClass} ${className}`} {...props} />;
@@ -101,7 +101,7 @@ export const MovieCard: FC<Props> = ({
       <div className={outerWrapperClass}>
         <Wrapper>
           <button
-            className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer flex-col items-center justify-center border-0 p-0 transition-colors duration-200 ${seen ? "bg-green-600 hover:bg-green-300 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 [&_svg]:fill-neutral-700"} [&_span]:text-[9px] [&_span]:text-white`}
+            className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer flex-col items-center justify-center border-0 p-0 transition-colors duration-200 ${seen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"} [&_span]:text-[9px] [&_span]:text-white`}
             type="button"
             onClick={(e) => {
               e.preventDefault();
@@ -144,25 +144,28 @@ export const MovieCard: FC<Props> = ({
               </h2>
               {data.duration && <div className="text-[10px]">{minutesToHours(data.duration)}</div>}
             </div>
-            <p>
-              <strong>Director:</strong> {data.director}
-            </p>
-            <p>
-              <strong>Cast:</strong> {data.cast}
-            </p>
-
-            {data.categories && data.categories?.length > 0 && (
-              <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-[#bb9c38] [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
-                <strong>Nominations:</strong>{" "}
-                {sortedCategories.map((cat) => {
-                  if (data.wonCategories?.includes(cat)) {
-                    return <em key={cat}>{formatCategory(cat)}</em>;
-                  } else {
-                    return <span key={cat}>{formatCategory(cat)}</span>;
-                  }
-                })}
+            <div className="flex flex-col gap-2">
+              <p>
+                <strong>Director:</strong> {data.director}
               </p>
-            )}
+              <p>
+                <strong>Cast:</strong> {data.cast}
+              </p>
+
+              {data.categories && data.categories?.length > 0 && (
+                <p className="[&_em]:font-medium [&_em]:not-italic [&_em]:text-amber-700 dark:[&_em]:text-amber-300 [&_span:not(:last-child)]:after:content-[',_'] [&_em:not(:last-child)]:after:content-[',_']">
+                  <strong>Nominations:</strong>{" "}
+                  {sortedCategories.map((cat) => {
+                    if (data.wonCategories?.includes(cat)) {
+                      return <em key={cat}>{formatCategory(cat)}</em>;
+                    } else {
+                      return <span key={cat}>{formatCategory(cat)}</span>;
+                    }
+                  })}
+                </p>
+              )}
+
+            </div>
             <div className="mt-auto flex items-center justify-between pt-2">
               {isSignedIn && (
                 <button className="h-6 w-6 cursor-pointer border-0 bg-transparent p-0" onClick={() => setShowCommentModal(true)}>
@@ -170,7 +173,7 @@ export const MovieCard: FC<Props> = ({
                 </button>
               )}
               <a
-                className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900"
+                className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline"
                 href={movieLink.href}
                 target="_BLANK"
               >
@@ -180,7 +183,7 @@ export const MovieCard: FC<Props> = ({
             </div>
           </Content>
         </Wrapper>
-        {savedComment && <p className="m-0 w-full bg-[#bad4f6] px-1 py-0.5 text-xs">{savedComment.comment}</p>}
+        {savedComment && <p className="m-0 w-full bg-blue-100 px-1 py-0.5 text-xs dark:bg-neutral-500 dark:text-neutral-200">{savedComment.comment}</p>}
       </div>
 
       <Modal

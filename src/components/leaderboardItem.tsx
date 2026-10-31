@@ -29,7 +29,7 @@ export const LeaderboardItem: FC<Props> = ({
   isPending = false,
 }) => {
   return (
-    <div key={username} className={`flex items-center justify-between px-4 py-2 [&:nth-child(odd):not(:first-child)]:bg-neutral-200 first:bg-[#bb9c38] first:text-white ${isCurrentUser ? "!bg-blue-200 !text-black" : ""}`}>
+    <div key={username} className={`flex items-center justify-between px-4 py-2 [&:nth-child(odd):not(:first-child)]:bg-neutral-200 first:bg-amber-600 first:text-white dark:[&:nth-child(odd):not(:first-child)]:bg-neutral-800 dark:first:bg-amber-700 ${isCurrentUser ? "!bg-blue-200 !text-black dark:!bg-blue-900 dark:!text-blue-100" : ""}`}>
       <Flex $gap="4" $alignItems="center">
         {rank < 3 && completed ? (
           <span className="inline-block h-[30px] w-[15px] bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]" style={{ backgroundColor: TROPHY_COLORS[rank] ?? "transparent", maskImage: `url(${trophyImg.src})`, WebkitMaskImage: `url(${trophyImg.src})`, WebkitMaskSize: "contain", WebkitMaskPosition: "center", WebkitMaskRepeat: "no-repeat" }} />

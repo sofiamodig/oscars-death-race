@@ -1,46 +1,4 @@
 import React, { CSSProperties } from "react";
-import styled from "styled-components";
-
-const Container = styled.div<{ width: string | undefined }>`
-  display: flex;
-  flex-direction: column;
-  width: ${({ width }) => (width ? width : "100%")};
-`;
-
-const Label = styled.label`
-  margin-bottom: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-neutral-700);
-`;
-
-const StyledInput = styled.input<{ $errormessage: boolean }>`
-  border: 1px solid
-    ${({ $errormessage }) =>
-      $errormessage ? "var(--color-error)" : "var(--color-neutral-200)"};
-  padding: 8px 16px;
-  height: 48px;
-  font-size: 16px;
-  border-radius: 4px;
-  outline: none;
-
-  &:focus {
-    border-color: var(--color-neutral-400);
-  }
-
-  &:-webkit-autofill,
-  &:-webkit-autofill:hover,
-  &:-webkit-autofill:focus,
-  &:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: var(--color-error);
-  font-size: 12px;
-  margin-top: 4px;
-`;
 
 interface InputProps {
   label?: string;
@@ -68,18 +26,18 @@ export const TextInput: React.FC<InputProps> = ({
   onBlur,
 }) => {
   return (
-    <Container width={width} style={style}>
-      {label && <Label>{label}</Label>}
-      <StyledInput
+    <div className="flex w-full flex-col" style={{ ...style, width: width ?? style?.width }}>
+      {label && <label className="mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-200">{label}</label>}
+      <input
+        className={`h-12 rounded border border-neutral-200 bg-white px-4 py-2 text-base text-neutral-900 outline-none placeholder:text-neutral-500 focus:border-neutral-400 autofill:shadow-[inset_0_0_0_30px_white] dark:border-neutral-700 dark:bg-neutral-700 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:autofill:shadow-[inset_0_0_0_30px_#262626] ${errorMessage ? "border-red-600 dark:border-red-500" : ""}`}
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
-        $errormessage={Boolean(errorMessage)}
         disabled={disabled}
       />
-      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-    </Container>
+      {errorMessage && <div className="mt-1 text-xs text-red-600">{errorMessage}</div>}
+    </div>
   );
 };

@@ -6,9 +6,6 @@ const nextConfig = {
     NEXT_SUPABASE_URL: process.env.NEXT_SUPABASE_URL,
     NEXT_SUPABASE_ANON_KEY: process.env.NEXT_SUPABASE_ANON_KEY,
   },
-  compiler: {
-    styledComponents: true,
-  },
   images: {
     remotePatterns: [
       {
@@ -16,6 +13,10 @@ const nextConfig = {
         hostname: "cdn.buymeacoffee.com",
       },
     ],
+  },
+  outputFileTracingIncludes: {
+    "/leaderboard": ["./public/movies.json"],
+    "/statistics": ["./public/movies.json"],
   },
 };
 

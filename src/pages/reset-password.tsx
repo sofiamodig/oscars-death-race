@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
-import { Heading } from "@/components/heading";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { Box } from "@/styles/Box";
@@ -46,13 +45,13 @@ const ResetPassword = () => {
       $maxWidth="400px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="md"
+      $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="lg" textAlign="center">
+      <h1 className="heading text-3xl !mb-8 text-center">
         Reset password
-      </Heading>
+      </h1>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="md">
+        <Box $marginBottom="6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -64,7 +63,7 @@ const ResetPassword = () => {
         </Box>
 
         {requestSent && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <InfoMessage>
               <InfoIcon />
               If an account exists for {email.trim()}, password reset
@@ -74,7 +73,7 @@ const ResetPassword = () => {
         )}
 
         {generalError && (
-          <Box $marginBottom="md" $marginTop="md">
+          <Box $marginBottom="6" $marginTop="6">
             <ErrorMessage>{generalError}</ErrorMessage>
           </Box>
         )}

@@ -4,58 +4,11 @@ import { MoviesYearsListType } from "@/types";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 import { Line } from "react-chartjs-2";
-import styled from "styled-components";
 import {
   fetchPublicUserSeenData,
 } from "@/functions/fetchUsers";
 import type { PublicUserSeenData } from "@/functions/fetchUsers";
 import { TextInput } from "./textInput";
-
-const InnerWrapper = styled.div`
-  height: 400px;
-  min-width: 900px;
-`;
-
-const ChartScrollArea = styled.div`
-  width: 100%;
-  overflow-x: auto;
-`;
-
-const InputWrapper = styled.div`
-  max-width: 500px;
-  margin-top: 8px;
-  position: relative;
-`;
-
-const Suggestions = styled.div`
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  max-height: 240px;
-  overflow-y: auto;
-  border: 1px solid var(--color-neutral-200);
-  border-radius: 4px;
-  background: white;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
-`;
-
-const Suggestion = styled.button`
-  display: block;
-  width: 100%;
-  padding: 8px 16px;
-  border: 0;
-  background: white;
-  text-align: left;
-  cursor: pointer;
-
-  &:hover,
-  &:focus {
-    background: var(--color-neutral-200);
-    outline: none;
-  }
-`;
 
 interface Props {
   movies: MoviesYearsListType;
@@ -67,8 +20,19 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
   const [compareUser, setCompareUser] = useState<PublicUserSeenData | null>(null);
   const [isLoadingCompareUser, setIsLoadingCompareUser] = useState(false);
   const [compareError, setCompareError] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const selectionRequestId = useRef(0);
   const { seenMovies } = useContext(SeenContext);
+
+  useEffect(() => {
+    const updatePreference = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
+    const observer = new MutationObserver(updatePreference);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    updatePreference();
+    return () => observer.disconnect();
+  }, []);
   const flattenedSeenMoviesImdbIds = seenMovies.flatMap((seenYear) =>
     seenYear.seenMovies?.map((movie) => movie.imdbId)
   );
@@ -143,10 +107,10 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
   const seenPercentages = calculateSeenPercentage();
   const filteredUsernames = userToCompareTo.trim() && !compareUser && !isLoadingCompareUser
     ? usernames
-        .filter((username) =>
-          username.toLocaleLowerCase().includes(userToCompareTo.toLocaleLowerCase()),
-        )
-        .slice(0, 10)
+      .filter((username) =>
+        username.toLocaleLowerCase().includes(userToCompareTo.toLocaleLowerCase()),
+      )
+      .slice(0, 10)
     : [];
   const userToCompareToSeenPercentage = compareUser
     ? calculateUserSeenPercentage(compareUser)
@@ -154,6 +118,7 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
 
   const options = {
     responsive: true,
+    color: isDarkMode ? "#e5e5e5" : "#404040",
     layout: {
       padding: {
         top: 5,
@@ -164,8 +129,12 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
       title: {
         display: true,
         text: "Your seen percentage by year",
+        color: isDarkMode ? "#e5e5e5" : "#404040",
       },
       tooltip: {
+        backgroundColor: isDarkMode ? "#262626" : "#ffffff",
+        titleColor: isDarkMode ? "#f5f5f5" : "#171717",
+        bodyColor: isDarkMode ? "#e5e5e5" : "#404040",
         mode: "index",
         intersect: false,
         callbacks: {
@@ -193,7 +162,11 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
       yAxis: {
         beginAtZero: true,
         max: 100,
+        grid: {
+          color: isDarkMode ? "rgb(255 255 255 / 12%)" : "rgb(0 0 0 / 10%)",
+        },
         ticks: {
+          color: isDarkMode ? "#d4d4d4" : "#404040",
           stepSize: 10,
           callback: function (value: any) {
             return value + "%";
@@ -209,8 +182,8 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
       {
         label: "You",
         data: seenPercentages,
-        borderColor: "#bb9c38",
-        backgroundColor: "#bb9c38",
+        borderColor: "#d97706",
+        backgroundColor: "#d97706",
       },
     ],
   };
@@ -219,20 +192,20 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
     data.datasets.push({
       label: compareUser.username,
       data: userToCompareToSeenPercentage,
-      borderColor: "#f5b65d",
-      backgroundColor: "#f5b65d",
+      borderColor: "#f59e0b",
+      backgroundColor: "#f59e0b",
     });
   }
 
   return (
     <>
-      <ChartScrollArea>
-        <InnerWrapper>
+      <div className="w-full overflow-x-auto">
+        <div className="h-[400px] min-w-[900px]">
           {/* @ts-ignore */}
           <Line options={options} data={data} />
-        </InnerWrapper>
-      </ChartScrollArea>
-      <InputWrapper>
+        </div>
+      </div>
+      <div className="relative mt-2 max-w-[500px]">
         <TextInput
           type="text"
           placeholder="Search username"
@@ -247,22 +220,23 @@ const SeenLineChart: FC<Props> = ({ movies, usernames }) => {
           }}
         />
         {filteredUsernames.length > 0 && (
-          <Suggestions role="listbox" aria-label="Username suggestions">
+          <div className="absolute inset-x-0 top-[calc(100%_+_4px)] z-10 max-h-[240px] overflow-y-auto rounded border border-neutral-200 bg-white shadow-[0_4px_12px_rgb(0_0_0_/_12%)] dark:border-neutral-700 dark:bg-neutral-700 dark:shadow-[0_4px_12px_rgb(0_0_0_/_45%)]" role="listbox" aria-label="Username suggestions">
             {filteredUsernames.map((username) => (
-              <Suggestion
+              <button
+                className="block w-full cursor-pointer border-0 bg-white px-4 py-2 text-left hover:bg-neutral-200 focus:bg-neutral-200 focus:outline-none dark:bg-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
                 key={username}
                 type="button"
                 role="option"
                 onClick={() => void selectUser(username)}
               >
                 {username}
-              </Suggestion>
+              </button>
             ))}
-          </Suggestions>
+          </div>
         )}
         {isLoadingCompareUser && <p>Loading user data…</p>}
         {compareError && <p role="status">{compareError}</p>}
-      </InputWrapper>
+      </div>
     </>
   );
 };

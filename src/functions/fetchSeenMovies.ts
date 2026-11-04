@@ -2,12 +2,24 @@ import { supabase } from "@/supabase";
 import { SeenMoviesType, UserSettingsType } from "@/types";
 
 export const fetchSeenMovies = async (userId: string) => {
-  const [seenResult, progressResult, profileResult] = await Promise.all([
-    supabase
+  const pageSize = 1000;
+  const seenRows = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase
       .from("seen_movies")
       .select("year, imdb_id, seen_at")
       .eq("user_id", userId)
-      .order("year", { ascending: true }),
+      .order("year", { ascending: true })
+      .order("imdb_id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+
+    if (error) throw new Error(`Failed to load your seen movies: ${error.message}`);
+    const page = data ?? [];
+    seenRows.push(...page);
+    if (page.length < pageSize) break;
+  }
+
+  const [progressResult, profileResult] = await Promise.all([
     supabase
       .from("user_year_progress")
       .select("year, completed_at")
@@ -19,11 +31,11 @@ export const fetchSeenMovies = async (userId: string) => {
       .maybeSingle(),
   ]);
 
-  const error = seenResult.error ?? progressResult.error ?? profileResult.error;
+  const error = progressResult.error ?? profileResult.error;
   if (error) throw new Error(`Failed to load your data: ${error.message}`);
 
   const byYear = new Map<number, SeenMoviesType>();
-  for (const row of seenResult.data ?? []) {
+  for (const row of seenRows) {
     const year = Number(row.year);
     const entry = byYear.get(year) ?? { year: String(year), seenMovies: [] };
     entry.seenMovies.push({ imdbId: row.imdb_id, date: row.seen_at });

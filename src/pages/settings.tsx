@@ -1,9 +1,7 @@
 import { AdminSettings } from "@/components/adminSettings";
 import { Button } from "@/components/button";
 import exportToCsv from "@/components/exportToCSV";
-import { Heading } from "@/components/heading";
 import { Modal } from "@/components/modal";
-import { Paragraph } from "@/components/paragraph";
 import { TextInput } from "@/components/textInput";
 import { Toggle } from "@/components/toggle";
 import { useSeenContext } from "@/contexts/seenContext";
@@ -17,58 +15,10 @@ import { MoviesYearsListType } from "@/types";
 import { validateEmail, validateUsername } from "@/utils";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
-import { useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/supabase";
-import styled from "styled-components";
-
-const SettingsHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-
-const LogoutLink = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 0;
-  border: 0;
-  background: none;
-  color: var(--color-secondary-500);
-  font: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--color-secondary-700);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
-
-const DangerAccordion = styled.details`
-  margin: 112px 0 32px;
-  padding-top: 48px;
-  border-top: 1px solid var(--color-neutral-300);
-
-  summary {
-    width: fit-content;
-    color: var(--color-ui-red, #b42318);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  button {
-    margin-top: 12px;
-  }
-`;
+import { useThemePreference } from "@/contexts/themeContext";
+import type { ThemePreference } from "@/contexts/themeContext";
 
 const ImportTabs = styled.div`
   display: flex;
@@ -143,6 +93,7 @@ export default function Settings({
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState("");
   const { showSnackbar } = useSnackbarContext();
+  const { themePreference, setThemePreference } = useThemePreference();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -285,24 +236,38 @@ export default function Settings({
 
   return (
     <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
-      <SettingsHeader>
-        <Heading size="lg">Settings</Heading>
+      <div className="mb-8 flex items-center justify-between gap-4">
+        <h2 className="heading text-2xl">Settings</h2>
         {userId && (
-          <LogoutLink type="button" onClick={handleSignOut}>
+          <button className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent py-1.5 font-sans text-indigo-700 underline hover:text-indigo-900 dark:text-white dark:hover:no-underline [&_svg]:h-[18px] [&_svg]:w-[18px]" type="button" onClick={handleSignOut}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M10 17l5-5-5-5" />
               <path d="M15 12H3" />
               <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7" />
             </svg>
             Log out
-          </LogoutLink>
+          </button>
         )}
-      </SettingsHeader>
+      </div>
+      <section className="mb-8 border-b border-neutral-300 pb-6 dark:border-neutral-700">
+        <label className="block text-sm font-medium" htmlFor="theme-preference">Theme</label>
+        <div className="custom-select-wrapper mt-2" style={{ width: "220px" }}>
+          <select
+            id="theme-preference"
+            value={themePreference}
+            onChange={(event) => setThemePreference(event.currentTarget.value as ThemePreference)}
+          >
+            <option value="system">Use system setting</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+      </section>
       {!userId || !userSettings ? (
         <Loader />
       ) : (
         <>
-          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="lg">
+          <Flex $alignItems="flex-end" $gap="4" $marginBottom="8">
             <TextInput
               label="Username"
               value={username ?? ""}
@@ -314,7 +279,7 @@ export default function Settings({
               isLoading={loading === "username"}
             />
           </Flex>
-          <Flex $alignItems="flex-end" $gap="sm" $marginBottom="lg">
+          <Flex $alignItems="flex-end" $gap="4" $marginBottom="8">
             <TextInput
               label="Change email"
               value={newEmail ?? ""}
@@ -328,15 +293,14 @@ export default function Settings({
           </Flex>
           <Flex
             $direction="column"
-            $gap="md"
-            $marginBottom="lg"
+            $gap="6"
+            $marginBottom="8"
             $alignItems="flex-start"
           >
             <Toggle
               label="Hide seen dates in the movie list"
               value={userSettings.hideSeenDates ?? false}
               onToggle={toggleShowSeenDates}
-              size="sm"
             />
             <Toggle
               label="Show your user in the leaderboard"
@@ -345,7 +309,6 @@ export default function Settings({
                 setShowInLeaderboard((prev) => !prev);
                 changeShowInLeaderboard();
               }}
-              size="sm"
             />
             <Toggle
               label="Progress by watchtime instead of movie count"
@@ -354,13 +317,12 @@ export default function Settings({
                 setPercentageByWatchTime((prev) => !prev);
                 togglePercentageByWatchTime();
               }}
-              size="sm"
             />
           </Flex>
-          <Box $marginTop="xxl" $marginBottom="lg">
-            <Heading size="md" marginBottom="sm">
+          <Box $marginTop="12" $marginBottom="8">
+            <h3 className="heading text-lg !mb-4">
               Movie links
-            </Heading>
+            </h3>
             <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
               <legend>Open movies with:</legend>
               {([
@@ -380,10 +342,15 @@ export default function Settings({
               ))}
             </fieldset>
           </Box>
+<<<<<<< HEAD
           {/* <Box $marginTop="xxxl" $marginBottom="lg">
             <Heading size="lg" marginBottom="md">
+=======
+          <Box $marginTop="16" $marginBottom="8">
+            <h2 className="heading text-2xl !mb-6">
+>>>>>>> 8f2f66bd417b7a6b8f0c08748ab023c24264ad86
               Export your data
-            </Heading>
+            </h2>
             <Button
               type="button"
               onClick={handleExport}
@@ -392,6 +359,7 @@ export default function Settings({
             />
           </Box> */}
 
+<<<<<<< HEAD
           <Box $marginTop="xxl" $marginBottom="lg">
             <Heading size="lg" marginBottom="sm">
               Import watched movies
@@ -435,6 +403,16 @@ export default function Settings({
               )}
             </ImportInstructions>
             <Flex $direction="column" $gap="sm" $alignItems="flex-start">
+=======
+          <Box $marginTop="12" $marginBottom="8">
+            <h2 className="heading text-2xl !mb-4">
+              Import IMDb ratings
+            </h2>
+            <p className="!mb-4">
+              Upload your IMDb ratings CSV. Movies in this catalog will be marked as seen using their IMDb rating date.
+            </p>
+            <Flex $direction="column" $gap="4" $alignItems="flex-start">
+>>>>>>> 8f2f66bd417b7a6b8f0c08748ab023c24264ad86
               <input
                 type="file"
                 accept=".csv,text/csv"
@@ -451,7 +429,7 @@ export default function Settings({
                 isLoading={isImporting}
                 disabled={!importFile || isImporting}
               />
-              {importStatus && <Paragraph>{importStatus}</Paragraph>}
+              {importStatus && <p className="">{importStatus}</p>}
             </Flex>
           </Box>
 
@@ -461,7 +439,7 @@ export default function Settings({
       {isAdmin && <AdminSettings />}
 
       {userId && userSettings && (
-        <DangerAccordion>
+        <details className="mt-[112px] mb-8 border-t border-neutral-300 pt-12 [&_summary]:w-fit [&_summary]:cursor-pointer [&_summary]:text-sm [&_summary]:font-semibold [&_summary]:text-red-600 [&_button]:mt-3">
           <summary>Danger zone</summary>
           <Button
             type="button"
@@ -469,7 +447,7 @@ export default function Settings({
             label="Delete account"
             variant="danger"
           />
-        </DangerAccordion>
+        </details>
       )}
 
       {deleteModal && (
@@ -478,12 +456,12 @@ export default function Settings({
           onClose={() => setDeleteModal(false)}
           maxWidth="400px"
         >
-          <Flex $direction="column" $gap="sm">
-            <Heading size="lg">Delete account</Heading>
-            <Paragraph marginBottom="md" textAlign="center">
+          <Flex $direction="column" $gap="4">
+            <h2 className="heading text-2xl">Delete account</h2>
+            <p className=" !mb-6 text-center">
               Are you sure you want to delete your account? This action is
               irreversible.
-            </Paragraph>
+            </p>
             <Box>
               <Button
                 onClick={deleteUserData}

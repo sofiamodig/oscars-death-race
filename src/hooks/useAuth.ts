@@ -4,11 +4,6 @@ import { useAuth } from "@/contexts/authContext";
 export { useAuth };
 export { AuthProvider } from "@/contexts/authContext";
 
-export const signOutUser = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
-};
-
 export const emailChange = async (newEmail: string) => {
   const { error } = await supabase.auth.updateUser({ email: newEmail });
   if (error) throw error;

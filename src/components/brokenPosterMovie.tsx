@@ -1,33 +1,8 @@
 import { useState } from "react";
-import styled from "styled-components";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
-import { Heading } from "./heading";
 import { PosterPreview } from "./posterPreview";
 import { TextInput } from "./textInput";
-
-const Row = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  border-top: 1px solid var(--color-neutral-500);
-  padding: 16px 0;
-  margin-top: 16px;
-
-  @media (max-width: 480px) {
-    gap: 10px;
-  }
-`;
-
-const Details = styled.div`
-  min-width: 0;
-  flex: 1;
-`;
-
-const Result = styled.p`
-  margin: 8px 0;
-  font-size: 14px;
-`;
 
 export interface PosterCandidate {
   posterUrl: string;
@@ -70,12 +45,12 @@ export const BrokenPosterMovie = ({
   };
 
   return (
-    <Row>
+    <div className="mt-4 flex items-start gap-2.5 border-t border-neutral-500 py-4 sm:gap-4">
       <PosterPreview url={candidate?.posterUrl ?? currentPosterUrl} title={title} />
-      <Details>
-        <Heading size="sm" as="h2">{title}</Heading>
-        <Result>IMDb: {id}</Result>
-        {candidate && <Result>OMDb match: {candidate.title || title}</Result>}
+      <div className="min-w-0 flex-1">
+        <h2 className="heading">{title}</h2>
+        <p className="my-2 text-sm">IMDb: {id}</p>
+        {candidate && <p className="my-2 text-sm">OMDb match: {candidate.title || title}</p>}
         {candidate && (
           <TextInput
             label="Review or edit poster URL"
@@ -84,7 +59,7 @@ export const BrokenPosterMovie = ({
             disabled={disabled}
           />
         )}
-        {errorMessage && <Result role="alert">{errorMessage}</Result>}
+        {errorMessage && <p className="my-2 text-sm" role="alert">{errorMessage}</p>}
         <Button
           type="button"
           label={candidate ? "Search again" : "Find poster"}
@@ -94,7 +69,7 @@ export const BrokenPosterMovie = ({
           size="sm"
           isLoading={isSearching}
         />
-      </Details>
-    </Row>
+      </div>
+    </div>
   );
 };

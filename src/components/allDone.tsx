@@ -1,6 +1,4 @@
 import { FC } from "react";
-import { Heading } from "./heading";
-import { Paragraph } from "./paragraph";
 import oscarsStatue from "../assets/images/oscar-statue.png";
 import Image from "next/image";
 import { Flex } from "@/styles/Flex";
@@ -16,22 +14,22 @@ export const AllDone: FC<Props> = ({ inCategories, isPredictions }) => {
       $justifyContent="center"
       $direction="column"
       $alignItems="center"
-      $marginTop="xxl"
-      $marginBottom="xxl"
+      $marginTop="12"
+      $marginBottom="12"
     >
       <Image src={oscarsStatue} height={150} alt="Oscar statue" priority />
-      <Heading size="lg" as="h2" marginTop="sm" marginBottom="xs">
+      <h2 className="heading text-2xl !mt-4 !mb-2">
         All done!
-      </Heading>
-      <Paragraph size="lg" textAlign="center">
+      </h2>
+      <p className="text-xl text-center">
         {inCategories
           ? inCategories == 1
             ? "You have seen all the movies in this category."
             : "You have seen all the movies in these categories."
           : isPredictions
-          ? "You have seen all the predictions for this year."
-          : "You have seen all the movies for this year."}
-      </Paragraph>
+            ? "You have seen all the predictions for this year."
+            : "You have seen all the movies for this year."}
+      </p>
     </Flex>
   );
 };

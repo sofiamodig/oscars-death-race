@@ -1,11 +1,10 @@
 import Head from "next/head";
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
-import { fetchMovies } from "@/functions/fetchMovies";
-import { MoviesYearsListType } from "@/types";
-import styled from "styled-components";
 import { useEffect } from "react";
 import SeenLineChart from "@/components/seenLineChart";
 import { useAuth } from "@/hooks/useAuth";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
+import { readMovieCatalog } from "@/functions/readMovieCatalog";
 import {
   fetchLeaderboardUsernames,
   fetchRacerCountsByYear,
@@ -29,101 +28,75 @@ import {
   getShortestMovieAllTime,
 } from "@/functions/statisticsFunctions";
 
-const Wrapper = styled.div`
-  padding: 24px 24px 0;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
+type StatisticsRow = {
+  year: string;
+  movieCount: number;
+  raceLength: string;
+  bestPictureWinner: string;
+  mostWins: string;
+  mostNominations: string;
+  averageLength: string;
+  longestMovie: string;
+};
 
-const PageTitle = styled.h1`
-  font-size: 40px;
-  margin-bottom: 16px;
-
-  span {
-    font-size: 24px;
-    font-weight: 400;
-  }
-`;
-
-const ChartWrapper = styled.div`
-  overflow: visible;
-  padding: 24px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-const TableWrapper = styled.div`
-  overflow-x: auto;
-  padding: 24px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 8px;
-
-  thead {
-    tr {
-      background-color: var(--color-neutral-700);
-      color: var(--color-neutral-0);
-    }
-  }
-
-  th {
-    padding: 8px;
-    white-space: nowrap;
-    text-align: left;
-  }
-
-  td {
-    padding: 8px;
-  }
-`;
-
-const TableRow = styled.tr`
-  background-color: var(--color-neutral-200);
-
-  &:nth-child(2n + 1) {
-    background-color: var(--color-neutral-300);
-  }
-`;
-
-const AllTime = styled.div`
-  background-color: var(--color-primary-300);
-  padding: 16px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  max-width: 600px;
-`;
+type StatisticsSummary = {
+  mostWins: string;
+  mostNominations: string;
+  longestRace: string;
+  longestMovie: string;
+  shortestMovie: string;
+  mostDirectorWins: ReturnType<typeof getMostDirectorWins>;
+  mostNominatedDirector: ReturnType<typeof getMostNominatedDirector>;
+  mostAppearedActor: ReturnType<typeof getMostAppearedActor>;
+};
 
 export const getStaticProps = (async () => {
-  const [movies, racerCountsByYear, usernames] = await Promise.all([
-    fetchMovies(),
+  const [catalog, racerCountsByYear, usernames] = await Promise.all([
+    readMovieCatalog(),
     fetchRacerCountsByYear(),
     fetchLeaderboardUsernames(),
   ]);
-  const reversedList = movies.reverse();
+  const reversedList = [...catalog].reverse();
+  const summary: StatisticsSummary = {
+    mostWins: getMostWinsAllTime(catalog),
+    mostNominations: getMostNominationsAllTime(catalog),
+    longestRace: getLongestRace(catalog),
+    longestMovie: getLongestMovieAllTime(catalog),
+    shortestMovie: getShortestMovieAllTime(catalog),
+    mostDirectorWins: getMostDirectorWins(catalog),
+    mostNominatedDirector: getMostNominatedDirector(catalog),
+    mostAppearedActor: getMostAppearedActor(catalog),
+  };
+  const rows: StatisticsRow[] = reversedList.map(({ year, movies }) => ({
+    year,
+    movieCount: movies.length,
+    raceLength: getRaceLength(movies),
+    bestPictureWinner: getBestPictureWinner(movies),
+    mostWins: getMostWins(movies),
+    mostNominations: movies.length ? getMostNominations(movies) : "No data",
+    averageLength: getMedianAndAverageMovieLength(movies).average,
+    longestMovie: getLongestMovie(movies),
+  }));
 
   return {
-    props: { movies: reversedList, racerCountsByYear, usernames },
+    props: { summary, rows, racerCountsByYear, usernames },
     revalidate: 86400,
   };
 }) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
+  summary: StatisticsSummary;
+  rows: StatisticsRow[];
   racerCountsByYear: RacerCountsByYear;
   usernames: string[];
 }>;
 
 export default function Statistics({
-  movies,
+  summary,
+  rows,
   racerCountsByYear,
   usernames,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { isSignedIn } = useAuth();
+  const { movies } = useMovieCatalog();
   useEffect(() => {
     document.body.classList.add("main-full-width");
 
@@ -133,15 +106,6 @@ export default function Statistics({
   });
 
   // General stats
-  const mostWins = getMostWinsAllTime(movies);
-  const mostNominations = getMostNominationsAllTime(movies);
-  const longestRace = getLongestRace(movies);
-  const longestMovie = getLongestMovieAllTime(movies);
-  const shortestMovie = getShortestMovieAllTime(movies);
-  const mostDirectorWins = getMostDirectorWins(movies);
-  const mostNominatedDirector = getMostNominatedDirector(movies);
-  const mostAppearedActor = getMostAppearedActor(movies);
-
   return (
     <>
       <Head>
@@ -168,71 +132,69 @@ export default function Statistics({
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
-        <meta name="theme-color" content="#ffffff"></meta>
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
       </Head>
-      <Wrapper>
-        <PageTitle>Statistics</PageTitle>
-        <AllTime>
+      <div className="mx-auto max-w-[1400px] px-6 pt-6">
+        <h1 className="mb-4 text-[40px]">Statistics</h1>
+        <div className="mb-2 max-w-[600px] rounded-lg bg-[#e2cd7a] p-4 dark:bg-[#968242] dark:text-neutral-800">
           <p>
-            <strong>Most wins:</strong> {mostWins}
+            <strong>Most wins:</strong> {summary.mostWins}
           </p>
           <p>
-            <strong>Most nominations:</strong> {mostNominations}
+            <strong>Most nominations:</strong> {summary.mostNominations}
           </p>
           <p>
-            <strong>Longest race:</strong> {longestRace}
+            <strong>Longest race:</strong> {summary.longestRace}
           </p>
           <p>
-            <strong>Longest movie:</strong> {longestMovie}
+            <strong>Longest movie:</strong> {summary.longestMovie}
           </p>
           <p>
-            <strong>Shortest movie:</strong> {shortestMovie}
+            <strong>Shortest movie:</strong> {summary.shortestMovie}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Most director wins:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {mostDirectorWins.name} ({mostDirectorWins.movies.length})
+                {summary.mostDirectorWins.name} ({summary.mostDirectorWins.movies.length})
               </span>
             </strong>
-            {mostDirectorWins.movies.join(", ")}
+            {summary.mostDirectorWins.movies.join(", ")}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Most nominated director:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {mostNominatedDirector.name} (
-                {mostNominatedDirector.movies.length})
+                {summary.mostNominatedDirector.name} (
+                {summary.mostNominatedDirector.movies.length})
               </span>
             </strong>
-            {mostNominatedDirector.movies.join(", ")}
+            {summary.mostNominatedDirector.movies.join(", ")}
           </p>
           <p>
             <strong style={{ display: "block" }}>
               Appeared most times*:{" "}
               <span style={{ textTransform: "capitalize" }}>
-                {mostAppearedActor.name} ({mostAppearedActor.movies.length})
+                {summary.mostAppearedActor.name} ({summary.mostAppearedActor.movies.length})
               </span>
             </strong>
-            {mostAppearedActor.movies.join(", ")}
+            {summary.mostAppearedActor.movies.join(", ")}
           </p>
-        </AllTime>
+        </div>
         <p style={{ fontSize: "12px" }}>
           * Listed in &quot;Stars&quot; on IMDB
         </p>
-      </Wrapper>
+      </div>
 
-      {isSignedIn && (
-        <ChartWrapper>
-          <SeenLineChart
-            movies={[...movies].reverse()}
-            usernames={usernames}
-          />
-        </ChartWrapper>
+      {isSignedIn && movies && (
+        <div className="mx-auto w-full max-w-[1400px] overflow-visible p-6">
+          <SeenLineChart movies={movies} usernames={usernames} />
+        </div>
       )}
 
-      <TableWrapper>
-        <Table>
+      <div className="mx-auto w-full max-w-[1400px] overflow-x-auto p-6">
+        <table className="mb-2 w-full border-collapse [&_thead_tr]:bg-neutral-700 [&_thead_tr]:text-white dark:[&_thead_tr]:bg-neutral-950 [&_th]:whitespace-nowrap [&_th]:p-2 [&_th]:text-left [&_td]:p-2">
           <thead>
             <tr>
               <th>Year</th>
@@ -247,33 +209,29 @@ export default function Statistics({
             </tr>
           </thead>
           <tbody>
-            {movies.map((obj) => {
+            {rows.map((row) => {
               return (
-                <TableRow key={"statistics-" + obj.year}>
-                  <td>{obj.year}</td>
-                  <td style={{ textAlign: "center" }}>{obj.movies.length}</td>
-                  <td>{getRaceLength(obj.movies)}</td>
-                  <td>{getBestPictureWinner(obj.movies)}</td>
-                  <td>{getMostWins(obj.movies)}</td>
-                  <td>
-                    {obj.movies.length
-                      ? getMostNominations(obj.movies)
-                      : "No data"}
-                  </td>
-                  <td>{getMedianAndAverageMovieLength(obj.movies).average}</td>
-                  <td>{getLongestMovie(obj.movies)}</td>
+                <tr key={"statistics-" + row.year} className="bg-neutral-200 odd:bg-neutral-300 dark:bg-neutral-700 dark:odd:bg-neutral-700">
+                  <td>{row.year}</td>
+                  <td style={{ textAlign: "center" }}>{row.movieCount}</td>
+                  <td>{row.raceLength}</td>
+                  <td>{row.bestPictureWinner}</td>
+                  <td>{row.mostWins}</td>
+                  <td>{row.mostNominations}</td>
+                  <td>{row.averageLength}</td>
+                  <td>{row.longestMovie}</td>
                   <td style={{ textAlign: "center" }}>
-                    {getNrOfRacers(obj.year, racerCountsByYear)}
+                    {getNrOfRacers(row.year, racerCountsByYear)}
                   </td>
-                </TableRow>
+                </tr>
               );
             })}
           </tbody>
-        </Table>
+        </table>
         <p style={{ fontSize: "12px" }}>
           * Average movie length excludes short films
         </p>
-      </TableWrapper>
+      </div>
     </>
   );
 }

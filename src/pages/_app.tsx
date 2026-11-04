@@ -8,21 +8,24 @@ import "@/styles/globals.css";
 import "react-dropdown/style.css";
 import { CommentsProvider } from "@/contexts/commentsContext";
 import { AuthProvider } from "@/contexts/authContext";
+import { ThemeProvider } from "@/contexts/themeContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <SnackbarProvider>
-      <AuthProvider>
-        <SiteInfoProvider>
-          <SeenProvider>
-            <CommentsProvider>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </CommentsProvider>
-          </SeenProvider>
-        </SiteInfoProvider>
-      </AuthProvider>
-    </SnackbarProvider>
+    <ThemeProvider>
+      <SnackbarProvider>
+        <AuthProvider>
+          <SiteInfoProvider>
+            <SeenProvider>
+              <CommentsProvider>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </CommentsProvider>
+            </SeenProvider>
+          </SiteInfoProvider>
+        </AuthProvider>
+      </SnackbarProvider>
+    </ThemeProvider>
   );
 }

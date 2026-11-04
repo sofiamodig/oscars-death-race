@@ -1,22 +1,9 @@
 import { FC, ReactNode, useContext, useEffect } from "react";
-import styled from "styled-components";
 import { SiteInfoContext } from "@/contexts/siteInfoContext";
 import { useAuth } from "@/hooks/useAuth";
 import Footer from "./footer";
 import Navbar from "./navbar";
 import { UnderConstruction } from "./underConstruction";
-
-const OuterWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-`;
-
-const Main = styled.main`
-  width: calc(100% - 32px);
-  max-width: 1400px;
-  margin: 0 auto;
-`;
 
 interface Props {
   children: ReactNode;
@@ -41,10 +28,10 @@ export const Layout: FC<Props> = ({ children }) => {
   if (construction && !isAdmin) return <UnderConstruction />;
 
   return (
-    <OuterWrapper>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <Main>{children}</Main>
+      <main className="mx-auto w-[calc(100%_-_32px)] max-w-[1400px]">{children}</main>
       <Footer />
-    </OuterWrapper>
+    </div>
   );
 };

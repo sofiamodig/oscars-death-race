@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
 import EditMovie from "@/components/editMovie";
 import AddMovie from "@/components/addMovie";
-import { Heading } from "@/components/heading";
 import { fetchMovies } from "@/functions/fetchMovies";
 import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
@@ -12,39 +11,13 @@ import { getYearsList } from "@/utils";
 import Dropdown from "react-dropdown";
 import NotFound from "./404";
 import { Button } from "@/components/button";
-import { Paragraph } from "@/components/paragraph";
 import { adminRequest } from "@/functions/adminRequest";
 import { BrokenPosterMovie } from "@/components/brokenPosterMovie";
 import type { PosterCandidate } from "@/components/brokenPosterMovie";
-import styled from "styled-components";
-
-const BrokenPosterToggle = styled.label`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  cursor: pointer;
-`;
-
-const PosterSaveBar = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-`;
-
-const PosterActions = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-`;
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
-  return { props: { movies }, revalidate: 60 };
+  return { props: { movies } };
 }) satisfies GetStaticProps<{
   movies: MoviesYearsListType;
 }>;
@@ -264,7 +237,7 @@ export default function Admin({
 
   return (
     <div>
-      <Box $marginBottom="xl">
+      <Box $marginBottom="10">
         <Button
           type="button"
           label="Trigger deploy"
@@ -273,16 +246,16 @@ export default function Admin({
           variant="secondary"
           size="md"
         />
-        {<Paragraph>{status}</Paragraph>}
+        {<p className="">{status}</p>}
       </Box>
       <AddMovie />
 
       <Flex
-        $marginTop="xl"
+        $marginTop="10"
         $justifyContent="space-between"
         $alignItems="center"
       >
-        <Heading size="lg">Edit movies</Heading>
+        <h2 className="heading text-2xl">Edit movies</h2>
         <Dropdown
           options={yearsList}
           onChange={(option) => {
@@ -293,21 +266,21 @@ export default function Admin({
         />
       </Flex>
 
-      <BrokenPosterToggle>
+      <label className="mt-4 inline-flex cursor-pointer items-center gap-2">
         <input
           type="checkbox"
           checked={showBrokenPostersOnly}
           onChange={(event) => setShowBrokenPostersOnly(event.target.checked)}
         />
         Show only movies with broken poster URLs ({brokenMovies.length})
-      </BrokenPosterToggle>
+      </label>
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && !posterScan.done && (
-        <Paragraph>Checking poster URLs for this year…</Paragraph>
+        <p className="">Checking poster URLs for this year…</p>
       )}
 
       {showBrokenPostersOnly && posterScan.year === selectedYear && posterScan.done && (
-        <PosterActions>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button
             type="button"
             label={`Find posters for all (${moviesWithoutCandidate.length})`}
@@ -317,12 +290,12 @@ export default function Admin({
             size="md"
             isLoading={isFindingAllPosters}
           />
-          {findAllStatus && <Paragraph>{findAllStatus}</Paragraph>}
-        </PosterActions>
+          {findAllStatus && <p className="">{findAllStatus}</p>}
+        </div>
       )}
 
       {showBrokenPostersOnly && (stagedPosters.length > 0 || posterSaveStatus) && (
-        <PosterSaveBar>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           {stagedPosters.length > 0 && (
             <Button
               type="button"
@@ -334,26 +307,26 @@ export default function Admin({
               isLoading={isSavingPosters}
             />
           )}
-          {posterSaveStatus && <Paragraph>{posterSaveStatus}</Paragraph>}
-        </PosterSaveBar>
+          {posterSaveStatus && <p className="">{posterSaveStatus}</p>}
+        </div>
       )}
 
       <Box>
         {selectedYear && showBrokenPostersOnly
           ? brokenMovies.length > 0
             ? brokenMovies.map((movie) => (
-                <BrokenPosterMovie
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  currentPosterUrl={movie.posterUrl}
-                  candidate={posterCandidates[`${selectedYear}:${movie.id}`]}
-                  onCandidate={stagePosterCandidate}
-                  disabled={isSavingPosters || isFindingAllPosters}
-                />
-              ))
+              <BrokenPosterMovie
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                currentPosterUrl={movie.posterUrl}
+                candidate={posterCandidates[`${selectedYear}:${movie.id}`]}
+                onCandidate={stagePosterCandidate}
+                disabled={isSavingPosters || isFindingAllPosters}
+              />
+            ))
             : posterScan.year === selectedYear && posterScan.done
-              ? <Paragraph>No broken poster URLs found for this year.</Paragraph>
+              ? <p className="">No broken poster URLs found for this year.</p>
               : null
           : selectedYear && yearMovies.map((movie) => (
             <EditMovie

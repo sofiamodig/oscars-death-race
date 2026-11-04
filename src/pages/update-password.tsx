@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ErrorIcon } from "@/assets/icons/ErrorIcon";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
-import { Heading } from "@/components/heading";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { Box } from "@/styles/Box";
@@ -76,11 +75,11 @@ const UpdatePassword = () => {
       $maxWidth="400px"
       $marginLeft="auto"
       $marginRight="auto"
-      $marginTop="md"
+      $marginTop="6"
     >
-      <Heading size="xxl" marginBottom="lg" textAlign="center">
+      <h1 className="heading text-3xl !mb-8 text-center">
         Choose a new password
-      </Heading>
+      </h1>
 
       {checkingSession ? (
         <InfoMessage>Checking your password reset link…</InfoMessage>
@@ -97,7 +96,7 @@ const UpdatePassword = () => {
         </ErrorMessage>
       ) : (
         <form onSubmit={handleForm}>
-          <Box $marginBottom="md">
+          <Box $marginBottom="6">
             <TextInput
               value={password}
               setValue={setPassword}
@@ -105,7 +104,7 @@ const UpdatePassword = () => {
               type="password"
             />
           </Box>
-          <Box $marginBottom="md">
+          <Box $marginBottom="6">
             <TextInput
               value={confirmPassword}
               setValue={setConfirmPassword}
@@ -124,7 +123,7 @@ const UpdatePassword = () => {
       )}
 
       {errorMessage && hasSession && !success && (
-        <Box $marginTop="md">
+        <Box $marginTop="6">
           <ErrorMessage>{errorMessage}</ErrorMessage>
         </Box>
       )}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import styled from "styled-components";
 import { CheckIcon } from "../assets/icons/CheckIcon";
 import { ErrorIcon } from "../assets/icons/ErrorIcon";
 import { InfoIcon } from "../assets/icons/InfoIcon";
@@ -12,52 +11,6 @@ interface Props {
   type?: SnackbarType;
   duration?: number; // Duration in milliseconds
 }
-
-const SnackbarWrapper = styled.div<{
-  $type: SnackbarType;
-  $isVisible: boolean;
-}>`
-  visibility: ${({ $isVisible }) => ($isVisible ? "visible" : "hidden")};
-  background-color: var(--color-neutral-0);
-  color: ${({ $type }) => {
-    switch ($type) {
-      case "success":
-        return "var(--color-success)";
-      case "error":
-        return "var(--color-error)";
-      default:
-        return "var(--color-neutral-900)";
-    }
-  }};
-  text-align: center;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  z-index: 1000;
-  right: 24px;
-  bottom: 24px;
-  transition: visibility 0.4s, opacity 0.4s linear;
-  opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
-  box-shadow: 0 0 10px var(--color-neutral-400);
-
-  svg {
-    fill: ${({ $type }) => {
-      switch ($type) {
-        case "success":
-          return "var(--color-success)";
-        case "error":
-          return "var(--color-error)";
-        default:
-          return "var(--color-info)";
-      }
-    }};
-    margin-right: 8px;
-  }
-`;
 
 const Icon = (type: SnackbarType) => {
   switch (type) {
@@ -89,10 +42,10 @@ const Snackbar: React.FC<Props> = ({
   }, [message, duration]);
 
   return ReactDOM.createPortal(
-    <SnackbarWrapper $type={type} $isVisible={isVisible}>
+    <div className={`fixed bottom-6 right-6 z-[1000] flex items-center justify-center rounded-lg bg-white px-4 py-2 text-center text-sm text-neutral-900 shadow-[0_0_10px_#a3a3a3] transition-opacity duration-300 dark:bg-neutral-700 dark:text-neutral-100 dark:shadow-[0_0_16px_rgb(0_0_0_/_45%)] ${isVisible ? "visible opacity-100" : "invisible opacity-0"} ${type === "success" ? "text-green-600 dark:text-green-400 [&_svg]:fill-green-600 dark:[&_svg]:fill-green-400" : type === "error" ? "text-red-600 dark:text-red-400 [&_svg]:fill-red-600 dark:[&_svg]:fill-red-400" : "text-neutral-900 dark:text-blue-300 [&_svg]:fill-blue-600 dark:[&_svg]:fill-blue-300"} [&_svg]:mr-2`}>
       {Icon(type)}
       {message}
-    </SnackbarWrapper>,
+    </div>,
     document.body
   );
 };

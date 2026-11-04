@@ -65,6 +65,6 @@ export const parseLetterboxdWatchedCsv = (csv: string) => {
     if (!existing || date > existing.date) byFilm.set(key, { date, slug, uri });
   }
 
-  const result = [...byFilm.values()];
+  const result = Array.from(byFilm.values());
   return { rows: result, skipped: skipped + validRows - result.length };
 };

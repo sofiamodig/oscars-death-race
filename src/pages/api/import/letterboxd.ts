@@ -121,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  const matched = [...matchedByMovie.values()];
+  const matched = Array.from(matchedByMovie.values());
   const alreadySeen = new Set<string>();
   for (let offset = 0; offset < matched.length; offset += 500) {
     const { data, error: seenError } = await client

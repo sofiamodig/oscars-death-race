@@ -9,7 +9,8 @@
     "prebuild": "node scripts/generate-movies-json.mjs",
     "start": "next start",
     "lint": "next lint",
-    "repair-posters": "node scripts/repair-posters.mjs"
+    "repair-posters": "node scripts/repair-posters.mjs",
+    "repair-letterboxd-ids": "node scripts/repair-letterboxd-ids.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",

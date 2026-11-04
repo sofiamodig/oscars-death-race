@@ -352,7 +352,7 @@ export default function Settings({
                     <li>Click the three vertical dots (or the export icon) located at the top right of your ratings page.</li>
                     <li>Upload the exported ratings.csv file here</li>
                   </ol>
-                  <p>The <strong>date rated</strong> is used as the watched date.</p>
+                  <p className="mt-2">The <strong>date rated</strong> is used as the watched date.</p>
                 </div>
               ) : (
                 <div>
@@ -361,7 +361,7 @@ export default function Settings({
                     <li>Download and unzip the archive</li>
                     <li>Upload the exported watched.csv file here</li>
                   </ol>
-                  <p>The <strong>Date</strong> column is used as the watched date.</p>
+                  <p className="mt-2">The <strong>Date</strong> column is used as the watched date.</p>
                 </div>
               )}
             </div>
@@ -383,6 +383,8 @@ export default function Settings({
                 disabled={!importFile || isImporting}
               />
               {importStatus && <p className="">{importStatus}</p>}
+
+              {isImporting && <p>It may take a couple of minutes, stay on the page!</p>}
             </Flex>
           </Box>
 

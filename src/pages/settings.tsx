@@ -21,6 +21,7 @@ import { useThemePreference } from "@/contexts/themeContext";
 import type { ThemePreference } from "@/contexts/themeContext";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
+type ImportSource = "imdb" | "letterboxd";
 
 export const getStaticProps = (async () => {
   const movies = await fetchMovies();
@@ -54,7 +55,8 @@ export default function Settings({
   const [loading, setLoading] = useState<ButtonLoadingType>();
   const [newEmail, setNewEmail] = useState<string>("");
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
-  const [imdbFile, setImdbFile] = useState<File>();
+  const [importSource, setImportSource] = useState<ImportSource>("imdb");
+  const [importFile, setImportFile] = useState<File>();
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState("");
   const { showSnackbar } = useSnackbarContext();
@@ -166,9 +168,9 @@ export default function Settings({
     exportToCsv(seenMovies, movies, "seen_movies");
   };
 
-  const importImdbRatings = async () => {
-    if (!imdbFile) return;
-    if (imdbFile.size > 5 * 1024 * 1024) {
+  const importWatchedMovies = async () => {
+    if (!importFile) return;
+    if (importFile.size > 5 * 1024 * 1024) {
       setImportStatus("Please choose a CSV file smaller than 5 MB.");
       return;
     }
@@ -176,24 +178,25 @@ export default function Settings({
     setImportStatus("");
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Please sign in again to import your ratings.");
-      const response = await fetch("/api/import/imdb-ratings", {
+      if (!session) throw new Error("Please sign in again to import watched movies.");
+      const isLetterboxd = importSource === "letterboxd";
+      const response = await fetch(isLetterboxd ? "/api/import/letterboxd" : "/api/import/imdb-ratings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ csv: await imdbFile.text() }),
+        body: JSON.stringify({ csv: await importFile.text() }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "Could not import IMDb ratings.");
+      if (!response.ok) throw new Error(result.error ?? "Could not import watched movies.");
       await refreshSeenMovies();
       setImportStatus(
-        `Imported ${result.imported} new movies. ${result.alreadySeen} were already marked seen and left unchanged; ${result.unmatched} were not in the catalog.`
+        `Imported ${result.imported} new movies. ${result.alreadySeen} were already marked seen and left unchanged; ${result.unmatched} were not in the catalog.${result.skipped ? ` ${result.skipped} invalid or duplicate rows were skipped.` : ""}`
       );
-      setImdbFile(undefined);
+      setImportFile(undefined);
     } catch (error) {
-      setImportStatus(error instanceof Error ? error.message : "Could not import IMDb ratings.");
+      setImportStatus(error instanceof Error ? error.message : "Could not import watched movies.");
     } finally {
       setIsImporting(false);
     }
@@ -320,28 +323,64 @@ export default function Settings({
           </Box>
 
           <Box $marginTop="12" $marginBottom="8">
-            <h2 className="heading text-2xl !mb-4">
-              Import IMDb ratings
-            </h2>
-            <p className="!mb-4">
-              Upload your IMDb ratings CSV. Movies in this catalog will be marked as seen using their IMDb rating date.
-            </p>
+            <h2 className="heading text-2xl !mb-4">Import watched movies</h2>
+            <p className="!mb-4">Import watched movies from IMDb or Letterboxd. Already checked movies on this site will not be affected.</p>
+            <div className="mb-4 flex gap-2 border-b border-neutral-300 dark:border-neutral-700" role="tablist" aria-label="Choose import source">
+              {(["imdb", "letterboxd"] as const).map((source) => (
+                <button
+                  key={source}
+                  type="button"
+                  role="tab"
+                  aria-selected={importSource === source}
+                  className={`border-0 border-b-2 px-3 py-2 font-semibold ${importSource === source ? "border-[#b39930] text-[#897b2c] dark:border-[#968242] dark:text-[#968242]" : "border-transparent bg-transparent text-neutral-600 hover:text-[#897b2c] dark:text-neutral-300 dark:hover:text-[#605227]"}`}
+                  onClick={() => {
+                    setImportSource(source);
+                    setImportFile(undefined);
+                    setImportStatus("");
+                  }}
+                >
+                  {source === "imdb" ? "IMDb" : "Letterboxd"}
+                </button>
+              ))}
+            </div>
+            <div className="!mb-4">
+              {importSource === "imdb" ? (
+                <div>
+                  <ol className="list-decimal ml-8 mt-1">
+                    <li>Log in to your account on IMDb using a desktop browser.</li>
+                    <li>Click your profile name or avatar in the top-right corner and select Your Ratings.</li>
+                    <li>Click the three vertical dots (or the export icon) located at the top right of your ratings page.</li>
+                    <li>Upload the exported ratings.csv file here</li>
+                  </ol>
+                  <p>The <strong>date rated</strong> is used as the watched date.</p>
+                </div>
+              ) : (
+                <div>
+                  <ol className="list-decimal ml-8 mt-1">
+                    <li>Log into Letterboxd and then go to <a href="https://letterboxd.com/user/exportdata/" target="_BLANK">https://letterboxd.com/user/exportdata/</a> OR <strong>Settings → Data → Export your data</strong></li>
+                    <li>Download and unzip the archive</li>
+                    <li>Upload the exported watched.csv file here</li>
+                  </ol>
+                  <p>The <strong>Date</strong> column is used as the watched date.</p>
+                </div>
+              )}
+            </div>
             <Flex $direction="column" $gap="4" $alignItems="flex-start">
               <input
                 type="file"
                 accept=".csv,text/csv"
                 onChange={(event) => {
-                  setImdbFile(event.currentTarget.files?.[0]);
+                  setImportFile(event.currentTarget.files?.[0]);
                   setImportStatus("");
                 }}
-                aria-label="Choose IMDb ratings CSV"
+                aria-label={`Choose ${importSource === "imdb" ? "IMDb ratings" : "Letterboxd watched"} CSV`}
               />
               <Button
                 type="button"
-                onClick={importImdbRatings}
-                label="Import ratings"
+                onClick={importWatchedMovies}
+                label={`Import ${importSource === "imdb" ? "IMDb ratings" : "Letterboxd watched movies"}`}
                 isLoading={isImporting}
-                disabled={!imdbFile || isImporting}
+                disabled={!importFile || isImporting}
               />
               {importStatus && <p className="">{importStatus}</p>}
             </Flex>

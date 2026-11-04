@@ -40,7 +40,7 @@ export const Button: React.FC<Props> = ({
   isLoading = false,
   width,
 }) => {
-  const className = `${classes} ${sizeClasses[size]} ${variantClasses[variant]} ${isLoading ? "[&_span]:opacity-0" : ""}`;
+  const className = `${classes} ${sizeClasses[size]} ${variantClasses[variant]}`;
   const style = width ? { width } : undefined;
   const handleClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
     if (disabled) {
@@ -56,16 +56,16 @@ export const Button: React.FC<Props> = ({
   };
 
   const content = <>
-    {isLoading && <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2"><SpinnerIcon /></span>}
-    <span>{label}</span>
+    {isLoading && <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2" aria-hidden="true"><SpinnerIcon /></span>}
+    <span className={isLoading ? "opacity-0" : undefined}>{label}</span>
   </>;
 
   return type === "link" ? (
-    <Link href={to ?? "/"} onClick={handleClick} className={className} style={style} aria-disabled={disabled}>
+    <Link href={to ?? "/"} onClick={handleClick} className={className} style={style} aria-disabled={disabled} aria-busy={isLoading}>
       {content}
     </Link>
   ) : (
-    <button type={type} onClick={handleClick} disabled={disabled} className={className} style={style}>
+    <button type={type} onClick={handleClick} disabled={disabled} className={className} style={style} aria-busy={isLoading}>
       {content}
     </button>
   );

@@ -1,7 +1,6 @@
 type ImdbRatingRow = { imdbId: string; date: string };
 
-// IMDb exports use RFC 4180 style quoting; titles may contain commas and quotes.
-export const parseImdbRatingsCsv = (csv: string) => {
+export const parseCsvRows = (csv: string) => {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
@@ -36,8 +35,14 @@ export const parseImdbRatingsCsv = (csv: string) => {
   if (quoted) throw new Error("The CSV contains an unclosed quoted field.");
   row.push(field);
   if (row.some((value) => value.length > 0)) rows.push(row);
-  if (rows.length < 2) throw new Error("The CSV has no rating rows.");
+  if (rows.length < 2) throw new Error("The CSV has no data rows.");
+  return rows;
+};
 
+// IMDb exports use RFC 4180 style quoting; titles may contain commas and quotes.
+export const parseImdbRatingsCsv = (csv: string) => {
+  const rows = parseCsvRows(csv);
+  if (rows.length < 2) throw new Error("The CSV has no rating rows.");
   const headers = rows[0].map((header, index) =>
     (index === 0 ? header.replace(/^\uFEFF/, "") : header).trim()
   );

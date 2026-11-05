@@ -6,37 +6,24 @@ import { TextInput } from "@/components/textInput";
 import { Toggle } from "@/components/toggle";
 import { useSeenContext } from "@/contexts/seenContext";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
-import { fetchMovies } from "@/functions/fetchMovies";
 import { useAuth, emailChange, userDeletion } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
-import { MoviesYearsListType } from "@/types";
 import { validateEmail, validateUsername } from "@/utils";
-import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/supabase";
 import { useThemePreference } from "@/contexts/themeContext";
 import type { ThemePreference } from "@/contexts/themeContext";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 type ImportSource = "imdb" | "letterboxd";
 
-export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
-  return {
-    props: {
-      movies: [...movies].reverse(),
-    },
-  };
-}) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
-}>;
-
-export default function Settings({
-  movies,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Settings() {
+  const { movies: catalog = [] } = useMovieCatalog();
+  const movies = useMemo(() => [...catalog].reverse(), [catalog]);
   const { userId, isAdmin } = useAuth();
   const {
     seenMovies,

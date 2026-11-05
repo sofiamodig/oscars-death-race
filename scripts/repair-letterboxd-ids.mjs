@@ -24,6 +24,7 @@ if (!supabaseUrl || !supabaseKey) {
 const applyChanges = process.argv.includes("--apply");
 const pageSize = 500;
 const concurrency = 6;
+const crosswalkUrl = "https://crosswalk.titles.media/exports/movies/ids/movies.json";
 const headers = { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` };
 
 async function loadMovies() {
@@ -44,23 +45,24 @@ async function loadMovies() {
   }
 }
 
-async function resolveCanonicalSlug(letterboxdId) {
-  const filmUrl = new URL(`/film/${encodeURIComponent(letterboxdId)}/`, "https://letterboxd.com");
-  const response = await fetch(filmUrl, {
-    redirect: "follow",
-    headers: { "User-Agent": "OscarsDeathRace/0.1.0" },
-    signal: AbortSignal.timeout(15000),
-  });
-  await response.body?.cancel();
-  if (!response.ok) throw new Error(`Letterboxd returned HTTP ${response.status}`);
-
-  const finalUrl = new URL(response.url);
-  if (!["letterboxd.com", "www.letterboxd.com"].includes(finalUrl.hostname)) {
-    throw new Error(`Unexpected redirect host: ${finalUrl.hostname}`);
+// Identifier mappings come from titles.media crosswalk (ODC-BY 1.0).
+async function loadCrosswalk() {
+  const response = await fetch(crosswalkUrl, { signal: AbortSignal.timeout(120000) });
+  if (!response.ok) {
+    const retryAfter = response.headers.get("retry-after");
+    const detail = (await response.text()).slice(0, 300);
+    const retryMessage = retryAfter ? ` Retry-After: ${retryAfter}.` : " No Retry-After header was provided.";
+    throw new Error(`Could not download the crosswalk (HTTP ${response.status}).${retryMessage}${detail ? ` ${detail}` : ""}`);
   }
-  const slug = finalUrl.pathname.match(/^\/film\/([^/]+)\/?$/i)?.[1];
-  if (!slug) throw new Error(`Redirect did not end at a film URL: ${finalUrl.href}`);
-  return decodeURIComponent(slug).toLowerCase();
+  const rows = await response.json();
+  if (!Array.isArray(rows)) throw new Error("The crosswalk response was not a JSON array.");
+
+  const byImdbId = new Map();
+  for (const row of rows) {
+    if (typeof row.imdb_id !== "string" || !row.imdb_id || typeof row.letterboxd_id !== "string" || !row.letterboxd_id) continue;
+    byImdbId.set(row.imdb_id, row.letterboxd_id.trim().toLowerCase());
+  }
+  return byImdbId;
 }
 
 async function updateLetterboxdId(movie, letterboxdId) {
@@ -75,20 +77,27 @@ async function updateLetterboxdId(movie, letterboxdId) {
 }
 
 const movies = await loadMovies();
-const toCheck = movies.filter((movie) =>
-  typeof movie.letterboxd_id === "string" && movie.letterboxd_id.trim().length > 0
-);
+const toCheck = movies.filter((movie) => typeof movie.imdb_id === "string" && movie.imdb_id.trim());
+console.log("Downloading the titles.media crosswalk once for local IMDb ID lookups...");
+const crosswalkByImdbId = await loadCrosswalk();
 const canonicalIds = new Map();
 let failed = 0;
+let unmapped = 0;
+let checked = 0;
 
-console.log(`Checking ${toCheck.length} stored Letterboxd IDs. Mode: ${applyChanges ? "APPLY" : "DRY RUN"}.`);
+console.log(`Checking ${toCheck.length} movies against ${crosswalkByImdbId.size} crosswalk mappings. Mode: ${applyChanges ? "APPLY" : "DRY RUN"}.`);
 
 async function processMovie(movie) {
-  if (typeof movie.letterboxd_id !== "string" || !movie.letterboxd_id.trim()) return;
-  const currentId = movie.letterboxd_id.trim().toLowerCase();
+  const currentId = typeof movie.letterboxd_id === "string" ? movie.letterboxd_id.trim().toLowerCase() : "";
   const label = `${movie.year} ${movie.title} (${movie.imdb_id})`;
   try {
-    const canonicalId = await resolveCanonicalSlug(currentId);
+    const canonicalId = crosswalkByImdbId.get(movie.imdb_id) ?? null;
+    checked++;
+    if (checked % 100 === 0) console.log(`Looked up ${checked}/${toCheck.length} movies.`);
+    if (!canonicalId) {
+      unmapped++;
+      return;
+    }
     const conflictingMovie = canonicalIds.get(canonicalId);
     if (conflictingMovie && conflictingMovie.imdb_id !== movie.imdb_id) {
       failed++;
@@ -98,7 +107,7 @@ async function processMovie(movie) {
     canonicalIds.set(canonicalId, movie);
     if (canonicalId === currentId) return;
     if (applyChanges) await updateLetterboxdId(movie, canonicalId);
-    console.log(`${applyChanges ? "UPDATED" : "WOULD UPDATE"} ${label}: ${currentId} -> ${canonicalId}`);
+    console.log(`${applyChanges ? "UPDATED" : "WOULD UPDATE"} ${label}: ${currentId || "(empty)"} -> ${canonicalId}`);
   } catch (error) {
     failed++;
     console.error(`FAILED ${label} (${currentId}): ${error instanceof Error ? error.message : error}`);
@@ -117,5 +126,5 @@ for (let start = 0; start < toCheck.length;) {
   }));
   start = end;
 }
-console.log(`${applyChanges ? "Updated" : "Would update"} IDs where Letterboxd redirected to a different film slug. Failed or conflicting: ${failed}.`);
+console.log(`${applyChanges ? "Updated" : "Would update"} IDs. Lookups completed: ${checked}; no mapping: ${unmapped}; failed or conflicting: ${failed}.`);
 if (failed) process.exitCode = 1;

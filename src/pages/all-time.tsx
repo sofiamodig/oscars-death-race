@@ -1,6 +1,4 @@
 import Head from "next/head";
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
-import { fetchMovies } from "@/functions/fetchMovies";
 import { MovieType, MoviesYearsListType } from "@/types";
 import {
   ReactNode,
@@ -18,6 +16,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
 import { TextInput } from "@/components/textInput";
 import { Box } from "@/styles/Box";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
+import { InfoMessage } from "@/styles/Message";
 
 const movieGridClasses = "grid grid-cols-[repeat(auto-fill,minmax(440px,1fr))] gap-6 max-[450px]:grid-cols-1";
 
@@ -105,24 +105,10 @@ const LazyMovieCardWrapper = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
-  const transformedData = transformData([...movies].reverse());
-  return {
-    props: {
-      movies: [...movies].reverse(),
-      moviesPerCategory: transformedData,
-    },
-  };
-}) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
-  moviesPerCategory: TransformedDataType;
-}>;
-
-export default function AllTime({
-  movies,
-  moviesPerCategory,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function AllTime() {
+  const { movies: catalog, loading: catalogLoading, error: catalogError } = useMovieCatalog();
+  const movies = useMemo(() => [...(catalog ?? [])].reverse(), [catalog]);
+  const moviesPerCategory = useMemo(() => transformData(movies), [movies]);
   const { isSignedIn } = useAuth();
   const { seenMovies, loading } = useContext(SeenContext);
   const [search, setSearch] = useState<string>("");
@@ -174,7 +160,7 @@ export default function AllTime({
     return moviesPerCategory[selectedCategory];
   }, [moviesPerCategory, selectedCategory, movies]);
 
-  if (loading) {
+  if (loading || catalogLoading) {
     return (
       <div className={movieGridClasses}>
         <MovieCardSkeleton />
@@ -189,6 +175,8 @@ export default function AllTime({
       </div>
     );
   }
+
+  if (catalogError) return <InfoMessage>{catalogError}</InfoMessage>;
 
   const toggleHideSeen = () => {
     setHideSeen(!hideSeen);

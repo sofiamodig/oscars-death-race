@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { GetStaticProps, InferGetStaticPropsType } from "next";
 import EditMovie from "@/components/editMovie";
 import AddMovie from "@/components/addMovie";
-import { fetchMovies } from "@/functions/fetchMovies";
 import { useAuth } from "@/hooks/useAuth";
 import { Box } from "@/styles/Box";
 import { Flex } from "@/styles/Flex";
-import { MoviesYearsListType } from "@/types";
 import { getYearsList } from "@/utils";
 import Dropdown from "react-dropdown";
 import NotFound from "./404";
@@ -14,17 +11,12 @@ import { Button } from "@/components/button";
 import { adminRequest } from "@/functions/adminRequest";
 import { BrokenPosterMovie } from "@/components/brokenPosterMovie";
 import type { PosterCandidate } from "@/components/brokenPosterMovie";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
+import { Loader } from "@/styles/Loader";
+import { InfoMessage } from "@/styles/Message";
 
-export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
-  return { props: { movies } };
-}) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
-}>;
-
-export default function Admin({
-  movies,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Admin() {
+  const { movies = [], loading: catalogLoading, error: catalogError } = useMovieCatalog();
   const { isAdmin } = useAuth();
   const [selectedYear, setSelectedYear] = useState<string>();
   const { yearsList } = getYearsList(movies);
@@ -55,6 +47,7 @@ export default function Admin({
     ? brokenMovies.filter((movie) => !posterCandidates[`${selectedYear}:${movie.id}`])
     : [];
   const [status, setStatus] = useState<string>();
+
 
   useEffect(() => {
     if (!selectedYear) {
@@ -234,6 +227,9 @@ export default function Admin({
       setIsSavingPosters(false);
     }
   };
+
+  if (catalogLoading) return <Loader />;
+  if (catalogError) return <InfoMessage>{catalogError}</InfoMessage>;
 
   return (
     <div>

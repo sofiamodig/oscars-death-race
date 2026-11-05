@@ -1,7 +1,5 @@
 import Head from "next/head";
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
-import { fetchMovies } from "@/functions/fetchMovies";
-import { MovieType, MoviesYearsListType } from "@/types";
+import { MovieType } from "@/types";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   checkLatestYear,
@@ -21,19 +19,12 @@ import { SeenContext } from "@/contexts/seenContext";
 import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { AllDone } from "@/components/allDone";
 import { SiteInfoContext } from "@/contexts/siteInfoContext";
+import { useMovieCatalog } from "@/hooks/useMovieCatalog";
 
 const movieGridClasses = "grid grid-cols-[repeat(auto-fill,minmax(440px,1fr))] gap-6 max-[450px]:grid-cols-1";
 
-export const getStaticProps = (async () => {
-  const movies = await fetchMovies();
-  return { props: { movies } };
-}) satisfies GetStaticProps<{
-  movies: MoviesYearsListType;
-}>;
-
-export default function Home({
-  movies,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Home() {
+  const { movies = [], loading: catalogLoading, error: catalogError } = useMovieCatalog();
   const { isSignedIn } = useAuth();
   const { seenMovies, loading } = useContext(SeenContext);
   const [onlyShowWinners, setOnlyShowWinners] = useState<boolean>(false);
@@ -128,7 +119,7 @@ export default function Home({
     }
   }, [filteredMovies, hideSeen, seenMoviesList]);
 
-  if (loading) {
+  if (loading || catalogLoading) {
     return (
       <div className={movieGridClasses}>
         <MovieCardSkeleton />
@@ -142,6 +133,10 @@ export default function Home({
         <MovieCardSkeleton />
       </div>
     );
+  }
+
+  if (catalogError) {
+    return <InfoMessage>{catalogError}</InfoMessage>;
   }
 
   if (movies.length === 0) {

@@ -25,6 +25,8 @@ type ExtendedMovieType = MovieType & {
   year: string;
 };
 
+type AllTimeTab = "years" | "nominations" | "suggestion";
+
 function transformData(moviesYearsList: MoviesYearsListType) {
   const categoriesMap: {
     [categoryName: string]: { year: string; movies: MovieType[] }[];
@@ -114,6 +116,7 @@ export default function AllTime() {
   const [search, setSearch] = useState<string>("");
   const [onlyShowWinners, setOnlyShowWinners] = useState<boolean>(false);
   const [hideSeen, setHideSeen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<AllTimeTab>("years");
   const [selectedCategory, setSelectedCategory] =
     useState<string>("best-picture");
 
@@ -139,6 +142,31 @@ export default function AllTime() {
     () => allSeenMovies.map((movie) => movie.imdbId),
     [allSeenMovies]
   );
+  const nominationGroups = useMemo(() => {
+    const groups = new Map<number, ExtendedMovieType[]>();
+
+    allMovies.forEach((movie) => {
+      const nominationCount = new Set(
+        (movie.categories ?? []).filter(
+          (category) =>
+            category !== "HONORARY AWARD" &&
+            !category.includes("SPECIAL ACHIEVEMENT")
+        )
+      ).size;
+
+      if (nominationCount < 2) return;
+      const group = groups.get(nominationCount) ?? [];
+      group.push(movie);
+      groups.set(nominationCount, group);
+    });
+
+    return Array.from(groups.entries())
+      .sort(([countA], [countB]) => countB - countA)
+      .map(([count, groupedMovies]) => ({
+        count,
+        movies: groupedMovies.sort((a, b) => a.title.localeCompare(b.title)),
+      }));
+  }, [allMovies]);
 
   useEffect(() => {
     if (localStorage.getItem("hideSeen")) {
@@ -221,10 +249,28 @@ export default function AllTime() {
       </Head>
       <>
         <div>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="mb-6 flex gap-2 border-b border-neutral-300 dark:border-neutral-700" role="tablist" aria-label="All-time views">
+            {(["years", "nominations", "suggestion"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
+                className={`border-0 border-b-2 px-3 py-2 font-semibold capitalize ${activeTab === tab ? "border-[#b39930] text-[#897b2c] dark:border-[#968242] dark:text-[#968242]" : "border-transparent bg-transparent text-neutral-600 hover:text-[#897b2c] dark:text-neutral-300 dark:hover:text-[#605227]"}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab === "suggestion" ? "Suggestion" : tab}
+              </button>
+            ))}
+          </div>
+          {activeTab !== "suggestion" && <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <Box $marginBottom="8" $marginTop="6">
               <h1 className="heading text-3xl !mb-4">
-                Nominations through the years
+                {activeTab === "years"
+                  ? "Nominations through the years"
+                  : activeTab === "nominations"
+                    ? "Movies by nominations"
+                    : "Suggestions"}
               </h1>
               {!loading && allSeenMovies.length ? (
                 <p>
@@ -236,16 +282,16 @@ export default function AllTime() {
                 </p>
               ) : null}
             </Box>
-            <div className="w-full max-w-[300px]">
+            {activeTab !== "suggestion" && <div className="w-full max-w-[300px]">
               <TextInput
                 setValue={(value) => setSearch(value)}
                 value={search}
                 type="text"
                 placeholder="Search for title, director or cast"
               />
-            </div>
-          </div>
-          <div className="mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
+            </div>}
+          </div>}
+          {activeTab === "years" && <div className="mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "230px" }}>
               <select onChange={(e) => setSelectedCategory(e.target.value)}>
                 <option value="all">All categories</option>
@@ -272,9 +318,67 @@ export default function AllTime() {
                 onToggle={toggleHideSeen}
               />
             )}
-          </div>
+          </div>}
 
-          {search.length > 2 ? (
+          {activeTab === "suggestion" ? null : activeTab === "nominations" ? (
+            <>
+              {isSignedIn && (
+                <div className="mb-6">
+                  <Toggle
+                    label="Hide seen movies"
+                    value={hideSeen}
+                    onToggle={toggleHideSeen}
+                  />
+                </div>
+              )}
+              {nominationGroups.map(({ count, movies: nominatedMovies }) => {
+                const allWereSeen = nominatedMovies.every((movie) =>
+                  allSeenMoviesImdbIds.includes(movie.imdbId)
+                );
+
+                if (allWereSeen && hideSeen) {
+                  return (
+                    <div key={count} className="mb-6 border-b border-neutral-300 pb-6">
+                      <div className="flex flex-col items-center justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-neutral-100">
+                        <h2 className="heading text-2xl">{count} nominations</h2>All done!
+                      </div>
+                    </div>
+                  );
+                }
+
+                const visibleMovies = nominatedMovies.filter((movie) => {
+                  const matchesSearch = search.length <= 2 ||
+                    movie.title.toLowerCase().includes(search.toLowerCase()) ||
+                    movie.cast.toLowerCase().includes(search.toLowerCase()) ||
+                    movie.director.toLowerCase().includes(search.toLowerCase());
+                  const isSeen = allSeenMoviesImdbIds.includes(movie.imdbId);
+                  return matchesSearch && !(hideSeen && isSeen);
+                });
+
+                if (!visibleMovies.length) return null;
+
+                return (
+                  <div key={count} className="mb-6 border-b border-neutral-300 pb-12">
+                    <div className="mb-6 flex justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-neutral-100">
+                      <h2 className="heading text-2xl">{count} nominations</h2>
+                    </div>
+                    <div className={movieGridClasses}>
+                      {visibleMovies.map((movie) => (
+                        <LazyMovieCardWrapper key={movie.imdbId}>
+                          <MovieCard
+                            data={movie}
+                            seenList={allSeenMovies}
+                            selectedYear={movie.year}
+                            movies={movies}
+                          />
+                        </LazyMovieCardWrapper>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          ) : search.length > 2 ? (
             <div className={movieGridClasses}>
               {allMovies
                 .filter(
@@ -314,7 +418,7 @@ export default function AllTime() {
 
                 return (
                   <div key={obj.year} className="mb-6 border-b border-neutral-300 pb-12">
-                    <div className="mb-6 flex justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-nautral-100">
+                    <div className="mb-6 flex justify-center rounded-lg bg-[#e2cd7a] p-2 dark:bg-[#968242] dark:text-neutral-100">
                       <h2 className="heading text-2xl">{obj.year}</h2>
                     </div>
                     <div className={movieGridClasses}>

@@ -300,7 +300,7 @@ export default function Settings() {
               ))}
             </fieldset>
           </div>
-          <div className="mt-16 mb-8">
+          {/* <div className="mt-16 mb-8">
             <h2 className="heading text-2xl !mb-6">
               Export your data
             </h2>
@@ -310,7 +310,7 @@ export default function Settings() {
               label="Export"
               variant="secondary"
             />
-          </div>
+          </div> */}
 
           <div className="mt-12 mb-8">
             <h2 className="heading text-2xl !mb-4">Import watched movies</h2>

@@ -6,7 +6,6 @@ import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
-import { Box } from "@/styles/Box";
 import { ErrorMessage, InfoMessage } from "@/styles/Message";
 import { validatePassword } from "@/utils";
 
@@ -71,12 +70,7 @@ const UpdatePassword = () => {
   };
 
   return (
-    <Box
-      $maxWidth="400px"
-      $marginLeft="auto"
-      $marginRight="auto"
-      $marginTop="6"
-    >
+    <div className="mt-6 ml-auto mr-auto max-w-sm">
       <h1 className="heading text-3xl !mb-8 text-center">
         Choose a new password
       </h1>
@@ -96,22 +90,22 @@ const UpdatePassword = () => {
         </ErrorMessage>
       ) : (
         <form onSubmit={handleForm}>
-          <Box $marginBottom="6">
+          <div className="mb-6">
             <TextInput
               value={password}
               setValue={setPassword}
               label="New password"
               type="password"
             />
-          </Box>
-          <Box $marginBottom="6">
+          </div>
+          <div className="mb-6">
             <TextInput
               value={confirmPassword}
               setValue={setConfirmPassword}
               label="Confirm new password"
               type="password"
             />
-          </Box>
+          </div>
 
           <Button
             type="submit"
@@ -123,11 +117,11 @@ const UpdatePassword = () => {
       )}
 
       {errorMessage && hasSession && !success && (
-        <Box $marginTop="6">
+        <div className="mt-6">
           <ErrorMessage>{errorMessage}</ErrorMessage>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 

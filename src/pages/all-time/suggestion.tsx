@@ -7,7 +7,6 @@ import { Toggle } from "@/components/toggle";
 import { useAllTimeData } from "@/hooks/useAllTimeData";
 import { AllTimeMovie } from "@/hooks/useAllTimeData";
 import { cleanupCategory, formatCategory, sortCategories } from "@/utils";
-import { Box } from "@/styles/Box";
 import { InfoMessage } from "@/styles/Message";
 import { AllTimeTabLayout } from "@/components/all-time/AllTimeTabLayout";
 import { AllTimeLoading } from "@/components/all-time/shared";
@@ -202,7 +201,7 @@ export const SuggestionPage = () => {
         <Modal isOpen={signInModalOpen} onClose={() => setSignInModalOpen(false)} maxWidth="400px">
           <h2 className="heading text-2xl !mb-4 text-center">You need to log in</h2>
           <p className="text-center">You need to sign in to add movies to your seen list. If you don&apos;t have an account you can create one.</p>
-          <Box $marginTop="6"><div className="flex justify-center gap-4"><Button to="/signup" type="link" label="Sign up" variant="secondary" /><Button to="/login" type="link" label="Log in" /></div></Box>
+          <div className="mt-6"><div className="flex justify-center gap-4"><Button to="/signup" type="link" label="Sign up" variant="secondary" /><Button to="/login" type="link" label="Log in" /></div></div>
         </Modal>
       </section>
     </AllTimeTabLayout>

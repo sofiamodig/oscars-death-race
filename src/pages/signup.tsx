@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/checkbox";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { useAuth } from "@/hooks/useAuth";
-import { Box } from "@/styles/Box";
 import { ErrorMessage, InfoMessage } from "@/styles/Message";
 import { validateEmail, validatePassword, validateUsername } from "@/utils";
 
@@ -104,17 +103,12 @@ const Signup = () => {
   if (!isReady || isSignedIn) return null;
 
   return (
-    <Box
-      $maxWidth="400px"
-      $marginLeft="auto"
-      $marginRight="auto"
-      $marginTop="6"
-    >
+    <div className="mt-6 ml-auto mr-auto max-w-sm">
       <h1 className="heading text-3xl !mb-8 text-center">
         Sign up
       </h1>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="6">
+        <div className="mb-6">
           <TextInput
             value={username}
             setValue={setUsername}
@@ -126,8 +120,8 @@ const Signup = () => {
           <p className="text-xs">
             This username will show up in the leaderboard. Spaces are allowed.
           </p>
-        </Box>
-        <Box $marginBottom="6">
+        </div>
+        <div className="mb-6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -136,8 +130,8 @@ const Signup = () => {
             placeholder="E-mail"
             errorMessage={errors?.email}
           />
-        </Box>
-        <Box $marginBottom="6">
+        </div>
+        <div className="mb-6">
           <TextInput
             setValue={setPassword}
             label="Password"
@@ -146,9 +140,9 @@ const Signup = () => {
             placeholder="Password"
             errorMessage={errors?.password}
           />
-        </Box>
+        </div>
 
-        <Box $marginBottom="6">
+        <div className="mb-6">
           <Checkbox
             label="I accept that my information will be saved to be used on this site."
             checked={acceptedTerms}
@@ -157,24 +151,24 @@ const Signup = () => {
           {errors?.acceptedTerms && (
             <ErrorMessage>{errors.acceptedTerms}</ErrorMessage>
           )}
-        </Box>
+        </div>
 
         {errors?.general && (
-          <Box $marginBottom="6" $marginTop="6">
+          <div className="mt-6 mb-6">
             <ErrorMessage>
               <ErrorIcon />
               {errors.general}
             </ErrorMessage>
-          </Box>
+          </div>
         )}
 
         {successMessage && (
-          <Box $marginBottom="6" $marginTop="6">
+          <div className="mt-6 mb-6">
             <InfoMessage>
               <InfoIcon />
               {successMessage}
             </InfoMessage>
-          </Box>
+          </div>
         )}
 
         <Button
@@ -184,7 +178,7 @@ const Signup = () => {
           width="100%"
         />
       </form>
-    </Box>
+    </div>
   );
 };
 

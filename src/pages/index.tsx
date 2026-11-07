@@ -12,7 +12,6 @@ import { MovieCard } from "@/components/movieCard";
 import { MovieCardSkeleton } from "@/components/movieCardSkeleton";
 import { ProgressBar } from "@/components/progressBar";
 import { Toggle } from "@/components/toggle";
-import { Box } from "@/styles/Box";
 import { InfoMessage } from "@/styles/Message";
 import { useAuth } from "@/hooks/useAuth";
 import { SeenContext } from "@/contexts/seenContext";
@@ -237,22 +236,22 @@ export default function Home() {
       <main>
         <>
           {isLatestYear && predictions && (
-            <Box>
+            <div>
               <InfoMessage $width="100%">
                 <InfoIcon />
                 These movies are predictions for the upcoming race, not the
                 actual nominations.
               </InfoMessage>
-            </Box>
+            </div>
           )}
           {isLatestYear && moviesBeingAdded && (
-            <Box>
+            <div>
               <InfoMessage $width="100%">
                 <InfoIcon />
                 Movies are currently being added so the list is not yet
                 complete. Please check back later.
               </InfoMessage>
-            </Box>
+            </div>
           )}
           <div className="mb-2 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
             <div className="custom-select-wrapper" style={{ width: "90px" }}>

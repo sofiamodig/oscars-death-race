@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { SearchIcon } from "@/assets/icons/SearchIcon";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
 import { useAuth } from "@/hooks/useAuth";
-import { Box } from "@/styles/Box";
-import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
@@ -298,40 +296,40 @@ const AddMovie = () => {
             }
           />
         </div>
-        <Box $marginTop="6">
+        <div className="mt-6">
           <p>Nominated Categories</p>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((category) => (
-              <Chip
+              <button
+                className={`flex w-fit items-center rounded-lg border-2 border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-black transition-all duration-200 ease-in-out hover:border-yellow-700 dark:border-neutral-700 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:border-yellow-500 ${nominatedCategories.includes(category) ? "!border-yellow-700 dark:!border-yellow-500" : ""}`}
                 key={category}
                 type="button"
-                $isSelected={nominatedCategories.includes(category)}
                 onClick={() => handleNominationClick(category)}
               >
                 {category.replace("Best", "")}
-              </Chip>
+              </button>
             ))}
           </div>
-        </Box>
+        </div>
 
         {nominatedCategories.length > 0 && (
-          <Box $marginTop="6">
+          <div className="mt-6">
             <p>Won Categories</p>
             <div className="flex flex-wrap gap-2">
               {nominatedCategories.map((category) => (
-                <Chip
+                <button
+                  className={`flex w-fit items-center rounded-lg border-2 border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-black transition-all duration-200 ease-in-out hover:border-yellow-700 dark:border-neutral-700 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:border-yellow-500 ${wonCategories.includes(category) ? "!border-yellow-700 dark:!border-yellow-500" : ""}`}
                   key={category}
                   type="button"
-                  $isSelected={wonCategories.includes(category)}
                   onClick={() => handleWonClick(category)}
                 >
                   {category.replace("Best", "")}
-                </Chip>
+                </button>
               ))}
             </div>
-          </Box>
+          </div>
         )}
-        <Box $marginTop="6">
+        <div className="mt-6">
           <Button
             type="submit"
             label="Add movie"
@@ -341,7 +339,7 @@ const AddMovie = () => {
             size="md"
             isLoading={isSubmitting}
           />
-        </Box>
+        </div>
       </form>
     </>
   );

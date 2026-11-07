@@ -1,15 +1,9 @@
 import Image from "next/image";
-import { Flex } from "@/styles/Flex";
 import gif from "../assets/images/notfound.gif";
 
 const NotFound = () => {
   return (
-    <Flex
-      $direction="column"
-      $justifyContent="center"
-      $marginTop="12"
-      $marginBottom="12"
-    >
+    <div className="flex flex-col justify-center items-center mt-12 mb-12">
       <h1 className="heading text-3xl !mb-2">
         Oh no!
       </h1>
@@ -22,7 +16,7 @@ const NotFound = () => {
           alt="People at the oscars being confused because they announced the wrong movie as the winner"
         />
       </div>
-    </Flex>
+    </div>
   );
 };
 

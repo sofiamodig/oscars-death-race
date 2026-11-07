@@ -7,7 +7,6 @@ import { Button } from "@/components/button";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
 import { useAuth } from "@/hooks/useAuth";
-import { Box } from "@/styles/Box";
 import { ErrorMessage } from "@/styles/Message";
 
 type Errors = {
@@ -64,17 +63,12 @@ const Login = () => {
   if (!isReady || isSignedIn) return null;
 
   return (
-    <Box
-      $maxWidth="400px"
-      $marginLeft="auto"
-      $marginRight="auto"
-      $marginTop="6"
-    >
+    <div className="mt-6 ml-auto mr-auto max-w-sm">
       <h1 className="heading text-3xl !mb-8 text-center">
         Log in
       </h1>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="6">
+        <div className="mb-6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -83,8 +77,8 @@ const Login = () => {
             placeholder="E-mail"
             errorMessage={errors?.email}
           />
-        </Box>
-        <Box $marginBottom="6">
+        </div>
+        <div className="mb-6">
           <TextInput
             setValue={setPassword}
             label="Password"
@@ -93,15 +87,15 @@ const Login = () => {
             placeholder="Password"
             errorMessage={errors?.password}
           />
-        </Box>
+        </div>
 
         {errors?.general && (
-          <Box $marginBottom="6" $marginTop="6">
+          <div className="mt-6 mb-6">
             <ErrorMessage>
               <ErrorIcon />
               {errors.general}
             </ErrorMessage>
-          </Box>
+          </div>
         )}
 
         <Button
@@ -110,13 +104,13 @@ const Login = () => {
           isLoading={loading}
           width="100%"
         />
-        <Box $marginTop="4">
+        <div className="mt-4">
           <p className="text-sm text-right">
             <Link href="/reset-password">Forgot password?</Link>
           </p>
-        </Box>
+        </div>
       </form>
-    </Box>
+    </div>
   );
 };
 

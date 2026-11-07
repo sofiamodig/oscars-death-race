@@ -15,8 +15,6 @@ import { PenIcon } from "@/assets/icons/PenIcon";
 import Image from "next/image";
 import { ChevronRightIcon } from "@/assets/icons/ChevronRightIcon";
 import { Modal } from "./modal";
-import { Box } from "@/styles/Box";
-import { Flex } from "@/styles/Flex";
 import { Button } from "./button";
 import { useCommentsContext } from "@/contexts/commentsContext";
 
@@ -198,8 +196,8 @@ export const MovieCard: FC<Props> = ({
           You need to sign in to add movies to your seen list. If you don&apos;t
           have an account you can create one for.
         </p>
-        <Box $marginTop="6">
-          <Flex $gap="4" $justifyContent="center">
+        <div className="mt-6">
+          <div className="flex flex-row justify-center items-center gap-4">
             <Button
               to="/signup"
               type="link"
@@ -207,8 +205,8 @@ export const MovieCard: FC<Props> = ({
               variant="secondary"
             />
             <Button to="/login" type="link" label="Log in" />
-          </Flex>
-        </Box>
+          </div>
+        </div>
       </Modal>
 
       <Modal
@@ -216,7 +214,7 @@ export const MovieCard: FC<Props> = ({
         onClose={() => setShowCommentModal(false)}
         maxWidth="400px"
       >
-        <Flex $direction="column" $justifyContent="center" $gap="4">
+        <div className="flex flex-col justify-center items-center gap-4">
           <input
             className="mb-4 w-full rounded border border-neutral-300 p-2 text-base"
             placeholder="Add a personal note"
@@ -258,7 +256,7 @@ export const MovieCard: FC<Props> = ({
               }}
             />
           </div>
-        </Flex>
+        </div>
       </Modal>
 
       <Modal
@@ -266,7 +264,7 @@ export const MovieCard: FC<Props> = ({
         onClose={() => setShowCalendar(false)}
         maxWidth="400px"
       >
-        <Flex $direction="column" $justifyContent="center" $gap="4">
+        <div className="flex flex-col justify-center items-center gap-4">
           <Calendar
             value={seenDate?.toISODate()}
             onChange={(value) => onDateChange(value?.toString())}
@@ -281,7 +279,7 @@ export const MovieCard: FC<Props> = ({
               setShowCalendar(false);
             }}
           />
-        </Flex>
+        </div>
       </Modal>
     </>
   );

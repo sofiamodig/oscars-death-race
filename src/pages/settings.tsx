@@ -7,8 +7,6 @@ import { Toggle } from "@/components/toggle";
 import { useSeenContext } from "@/contexts/seenContext";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
 import { useAuth, emailChange, userDeletion } from "@/hooks/useAuth";
-import { Box } from "@/styles/Box";
-import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { validateEmail, validateUsername } from "@/utils";
 import { useRouter } from "next/router";
@@ -190,7 +188,7 @@ export default function Settings() {
   };
 
   return (
-    <Box $maxWidth="600px" $marginLeft="auto" $marginRight="auto">
+    <div className="ml-auto mr-auto max-w-xl">
       <div className="mb-8 flex items-center justify-between gap-4">
         <h2 className="heading text-2xl">Settings</h2>
         {userId && (
@@ -222,7 +220,7 @@ export default function Settings() {
         <Loader />
       ) : (
         <>
-          <Flex $alignItems="flex-end" $gap="4" $marginBottom="8">
+          <div className="flex flex-row justify-between items-end gap-4 mb-8">
             <TextInput
               label="Username"
               value={username ?? ""}
@@ -233,8 +231,8 @@ export default function Settings() {
               label="Save"
               isLoading={loading === "username"}
             />
-          </Flex>
-          <Flex $alignItems="flex-end" $gap="4" $marginBottom="8">
+          </div>
+          <div className="flex flex-row justify-between items-end gap-4 mb-8">
             <TextInput
               label="Change email"
               value={newEmail ?? ""}
@@ -245,13 +243,8 @@ export default function Settings() {
               label="Save"
               isLoading={loading === "email"}
             />
-          </Flex>
-          <Flex
-            $direction="column"
-            $gap="6"
-            $marginBottom="8"
-            $alignItems="flex-start"
-          >
+          </div>
+          <div className="flex flex-col justify-between items-start gap-6 mb-8">
             <Toggle
               label="Hide seen dates in the movie list"
               value={userSettings.hideSeenDates ?? false}
@@ -273,8 +266,8 @@ export default function Settings() {
                 togglePercentageByWatchTime();
               }}
             />
-          </Flex>
-          <Box $marginTop="12" $marginBottom="8">
+          </div>
+          <div className="mt-12 mb-8">
             <h3 className="heading text-lg !mb-4">
               Movie links
             </h3>
@@ -296,8 +289,8 @@ export default function Settings() {
                 </label>
               ))}
             </fieldset>
-          </Box>
-          <Box $marginTop="16" $marginBottom="8">
+          </div>
+          <div className="mt-16 mb-8">
             <h2 className="heading text-2xl !mb-6">
               Export your data
             </h2>
@@ -307,9 +300,9 @@ export default function Settings() {
               label="Export"
               variant="secondary"
             />
-          </Box>
+          </div>
 
-          <Box $marginTop="12" $marginBottom="8">
+          <div className="mt-12 mb-8">
             <h2 className="heading text-2xl !mb-4">Import watched movies</h2>
             <p className="!mb-4">Import watched movies from IMDb or Letterboxd. Already checked movies on this site will not be affected.</p>
             <div className="mb-4 flex gap-2 border-b border-neutral-300 dark:border-neutral-700" role="tablist" aria-label="Choose import source">
@@ -352,7 +345,7 @@ export default function Settings() {
                 </div>
               )}
             </div>
-            <Flex $direction="column" $gap="4" $alignItems="flex-start">
+            <div className="flex flex-col justify-between items-start gap-4">
               <input
                 type="file"
                 accept=".csv,text/csv"
@@ -372,8 +365,8 @@ export default function Settings() {
               {importStatus && <p className="">{importStatus}</p>}
 
               {isImporting && <p>It may take a couple of minutes, stay on the page!</p>}
-            </Flex>
-          </Box>
+            </div>
+          </div>
 
         </>
       )}
@@ -398,23 +391,23 @@ export default function Settings() {
           onClose={() => setDeleteModal(false)}
           maxWidth="400px"
         >
-          <Flex $direction="column" $gap="4">
+          <div className="flex flex-col justify-between items-center gap-4">
             <h2 className="heading text-2xl">Delete account</h2>
             <p className=" !mb-6 text-center">
               Are you sure you want to delete your account? This action is
               irreversible.
             </p>
-            <Box>
+            <div>
               <Button
                 onClick={deleteUserData}
                 label="Delete account"
                 variant="danger"
                 isLoading={loading === "delete"}
               />
-            </Box>
-          </Flex>
+            </div>
+          </div>
         </Modal>
       )}
-    </Box>
+    </div>
   );
 }

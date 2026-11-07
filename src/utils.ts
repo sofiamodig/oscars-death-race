@@ -87,8 +87,6 @@ export const checkLatestYear = (year: string, movies: MoviesYearsListType) => {
   return year === latestYear;
 };
 
-export type SpacingSize = "1" | "2" | "4" | "6" | "8" | "10" | "12" | "16";
-
 export const getYearsList = (movies: MoviesYearsListType) => {
   const list = Object.values(movies)
     .map((doc) => {

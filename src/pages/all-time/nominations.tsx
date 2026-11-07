@@ -4,7 +4,6 @@ import { TextInput } from "@/components/textInput";
 import { Toggle } from "@/components/toggle";
 import { useAllTimeData } from "@/hooks/useAllTimeData";
 import { InfoMessage } from "@/styles/Message";
-import { Box } from "@/styles/Box";
 import { AllTimeTabLayout } from "@/components/all-time/AllTimeTabLayout";
 import { AllTimeLoading, LazyMovieCardWrapper, movieGridClasses } from "@/components/all-time/shared";
 
@@ -44,10 +43,10 @@ export const NominationsPage = () => {
   return (
     <AllTimeTabLayout tab="nominations">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <Box $marginBottom="8" $marginTop="6">
+        <div className="mt-6 mb-8">
           <h1 className="heading text-3xl !mb-4">Movies by nominations</h1>
           {allSeenMovies.length > 0 && <p>You have seen {Math.round((allSeenMovies.length / allMovieIds.length) * 100)}% ({allSeenMovies.length}/{allMovieIds.length})</p>}
-        </Box>
+        </div>
         <div className="w-full max-w-[300px]"><TextInput setValue={setSearch} value={search} type="text" placeholder="Search for title, director or cast" /></div>
       </div>
 

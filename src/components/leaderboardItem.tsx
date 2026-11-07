@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { DateTime } from "luxon";
 import trophyImg from "../assets/images/oscar-statue.png";
-import { Flex } from "@/styles/Flex";
 
 const TROPHY_COLORS: { [key: number]: string } = {
   0: "#ffe448",
@@ -30,14 +29,14 @@ export const LeaderboardItem: FC<Props> = ({
 }) => {
   return (
     <div key={username} className={`flex items-center justify-between px-4 py-2 [&:nth-child(odd):not(:first-child)]:bg-neutral-200 first:bg-[#b39930] first:text-white dark:[&:nth-child(odd):not(:first-child)]:bg-neutral-800 dark:first:bg-[#968242] ${isCurrentUser ? "!bg-blue-200 !text-black dark:!bg-blue-900 dark:!text-blue-100" : ""}`}>
-      <Flex $gap="4" $alignItems="center">
+      <div className="flex flex-row justify-between items-center gap-4">
         {rank < 3 && completed ? (
           <span className="inline-block h-[30px] w-[15px] bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]" style={{ backgroundColor: TROPHY_COLORS[rank] ?? "transparent", maskImage: `url(${trophyImg.src})`, WebkitMaskImage: `url(${trophyImg.src})`, WebkitMaskSize: "contain", WebkitMaskPosition: "center", WebkitMaskRepeat: "no-repeat" }} />
         ) : (
           <span className="min-w-[15px] text-center font-bold">{rank + 1}</span>
         )}
         <div style={{ wordBreak: "break-word" }}>{username}</div>
-      </Flex>
+      </div>
       <div className="flex flex-col items-end gap-0 md:flex-row-reverse md:items-center md:gap-4">
         {isPending ? (
           <span className="text-right text-[10px] md:text-xs">Pending invitation</span>

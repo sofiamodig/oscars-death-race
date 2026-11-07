@@ -53,6 +53,5 @@ replacement by IMDb ID using OMDb. The default is a dry run; review the proposed
 URLs, then run `npm run repair-posters -- --apply` to write them to Supabase.
 
 The script reads `.env.local` and requires `NEXT_SUPABASE_URL`,
-`NEXT_SUPABASE_SERVICE_ROLE_KEY`, and `OMDB_API_KEY` (it also accepts the
-existing `NEXT_PUBLIC_OMDB_API_KEY`). Movies OMDb cannot match are reported and
+`NEXT_SUPABASE_SERVICE_ROLE_KEY`, and `OMDB_API_KEY`. Movies OMDb cannot match are reported and
 left unchanged.

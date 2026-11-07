@@ -1,6 +1,4 @@
 import { useSiteInfoContext } from "@/contexts/siteInfoContext";
-import { Box } from "@/styles/Box";
-import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { Toggle } from "./toggle";
 
@@ -15,12 +13,7 @@ export const AdminSettings = () => {
   } = useSiteInfoContext();
 
   return (
-    <Box
-      $maxWidth="600px"
-      $marginLeft="auto"
-      $marginRight="auto"
-      $marginTop="16"
-    >
+    <div className="mt-16 ml-auto mr-auto max-w-xl">
       <h2 className="heading text-2xl !mb-6">
         Admin settings
       </h2>
@@ -28,12 +21,7 @@ export const AdminSettings = () => {
         <Loader />
       ) : (
         <>
-          <Flex
-            $direction="column"
-            $gap="4"
-            $marginBottom="6"
-            $alignItems="flex-start"
-          >
+          <div className="flex flex-col justify-between items-start gap-4 mb-6">
             <Toggle
               label="Under construction"
               value={construction ?? false}
@@ -51,9 +39,9 @@ export const AdminSettings = () => {
               value={moviesBeingAdded ?? false}
               onToggle={toggleMoviesBeingAdded}
             />
-          </Flex>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   );
 };

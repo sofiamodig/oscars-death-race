@@ -1,7 +1,6 @@
 import { FC } from "react";
 import oscarsStatue from "../assets/images/oscar-statue.png";
 import Image from "next/image";
-import { Flex } from "@/styles/Flex";
 
 interface Props {
   inCategories?: number;
@@ -10,13 +9,7 @@ interface Props {
 
 export const AllDone: FC<Props> = ({ inCategories, isPredictions }) => {
   return (
-    <Flex
-      $justifyContent="center"
-      $direction="column"
-      $alignItems="center"
-      $marginTop="12"
-      $marginBottom="12"
-    >
+    <div className="flex flex-col justify-center items-center mt-12 mb-12">
       <Image src={oscarsStatue} height={150} alt="Oscar statue" priority />
       <h2 className="heading text-2xl !mt-4 !mb-2">
         All done!
@@ -30,6 +23,6 @@ export const AllDone: FC<Props> = ({ inCategories, isPredictions }) => {
             ? "You have seen all the predictions for this year."
             : "You have seen all the movies for this year."}
       </p>
-    </Flex>
+    </div>
   );
 };

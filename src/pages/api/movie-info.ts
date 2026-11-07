@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { readFileSync } from "fs";
 import { join } from "path";
 import type { MoviesYearsListType } from "@/types";
+import { fetchSimklMovieDetails } from "@/server/movieExternalIds";
 
 type OmdbMovie = {
   Response?: string;
@@ -14,6 +15,13 @@ type OmdbMovie = {
   Genre?: string;
   Plot?: string;
   Awards?: string;
+};
+
+const asString = (value: unknown, fallback = "N/A") =>
+  value === undefined || value === null || value === "" ? fallback : String(value);
+
+const cacheMovieInfo = (res: NextApiResponse) => {
+  res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
 };
 
 let movieCatalog: MoviesYearsListType | undefined;
@@ -48,36 +56,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const apiKey = process.env.OMDB_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "The OMDb API key is not configured." });
+  let omdbError = "OMDb is unavailable.";
+  try {
+    if (!apiKey) {
+      omdbError = "The OMDb API key is not configured.";
+    } else {
+      const url = new URL("https://www.omdbapi.com/");
+      url.searchParams.set("i", imdbId);
+      url.searchParams.set("apikey", apiKey);
 
-  const url = new URL("https://www.omdbapi.com/");
-  url.searchParams.set("i", imdbId);
-  url.searchParams.set("apikey", apiKey);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`OMDb returned HTTP ${response.status}.`);
+
+      const movie = (await response.json()) as OmdbMovie;
+      if (movie.Response !== "False") {
+        cacheMovieInfo(res);
+        return res.status(200).json({
+          imdbRating: movie.imdbRating ?? "N/A",
+          imdbVotes: movie.imdbVotes ?? "N/A",
+          Rated: movie.Rated ?? "N/A",
+          Released: movie.Released ?? "N/A",
+          Runtime: movie.Runtime ?? "N/A",
+          Genre: movie.Genre ?? "N/A",
+          Plot: movie.Plot ?? "N/A",
+          Awards: movie.Awards ?? "N/A",
+          source: "OMDb",
+          ratingSource: "IMDb",
+        });
+      }
+      omdbError = movie.Error ?? "OMDb did not have details for this movie.";
+    }
+  } catch (error) {
+    omdbError = error instanceof Error ? error.message : "Could not load movie details from OMDb.";
+  }
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return res.status(502).json({ error: "OMDb could not be reached." });
-    }
-
-    const movie = (await response.json()) as OmdbMovie;
-    if (movie.Response === "False") {
-      res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
-      return res.status(404).json({ error: movie.Error ?? "Movie details are not available." });
-    }
-
-    res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
+    const movie = await fetchSimklMovieDetails(imdbId);
+    const hasImdbRating = movie.imdbRating !== undefined && movie.imdbRating !== null;
+    const rating = hasImdbRating ? movie.imdbRating : movie.simklRating;
+    const ratingVotes = hasImdbRating ? movie.imdbVotes : movie.simklVotes;
+    cacheMovieInfo(res);
     return res.status(200).json({
-      imdbRating: movie.imdbRating ?? "N/A",
-      imdbVotes: movie.imdbVotes ?? "N/A",
-      Rated: movie.Rated ?? "N/A",
-      Released: movie.Released ?? "N/A",
-      Runtime: movie.Runtime ?? "N/A",
-      Genre: movie.Genre ?? "N/A",
-      Plot: movie.Plot ?? "N/A",
-      Awards: movie.Awards ?? "N/A",
+      imdbRating: asString(rating),
+      imdbVotes: asString(ratingVotes, ""),
+      Rated: asString(movie.certification),
+      Released: asString(movie.released),
+      Runtime: movie.runtime ? `${movie.runtime} min` : "N/A",
+      Genre: movie.genres?.length ? movie.genres.join(", ") : "N/A",
+      Plot: asString(movie.overview),
+      source: "Simkl",
+      ratingSource: hasImdbRating ? "IMDb" : movie.simklRating !== undefined ? "Simkl" : "IMDb",
+      simklId: movie.simklId,
     });
-  } catch {
-    return res.status(502).json({ error: "Could not load movie details from OMDb." });
+  } catch (error) {
+    const simklError = error instanceof Error ? error.message : "Could not load movie details from Simkl.";
+    return res.status(502).json({ error: `Movie details unavailable. OMDb: ${omdbError} Simkl: ${simklError}` });
   }
 }

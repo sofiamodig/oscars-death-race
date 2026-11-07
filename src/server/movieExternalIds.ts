@@ -5,6 +5,19 @@ interface ExternalMovieIds {
   warnings: string[];
 }
 
+export interface SimklMovieDetails {
+  simklId: number;
+  overview?: string;
+  runtime?: number;
+  certification?: string;
+  released?: string;
+  genres?: string[];
+  imdbRating?: number | string;
+  imdbVotes?: number | string;
+  simklRating?: number | string;
+  simklVotes?: number | string;
+}
+
 const SIMKL_APP_NAME = "oscars-death-race";
 const SIMKL_APP_VERSION = "0.1.0";
 
@@ -93,4 +106,28 @@ export const fetchSimklMovie = async (imdbId: string): Promise<ExternalMovieIds>
       warnings: [error instanceof Error ? error.message : "Simkl lookup failed."],
     };
   }
+};
+
+export const fetchSimklMovieDetails = async (imdbId: string): Promise<SimklMovieDetails> => {
+  const clientId = process.env.SIMKL_CLIENT_ID;
+  if (!clientId) throw new Error("SIMKL_CLIENT_ID is not configured.");
+
+  const simklId = await resolveSimklMovie(imdbId, clientId);
+  if (!simklId) throw new Error("Simkl did not find this movie.");
+
+  const movie = await fetchSimklMovieById(simklId, clientId);
+  if (!movie || Array.isArray(movie)) throw new Error("Simkl did not return movie details.");
+
+  return {
+    simklId,
+    overview: typeof movie.overview === "string" ? movie.overview : undefined,
+    runtime: typeof movie.runtime === "number" ? movie.runtime : undefined,
+    certification: typeof movie.certification === "string" ? movie.certification : undefined,
+    released: typeof movie.released === "string" ? movie.released : undefined,
+    genres: Array.isArray(movie.genres) ? movie.genres.filter((genre: unknown): genre is string => typeof genre === "string") : undefined,
+    imdbRating: movie.ratings?.imdb?.rating,
+    imdbVotes: movie.ratings?.imdb?.votes,
+    simklRating: movie.ratings?.simkl?.rating,
+    simklVotes: movie.ratings?.simkl?.votes,
+  };
 };

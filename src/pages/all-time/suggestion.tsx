@@ -19,6 +19,9 @@ type OmdbMovieInfo = {
   Runtime?: string;
   Genre?: string;
   Plot?: string;
+  source?: "OMDb" | "Simkl";
+  ratingSource?: "IMDb" | "Simkl";
+  simklId?: number;
 };
 
 const isShortMovie = (movie: AllTimeMovie) =>
@@ -58,11 +61,13 @@ export const SuggestionPage = () => {
   }, [allMovies]);
   const suggestionIsSeen = Boolean(selectedSuggestion && allSeenMovieIds.includes(selectedSuggestion.imdbId));
   const destination = userSettings.movieLinkDestination ?? "imdb";
-  const suggestionMovieLink = destination === "letterboxd" && selectedSuggestion?.letterboxdId
-    ? { href: `https://letterboxd.com/film/${selectedSuggestion.letterboxdId}/`, label: "GO TO LETTERBOXD" }
-    : destination === "simkl" && selectedSuggestion?.simklId
-      ? { href: `https://simkl.com/movies/${selectedSuggestion.simklId}/`, label: "GO TO SIMKL" }
-      : { href: `https://imdb.com/title/${selectedSuggestion?.imdbId}`, label: "GO TO IMDB" };
+  const suggestionMovieLink = suggestionInfo?.source === "Simkl" && suggestionInfo.simklId
+    ? { href: `https://simkl.com/movies/${suggestionInfo.simklId}/`, label: "GO TO SIMKL" }
+    : destination === "letterboxd" && selectedSuggestion?.letterboxdId
+      ? { href: `https://letterboxd.com/film/${selectedSuggestion.letterboxdId}/`, label: "GO TO LETTERBOXD" }
+      : destination === "simkl" && selectedSuggestion?.simklId
+        ? { href: `https://simkl.com/movies/${selectedSuggestion.simklId}/`, label: "GO TO SIMKL" }
+        : { href: `https://imdb.com/title/${selectedSuggestion?.imdbId}`, label: "GO TO IMDB" };
 
   useEffect(() => {
     const saved = localStorage.getItem("showShortMovies");
@@ -227,7 +232,7 @@ export const SuggestionPage = () => {
                     <p className="mb-1 lg:mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#897b2c] dark:text-[#968242]">Oscars year {selectedSuggestion.year}</p>
                     <h2 className="heading text-2xl lg:text-4xl mb-1">{selectedSuggestion.title}</h2>
 
-                    {suggestionInfoLoading ? <p className="mt-2 text-neutral-600 dark:text-neutral-300">Loading IMDb details…</p> : suggestionInfoError ? <p className="mb-5 text-neutral-600 dark:text-neutral-300" role="status">{suggestionInfoError}</p> : suggestionInfo ? <>
+                    {suggestionInfoLoading ? <p className="mt-2 text-neutral-600 dark:text-neutral-300">Loading movie details…</p> : suggestionInfoError ? <p className="mb-5 text-neutral-600 dark:text-neutral-300" role="status">{suggestionInfoError}</p> : suggestionInfo ? <>
                       <div className="mt-2 flex flex-wrap items-center gap-x-2 text-lg">
                         <p className="flex items-center gap-1">
                           <svg className="h-6 w-6 shrink-0 fill-yellow-500" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.7.9-4.9 4.8 1.2 6.7-5.9-3.2-5.9 3.2 1.2-6.7-4.9-4.8 6.7-.9L12 2z" /></svg>
@@ -253,7 +258,7 @@ export const SuggestionPage = () => {
                             { label: "Nominations", value: selectedSuggestion.categories?.length ? <span>{sortCategories([...selectedSuggestion.categories]).map((category, index) => <span key={category} className={selectedSuggestion.wonCategories?.includes(category) ? "font-medium text-[#b39930] dark:text-[#968242]" : undefined}>{formatCategory(category)}{index < selectedSuggestion.categories!.length - 1 ? ", " : ""}</span>)}</span> : "No nominations" },
                           ].map(({ label, value }) => value && value !== "N/A" ? <div className="contents" key={label}><dt className="font-semibold">{label}</dt><dd className="m-0 text-neutral-700 dark:text-neutral-200">{value}</dd></div> : null)}
                         </dl>
-                        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">Movie details and IMDb rating provided by OMDb.</p>
+                        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">Movie details and {suggestionInfo.ratingSource ?? "IMDb"} rating provided by {suggestionInfo.source ?? "OMDb"}.</p>
                       </>
                     )}
                   </div>

@@ -6,7 +6,7 @@ import { Modal } from "@/components/modal";
 import { Toggle } from "@/components/toggle";
 import { useAllTimeData } from "@/hooks/useAllTimeData";
 import { AllTimeMovie } from "@/hooks/useAllTimeData";
-import { cleanupCategory, formatCategory, sortCategories } from "@/utils";
+import { cleanupCategory, formatCategory, prettifyCategory, sortCategories } from "@/utils";
 import { InfoMessage } from "@/styles/Message";
 import { AllTimeTabLayout } from "@/components/all-time/AllTimeTabLayout";
 import { AllTimeLoading } from "@/components/all-time/shared";
@@ -26,10 +26,11 @@ const isShortMovie = (movie: AllTimeMovie) =>
 
 export const SuggestionPage = () => {
   const {
-    movies, allMovies, allSeenMovieIds, categories, isSignedIn, loading, error,
+    movies, allMovies, allSeenMovieIds, isSignedIn, loading, error,
     addMovieToSeen, removeMovieFromSeen, userSettings,
   } = useAllTimeData();
-  const [suggestionCategory, setSuggestionCategory] = useState("all");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoriesOptionsOpen, setCategoriesOptionsOpen] = useState(false);
   const [yearSpan, setYearSpan] = useState<[number, number]>([0, 0]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<AllTimeMovie>();
   const [suggestionInfo, setSuggestionInfo] = useState<OmdbMovieInfo>();
@@ -48,6 +49,13 @@ export const SuggestionPage = () => {
   const yearRangeWidth = Math.max(1, yearRangeMax - yearRangeMin);
   const yearRangeStartPercent = ((selectedYearSpan[0] - yearRangeMin) / yearRangeWidth) * 100;
   const yearRangeEndPercent = ((selectedYearSpan[1] - yearRangeMin) / yearRangeWidth) * 100;
+  const categoryOptions = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(allMovies.flatMap((movie) => movie.categories ?? [])));
+    return sortCategories(uniqueCategories).map((category) => ({
+      value: cleanupCategory(category),
+      label: formatCategory(category) || prettifyCategory(cleanupCategory(category)),
+    }));
+  }, [allMovies]);
   const suggestionIsSeen = Boolean(selectedSuggestion && allSeenMovieIds.includes(selectedSuggestion.imdbId));
   const destination = userSettings.movieLinkDestination ?? "imdb";
   const suggestionMovieLink = destination === "letterboxd" && selectedSuggestion?.letterboxdId
@@ -67,7 +75,7 @@ export const SuggestionPage = () => {
     setSelectedSuggestion(undefined);
     setSuggestionInfo(undefined);
     setNoSuggestionFound(false);
-  }, [suggestionCategory, yearSpan[0], yearSpan[1]]);
+  }, [selectedCategories, yearSpan[0], yearSpan[1]]);
   useEffect(() => {
     const imdbId = selectedSuggestion?.imdbId;
     if (!imdbId) {
@@ -104,7 +112,7 @@ export const SuggestionPage = () => {
     const unseen = allMovies.filter((movie) => {
       const year = Number(movie.year);
       const inYearSpan = year >= selectedYearSpan[0] && year <= selectedYearSpan[1];
-      const inCategory = suggestionCategory === "all" || movie.categories?.some((category) => cleanupCategory(category) === suggestionCategory);
+      const inCategory = selectedCategories.length === 0 || movie.categories?.some((category) => selectedCategories.includes(cleanupCategory(category)));
       const includesShort = showShortMovies || !isShortMovie(movie);
       const meetsRuntime = showShortMovies || (movie.duration !== undefined && movie.duration > 40);
       return inYearSpan && inCategory && includesShort && meetsRuntime && !allSeenMovieIds.includes(movie.imdbId);
@@ -128,11 +136,46 @@ export const SuggestionPage = () => {
     <AllTimeTabLayout tab="suggestion">
       <section>
         <div className="mb-8 flex flex-wrap items-center gap-6">
-          <div className="custom-select-wrapper" style={{ width: "230px" }}>
-            <select id="suggestion-category" aria-label="Category" value={suggestionCategory} onChange={(event) => setSuggestionCategory(event.target.value)}>
-              <option value="all">All categories</option>
-              {categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
-            </select>
+          <div
+            className={`custom-multiselect ${categoriesOptionsOpen ? "open" : ""}`}
+            style={{ width: "230px" }}
+            tabIndex={0}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setCategoriesOptionsOpen(false);
+            }}
+          >
+            <div
+              className="custom-multiselect__control"
+              onClick={() => setCategoriesOptionsOpen(!categoriesOptionsOpen)}
+              onBlur={() => setCategoriesOptionsOpen(false)}
+              title={selectedCategories.length
+                ? sortCategories([...selectedCategories]).map((value) => categoryOptions.find((category) => category.value === value)?.label).filter(Boolean).join(", ")
+                : "All categories"}
+            >
+              {selectedCategories.length
+                ? sortCategories([...selectedCategories]).map((value) => categoryOptions.find((category) => category.value === value)?.label).filter(Boolean).join(", ")
+                : "All categories"}
+            </div>
+            {categoriesOptionsOpen && (
+              <div className="custom-multiselect__menu">
+                {categoryOptions.map((category) => (
+                  <label key={category.value} style={{ cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      value={category.value}
+                      checked={selectedCategories.includes(category.value)}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setSelectedCategories((current) => current.includes(value)
+                          ? current.filter((category) => category !== value)
+                          : [...current, value]);
+                      }}
+                    />
+                    {category.label}
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
           <Toggle label="Include shorts" value={showShortMovies} onToggle={toggleShortMovies} />
           <div className="md:flex gap-4 md:ml-auto">
@@ -149,10 +192,18 @@ export const SuggestionPage = () => {
         </div>
 
         {!selectedSuggestion && (
-          <div className="mx-auto mt-8 flex min-h-[220px] max-w-5xl flex-col items-center justify-center text-center">
-            <div className="mb-3 text-4xl" aria-hidden="true">🍿</div>
-            <p className="mb-5 text-lg font-medium text-neutral-700 dark:text-neutral-200">Your next movie night pick is waiting.</p>
-            <Button label="🎲 Surprise me" variant="primary" onClick={chooseSuggestion} isLoading={suggestionInfoLoading} disabled={suggestionInfoLoading} />
+          <div className="relative isolate mx-auto mt-8 flex min-h-[300px] max-w-5xl flex-col items-center justify-center overflow-hidden rounded-3xl border border-[#b39930]/30 bg-gradient-to-br from-yellow-50 via-white to-yellow-100 px-6 py-12 text-center shadow-sm dark:from-neutral-800 dark:via-neutral-900 dark:to-neutral-800">
+            <div className="pointer-events-none absolute -left-12 -top-12 -z-10 h-44 w-44 rounded-full bg-[#e2cd7a]/30 blur-3xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute -bottom-16 -right-8 -z-10 h-48 w-48 rounded-full bg-[#b39930]/20 blur-3xl" aria-hidden="true" />
+            <div className="mb-5 flex items-center gap-4 text-3xl" aria-hidden="true">
+              <span className="animate-bounce [animation-delay:150ms] motion-reduce:animate-none">🎟️</span>
+              <span className="text-5xl">🍿</span>
+              <span className="animate-bounce [animation-delay:300ms] motion-reduce:animate-none">✨</span>
+            </div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#897b2c] dark:text-[#e2cd7a]">Random oscars movie</p>
+            <h2 className="mb-3 text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">Your next movie night pick is waiting.</h2>
+            <p className="mb-6 max-w-md text-sm text-neutral-600 dark:text-neutral-300">We&apos;ll find an unseen Oscar movie for your next movie night.</p>
+            <Button label="🎲 Pick a movie" variant="primary" onClick={chooseSuggestion} isLoading={suggestionInfoLoading} disabled={suggestionInfoLoading} />
             {noSuggestionFound && <div className="mt-5"><InfoMessage>No unseen movies match this category and year span.</InfoMessage></div>}
           </div>
         )}
@@ -160,9 +211,9 @@ export const SuggestionPage = () => {
         {selectedSuggestion && (
           <section className="mx-auto max-w-5xl text-left mt-16">
             <div className="grid items-start gap-8 md:grid-cols-[minmax(220px,320px)_minmax(0,1fr)]">
-              <div className="relative mb-2 aspect-[2/3] w-full max-w-[280px] rounded-md bg-neutral-200 bg-cover bg-center shadow-xl dark:bg-neutral-700">
+              <div className="relative mb-2 aspect-[2/3] w-full max-w-[320px] rounded-md bg-neutral-200 bg-cover bg-center shadow-xl dark:bg-neutral-700">
                 <div className="absolute inset-0 rounded-md bg-cover bg-center" role="img" aria-label={`${selectedSuggestion.title} poster`} style={{ backgroundImage: `url(${selectedSuggestion.posterUrl && selectedSuggestion.posterUrl !== "N/A" ? selectedSuggestion.posterUrl : "https://www.oscarsdeathrace.com/no-poster.png"})` }} />
-                <button className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer items-center justify-center border-0 p-0 transition-colors duration-200 ${suggestionIsSeen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"}`} type="button" aria-label={suggestionIsSeen ? "Mark as unseen" : "Mark as seen"} aria-pressed={suggestionIsSeen} onClick={() => {
+                <button className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer rounded-tr-lg items-center justify-center border-0 p-0 transition-colors duration-200 ${suggestionIsSeen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"}`} type="button" aria-label={suggestionIsSeen ? "Mark as unseen" : "Mark as seen"} aria-pressed={suggestionIsSeen} onClick={() => {
                   if (!isSignedIn) setSignInModalOpen(true);
                   else if (suggestionIsSeen) removeMovieFromSeen(selectedSuggestion.imdbId, selectedSuggestion.year);
                   else addMovieToSeen(selectedSuggestion.imdbId, selectedSuggestion.year, movies);
@@ -179,19 +230,25 @@ export const SuggestionPage = () => {
                     {suggestionInfo.imdbVotes && suggestionInfo.imdbVotes !== "N/A" && <span className="ml-2 text-sm text-neutral-600 dark:text-neutral-300">{suggestionInfo.imdbVotes} votes</span>}
                   </p>
                   {suggestionInfo.Plot && suggestionInfo.Plot !== "N/A" && <p className="mb-3 text-base leading-7">{suggestionInfo.Plot}</p>}
-                  <dl className="grid max-w-lg grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-left text-sm">
-                    {[
-                      { label: "Genre", value: suggestionInfo.Genre },
-                      { label: "Released", value: suggestionInfo.Released },
-                      { label: "Runtime", value: suggestionInfo.Runtime },
-                      { label: "Rated", value: suggestionInfo.Rated },
-                      { label: "Nominations", value: selectedSuggestion.categories?.length ? <span>{sortCategories([...selectedSuggestion.categories]).map((category, index) => <span key={category} className={selectedSuggestion.wonCategories?.includes(category) ? "font-medium text-[#b39930] dark:text-[#968242]" : undefined}>{formatCategory(category)}{index < selectedSuggestion.categories!.length - 1 ? ", " : ""}</span>)}</span> : "No nominations" },
-                    ].map(({ label, value }) => value && value !== "N/A" ? <div className="contents" key={label}><dt className="font-semibold">{label}</dt><dd className="m-0 text-neutral-700 dark:text-neutral-200">{value}</dd></div> : null)}
-                  </dl>
-                  <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-500">Movie details and IMDb rating provided by OMDb.</p>
                 </> : null}
-                <div className="mt-8 flex flex-wrap items-center justify-start gap-x-6 gap-y-3">
-                  <a className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline" href={suggestionMovieLink.href} target="_blank" rel="noreferrer"><span>{suggestionMovieLink.label}</span><ChevronRightIcon /></a>
+                <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div className="min-w-0">
+                    {suggestionInfo && (
+                      <>
+                        <dl className="grid max-w-lg grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-left text-sm">
+                          {[
+                            { label: "Genre", value: suggestionInfo.Genre },
+                            { label: "Released", value: suggestionInfo.Released },
+                            { label: "Runtime", value: suggestionInfo.Runtime },
+                            { label: "Rated", value: suggestionInfo.Rated },
+                            { label: "Nominations", value: selectedSuggestion.categories?.length ? <span>{sortCategories([...selectedSuggestion.categories]).map((category, index) => <span key={category} className={selectedSuggestion.wonCategories?.includes(category) ? "font-medium text-[#b39930] dark:text-[#968242]" : undefined}>{formatCategory(category)}{index < selectedSuggestion.categories!.length - 1 ? ", " : ""}</span>)}</span> : "No nominations" },
+                          ].map(({ label, value }) => value && value !== "N/A" ? <div className="contents" key={label}><dt className="font-semibold">{label}</dt><dd className="m-0 text-neutral-700 dark:text-neutral-200">{value}</dd></div> : null)}
+                        </dl>
+                        <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-500">Movie details and IMDb rating provided by OMDb.</p>
+                      </>
+                    )}
+                  </div>
+                  <a className="flex shrink-0 items-center self-start text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline md:self-end" href={suggestionMovieLink.href} target="_blank" rel="noreferrer"><span>{suggestionMovieLink.label}</span><ChevronRightIcon /></a>
                 </div>
                 <div className="mt-4"><Button label="🎲 Pick another movie" variant="primary" onClick={chooseSuggestion} isLoading={suggestionInfoLoading} disabled={suggestionInfoLoading} /></div>
               </div>

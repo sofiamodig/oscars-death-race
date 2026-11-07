@@ -9,6 +9,7 @@ import "react-dropdown/style.css";
 import { CommentsProvider } from "@/contexts/commentsContext";
 import { AuthProvider } from "@/contexts/authContext";
 import { ThemeProvider } from "@/contexts/themeContext";
+import { GoogleAnalytics } from "@/components/googleAnalytics";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -21,6 +22,7 @@ export default function App({ Component, pageProps }: AppProps) {
                 <Layout>
                   <Component {...pageProps} />
                 </Layout>
+                <GoogleAnalytics />
               </CommentsProvider>
             </SeenProvider>
           </SiteInfoProvider>

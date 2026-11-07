@@ -17,6 +17,7 @@ import { ChevronRightIcon } from "@/assets/icons/ChevronRightIcon";
 import { Modal } from "./modal";
 import { Button } from "./button";
 import { useCommentsContext } from "@/contexts/commentsContext";
+import { trackAnalyticsEvent } from "@/utils/analytics";
 
 const outerWrapperClass = "relative mb-4 flex h-full flex-col overflow-hidden rounded-lg";
 const wrapperClass = "relative flex h-full flex-1 flex-row flex-wrap overflow-hidden bg-white shadow-[0_0_20px_#d4d4d4] dark:bg-neutral-700 dark:shadow-[0_0_20px_rgb(0_0_0_/_35%)] min-h-[250px] max-[450px]:min-h-0";
@@ -174,6 +175,7 @@ export const MovieCard: FC<Props> = ({
                 className="mt-auto mr-[-4px] flex items-center self-end text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline"
                 href={movieLink.href}
                 target="_BLANK"
+                onClick={() => trackAnalyticsEvent("movie_link_opened", { provider: movieLink.label.replace("GO TO ", "").toLowerCase(), source: "movie_card" })}
               >
                 <span>{movieLink.label}</span>
                 <ChevronRightIcon />

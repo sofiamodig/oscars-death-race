@@ -7,6 +7,7 @@ import { cleanupCategory } from "@/utils";
 import { InfoMessage } from "@/styles/Message";
 import { AllTimeTabLayout } from "@/components/all-time/AllTimeTabLayout";
 import { AllTimeLoading, LazyMovieCardWrapper, movieGridClasses } from "@/components/all-time/shared";
+import { trackAnalyticsEvent } from "@/utils/analytics";
 
 const isShortMovie = (movie: { categories?: string[] }) =>
   movie.categories?.some((category) => category.toLowerCase().includes("short")) ?? false;
@@ -38,11 +39,13 @@ export const YearsPage = () => {
     const next = !hideSeen;
     setHideSeen(next);
     localStorage.setItem("hideSeen", String(next));
+    trackAnalyticsEvent("years_filter_changed", { filter: "hide_seen", enabled: next });
   };
   const toggleShortMovies = () => {
     const next = !showShortMovies;
     setShowShortMovies(next);
     localStorage.setItem("showShortMovies", String(next));
+    trackAnalyticsEvent("years_filter_changed", { filter: "short_movies", enabled: next });
   };
 
   if (loading) return <AllTimeTabLayout tab="years"><AllTimeLoading /></AllTimeTabLayout>;
@@ -64,12 +67,19 @@ export const YearsPage = () => {
 
       <div className="mt-4 mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
         <div className="custom-select-wrapper" style={{ width: "230px" }}>
-          <select onChange={(event) => setSelectedCategory(event.target.value)}>
+          <select onChange={(event) => {
+            setSelectedCategory(event.target.value);
+            trackAnalyticsEvent("years_filter_changed", { filter: "category", value: event.target.value });
+          }}>
             <option value="all">All categories</option>
             {categories.map((category, index) => <option key={category.value} selected={index === 0} value={category.value}>{category.label}</option>)}
           </select>
         </div>
-        <Toggle label="Only show winners" value={onlyShowWinners} onToggle={() => setOnlyShowWinners(!onlyShowWinners)} />
+        <Toggle label="Only show winners" value={onlyShowWinners} onToggle={() => {
+          const next = !onlyShowWinners;
+          setOnlyShowWinners(next);
+          trackAnalyticsEvent("years_filter_changed", { filter: "winners_only", enabled: next });
+        }} />
         <Toggle label="Show short movies" value={showShortMovies} onToggle={toggleShortMovies} />
         {isSignedIn && <Toggle label="Hide seen movies" value={hideSeen} onToggle={toggleHideSeen} />}
       </div>

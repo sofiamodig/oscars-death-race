@@ -10,6 +10,7 @@ import { cleanupCategory, formatCategory, prettifyCategory, sortCategories } fro
 import { InfoMessage } from "@/styles/Message";
 import { AllTimeTabLayout } from "@/components/all-time/AllTimeTabLayout";
 import { AllTimeLoading } from "@/components/all-time/shared";
+import { trackAnalyticsEvent } from "@/utils/analytics";
 
 type OmdbMovieInfo = {
   imdbRating?: string;
@@ -144,9 +145,17 @@ export const SuggestionPage = () => {
         if (!response.ok) throw new Error(result.error ?? "Could not load movie details.");
         return result as OmdbMovieInfo;
       })
-      .then(setSuggestionInfo)
+      .then((details) => {
+        setSuggestionInfo(details);
+        trackAnalyticsEvent("suggestion_details_loaded", {
+          provider: details.source?.toLowerCase() ?? "unknown",
+          has_rating: Boolean(details.imdbRating && details.imdbRating !== "N/A"),
+          has_plot: Boolean(details.Plot && details.Plot !== "N/A"),
+        });
+      })
       .catch((fetchError: unknown) => {
         if (fetchError instanceof Error && fetchError.name === "AbortError") return;
+        trackAnalyticsEvent("suggestion_details_failed");
         setSuggestionInfoError(fetchError instanceof Error ? fetchError.message : "Could not load movie details.");
       })
       .finally(() => { if (!controller.signal.aborted) setSuggestionInfoLoading(false); });
@@ -157,6 +166,7 @@ export const SuggestionPage = () => {
     const next = !showShortMovies;
     setShowShortMovies(next);
     localStorage.setItem("showShortMovies", String(next));
+    trackAnalyticsEvent("suggestion_filter_changed", { filter: "short_movies", enabled: next });
   };
   const chooseSuggestion = () => {
     const unseen = allMovies.filter((movie) => {
@@ -172,13 +182,33 @@ export const SuggestionPage = () => {
     if (!unseen.length) {
       setSelectedSuggestion(undefined);
       setNoSuggestionFound(true);
+      trackAnalyticsEvent("movie_suggestion_requested", {
+        result: "no_match",
+        matching_movies: 0,
+        category_filters: selectedCategories.length,
+        genre_filter: Boolean(selectedGenre),
+        year_range_start: selectedYearSpan[0],
+        year_range_end: selectedYearSpan[1],
+        include_shorts: showShortMovies,
+      });
       return;
     }
     const choices = unseen.length > 1 && selectedSuggestion
       ? unseen.filter((movie) => movie.imdbId !== selectedSuggestion.imdbId)
       : unseen;
-    setSelectedSuggestion(choices[Math.floor(Math.random() * choices.length)]);
+    const suggestion = choices[Math.floor(Math.random() * choices.length)];
+    setSelectedSuggestion(suggestion);
     setNoSuggestionFound(false);
+    trackAnalyticsEvent("movie_suggestion_requested", {
+      result: "suggested",
+      matching_movies: unseen.length,
+      oscar_year: Number(suggestion.year),
+      category_filters: selectedCategories.length,
+      genre_filter: Boolean(selectedGenre),
+      year_range_start: selectedYearSpan[0],
+      year_range_end: selectedYearSpan[1],
+      include_shorts: showShortMovies,
+    });
   };
 
   if (loading) return <AllTimeTabLayout tab="suggestion"><AllTimeLoading /></AllTimeTabLayout>;
@@ -218,9 +248,11 @@ export const SuggestionPage = () => {
                       checked={selectedCategories.includes(category.value)}
                       onChange={(event) => {
                         const value = event.target.value;
-                        setSelectedCategories((current) => current.includes(value)
-                          ? current.filter((category) => category !== value)
-                          : [...current, value]);
+                        const selected = selectedCategories.includes(value)
+                          ? selectedCategories.filter((category) => category !== value)
+                          : [...selectedCategories, value];
+                        setSelectedCategories(selected);
+                        trackAnalyticsEvent("suggestion_filter_changed", { filter: "category", selected_count: selected.length });
                       }}
                     />
                     {category.label}
@@ -230,7 +262,10 @@ export const SuggestionPage = () => {
             )}
           </div>
           <div className="custom-select-wrapper" style={{ width: "200px" }}>
-            <select aria-label="Genre" value={selectedGenre} onChange={(event) => setSelectedGenre(event.target.value)}>
+            <select aria-label="Genre" value={selectedGenre} onChange={(event) => {
+              setSelectedGenre(event.target.value);
+              trackAnalyticsEvent("suggestion_filter_changed", { filter: "genre", enabled: Boolean(event.target.value) });
+            }}>
               <option value="">All genres</option>
               {genreOptions.map((genre) => <option key={genre.value} value={genre.value}>{genre.label}</option>)}
             </select>
@@ -315,7 +350,7 @@ export const SuggestionPage = () => {
                       </>
                     )}
                   </div>
-                  <a className="mb-[-4px] flex shrink-0 items-center self-start text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline md:self-end" href={suggestionMovieLink.href} target="_blank" rel="noreferrer"><span>{suggestionMovieLink.label}</span><ChevronRightIcon /></a>
+                  <a className="mb-[-4px] flex shrink-0 items-center self-start text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline md:self-end" href={suggestionMovieLink.href} target="_blank" rel="noreferrer" onClick={() => trackAnalyticsEvent("movie_link_opened", { provider: suggestionMovieLink.label.replace("GO TO ", "").toLowerCase(), source: "suggestion" })}><span>{suggestionMovieLink.label}</span><ChevronRightIcon /></a>
                 </div>
                 <div className="mt-4"><Button label="🎲 Pick another movie" variant="primary" onClick={chooseSuggestion} isLoading={suggestionInfoLoading} disabled={suggestionInfoLoading} /></div>
               </div>

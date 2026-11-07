@@ -15,6 +15,7 @@ import { supabase } from "@/supabase";
 import { useThemePreference } from "@/contexts/themeContext";
 import type { ThemePreference } from "@/contexts/themeContext";
 import { useMovieCatalog } from "@/hooks/useMovieCatalog";
+import { trackAnalyticsEvent } from "@/utils/analytics";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
 type ImportSource = "imdb" | "letterboxd";
@@ -150,7 +151,8 @@ export default function Settings() {
   const deleteUserData = deleteAccount;
 
   const handleExport = () => {
-    exportToCsv(seenMovies, movies, "seen_movies");
+    const exportedMovies = exportToCsv(seenMovies, movies, "seen_movies");
+    trackAnalyticsEvent("movie_data_exported", { format: "csv", movie_count: exportedMovies });
   };
 
   const importWatchedMovies = async () => {
@@ -176,11 +178,19 @@ export default function Settings() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Could not import watched movies.");
       await refreshSeenMovies();
+      trackAnalyticsEvent("movie_data_imported", {
+        source: importSource,
+        imported_count: Number(result.imported) || 0,
+        already_seen_count: Number(result.alreadySeen) || 0,
+        unmatched_count: Number(result.unmatched) || 0,
+        skipped_count: Number(result.skipped) || 0,
+      });
       setImportStatus(
         `Imported ${result.imported} new movies. ${result.alreadySeen} were already marked seen and left unchanged; ${result.unmatched} were not in the catalog.${result.skipped ? ` ${result.skipped} invalid or duplicate rows were skipped.` : ""}`
       );
       setImportFile(undefined);
     } catch (error) {
+      trackAnalyticsEvent("movie_data_import_failed", { source: importSource });
       setImportStatus(error instanceof Error ? error.message : "Could not import watched movies.");
     } finally {
       setIsImporting(false);

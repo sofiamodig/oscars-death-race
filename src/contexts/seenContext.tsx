@@ -13,6 +13,7 @@ import { addMovieToSeenFunc } from "@/functions/addMovieToSeen";
 import { SiteInfoContext } from "./siteInfoContext";
 import { removeMovieFromSeenFunc } from "@/functions/removeMovieFromSeen";
 import { supabase } from "@/supabase";
+import { trackAnalyticsEvent } from "@/utils/analytics";
 
 type SeenContextType = {
   seenMovies: SeenMoviesType[];
@@ -116,6 +117,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       .then((data) => {
         setSeenMovies(data);
         setLoading(false);
+        trackAnalyticsEvent("movie_marked_seen", { oscar_year: Number(year) });
       })
       .catch((error) => {
         showSnackbar("Error adding movie", "error");
@@ -129,6 +131,7 @@ export const SeenProvider: React.FC<SeenProviderProps> = ({ children }) => {
       .then((data) => {
         setSeenMovies(data);
         setLoading(false);
+        trackAnalyticsEvent("movie_marked_unseen", { oscar_year: Number(year) });
       })
       .catch((error) => {
         showSnackbar("Error removing", "error");

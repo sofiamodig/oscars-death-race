@@ -16,9 +16,9 @@ try {
 
 const supabaseUrl = process.env.NEXT_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
-const omdbKey = process.env.OMDB_API_KEY ?? process.env.NEXT_PUBLIC_OMDB_API_KEY;
+const omdbKey = process.env.OMDB_API_KEY;
 if (!supabaseUrl || !supabaseKey || !omdbKey) {
-  console.error("Set NEXT_SUPABASE_URL, NEXT_SUPABASE_SERVICE_ROLE_KEY, and OMDB_API_KEY (or NEXT_PUBLIC_OMDB_API_KEY).");
+  console.error("Set NEXT_SUPABASE_URL, NEXT_SUPABASE_SERVICE_ROLE_KEY, and OMDB_API_KEY.");
   process.exit(1);
 }
 

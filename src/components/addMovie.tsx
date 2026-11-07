@@ -46,8 +46,6 @@ const AddMovie = () => {
   const { isAdmin } = useAuth();
   const { showSnackbar } = useSnackbarContext();
 
-  const apiKey = process.env.NEXT_PUBLIC_OMDB_API_KEY;
-
   if (!isAdmin) return null;
 
   const lookupSimkl = async (imdbId: string) => {
@@ -73,33 +71,26 @@ const AddMovie = () => {
 
   const handleSearch = async (isTitle?: boolean) => {
     setNotFound("");
-    let apiURL =
-      "https://www.omdbapi.com/?i=" + formData.imdbId + `&apikey=${apiKey}`;
-
-    if (formData.title && isTitle) {
-      const formatTitle = formData.title.toLowerCase().replace(/ /g, "_");
-      apiURL = "https://www.omdbapi.com/?t=" + formatTitle + "&apikey=90e46764";
-    }
-
-    fetch(apiURL)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.Error) {
-          setNotFound("Could not find the movie, try again");
-        } else {
-          setErrors(InitialErrors);
-          if (isTitle) void lookupSimkl(data.imdbID);
-          setFormData((prevState) => ({
-            ...prevState,
-            imdbId: data.imdbID,
-            title: data.Title,
-            posterUrl: data.Poster,
-            director: data.Director,
-            cast: data.Actors,
-            duration: parseInt(data.Runtime) ?? null,
-          }));
-        }
+    try {
+      const data = await adminRequest("/api/admin/movie-info", "POST", {
+        ...(isTitle
+          ? { title: formData.title, year: formData.year }
+          : { imdbId: formData.imdbId }),
       });
+      setErrors(InitialErrors);
+      if (isTitle) void lookupSimkl(data.imdbID);
+      setFormData((previous) => ({
+        ...previous,
+        imdbId: data.imdbID,
+        title: data.Title,
+        posterUrl: data.Poster,
+        director: data.Director,
+        cast: data.Actors,
+        duration: Number.parseInt(data.Runtime, 10) || 0,
+      }));
+    } catch (error) {
+      setNotFound(error instanceof Error ? error.message : "Could not find the movie, try again.");
+    }
   };
 
   const validate = () => {

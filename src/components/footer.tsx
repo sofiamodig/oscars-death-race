@@ -4,13 +4,9 @@ import Image from "next/image";
 
 const Footer = () => {
   return (
-    <Box className="mt-auto" $marginLeft="10" $marginRight="10" $marginBottom="12">
-      <Box $marginTop="16" $marginBottom="6">
-        <Flex
-          $justifyContent="center"
-          $alignItems="center"
-          $direction="column"
-        >
+    <div className="mt-auto px-4 pt-10 pb-20 bg-white dark:bg-neutral-800">
+      <div>
+        <div className="flex flex-col items-center mb-4">
           <p className=" !mb-4 text-center">
             Do you like this website and want to support it?
           </p>
@@ -25,15 +21,9 @@ const Footer = () => {
               />
             </div>
           </a>
-        </Flex>
-      </Box>
-      <Flex
-        $direction="column"
-        $justifyContent="center"
-        $alignItems="center"
-        $gap="2"
-        $marginBottom="6"
-      >
+        </div>
+      </div>
+      <div className="flex flex-col items-center">
         <p className="text-sm text-center">
           Questions or ideas? Contact{" "}
           <a href="https://www.reddit.com/user/fordvspurrari/" target="_BLANK">
@@ -46,8 +36,8 @@ const Footer = () => {
             r/oscarsdeathrace
           </a>
         </p>
-      </Flex>
-    </Box>
+      </div>
+    </div>
   );
 };
 

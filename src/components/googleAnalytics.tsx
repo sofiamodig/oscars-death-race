@@ -17,7 +17,9 @@ export const GoogleAnalytics = () => {
     if (!measurementId) return;
 
     window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || ((...args: unknown[]) => window.dataLayer?.push(args));
+    window.gtag = window.gtag || function () {
+      window.dataLayer?.push(arguments);
+    };
 
     const trackPageView = (url: string) => {
       window.gtag?.("event", "page_view", {

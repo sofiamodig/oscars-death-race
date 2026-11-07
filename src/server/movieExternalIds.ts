@@ -102,7 +102,10 @@ export const fetchSimklMovie = async (imdbId: string, knownSimklId?: number): Pr
         ? apiMovie.ids.letterboxd
         : null,
       genres: Array.isArray(apiMovie?.genres)
-        ? [...new Set(apiMovie.genres.filter((genre: unknown): genre is string => typeof genre === "string").map((genre: string) => genre.trim()).filter(Boolean))]
+        ? apiMovie.genres
+          .filter((genre: unknown): genre is string => typeof genre === "string")
+          .map((genre: string) => genre.trim())
+          .filter((genre: string, index: number, genres: string[]) => Boolean(genre) && genres.indexOf(genre) === index)
         : [],
       warnings: [],
     };

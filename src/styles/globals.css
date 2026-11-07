@@ -30,14 +30,13 @@ h4,
 h5,
 h6 {
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   font-size: 20px;
   line-height: 1.3;
   letter-spacing: 0.4px;
 }
 
 .heading {
-  margin: 0;
   @apply text-black;
   line-height: 1.3;
   letter-spacing: 0.4px;
@@ -45,8 +44,6 @@ h6 {
 }
 
 p {
-  margin-top: 0;
-  margin-bottom: 8px;
   margin: 0;
 }
 
@@ -194,6 +191,96 @@ select:focus {
   /* Ensures the pseudo-element doesn't interfere with click events */
   transition: transform 0.3s ease;
   /* Smooth transition for arrow rotation */
+}
+
+.year-range-slider {
+  position: relative;
+  height: 28px;
+  width: 100%;
+}
+
+.year-range-slider__input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.year-range-slider__input--start {
+  z-index: 2;
+}
+
+.year-range-slider__input--end {
+  z-index: 3;
+}
+
+.year-range-slider__input:focus {
+  z-index: 4;
+}
+
+.year-range-slider__input::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+
+.year-range-slider__input::-moz-range-track {
+  height: 4px;
+  background: transparent;
+}
+
+.year-range-slider__input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #b39930;
+  box-shadow: 0 0 0 1px #b39930;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.year-range-slider__input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #b39930;
+  box-shadow: 0 0 0 1px #b39930;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.year-range-slider__input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid #897b2c;
+  outline-offset: 2px;
+}
+
+.year-range-slider__input:focus-visible::-moz-range-thumb {
+  outline: 2px solid #897b2c;
+  outline-offset: 2px;
+}
+
+html.dark .year-range-slider__input::-webkit-slider-thumb {
+  background: #968242;
+  box-shadow: 0 0 0 1px #968242;
+}
+
+html.dark .year-range-slider__input::-moz-range-thumb {
+  background: #968242;
+  box-shadow: 0 0 0 1px #968242;
+}
+
+html.dark .year-range-slider__input:focus-visible::-webkit-slider-thumb,
+html.dark .year-range-slider__input:focus-visible::-moz-range-thumb {
+  outline-color: #968242;
 }
 
 /* Rotate the custom arrow on select open - requires JavaScript to toggle a class */

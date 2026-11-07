@@ -17,6 +17,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/leaderboard": ["./public/movies.json"],
     "/statistics": ["./public/movies.json"],
+    "/api/movie-info": ["./public/movies.json"],
   },
 };
 

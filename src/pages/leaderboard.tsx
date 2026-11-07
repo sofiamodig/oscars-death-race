@@ -5,8 +5,6 @@ import { useSeenContext } from "@/contexts/seenContext";
 import { useMovieCatalog } from "@/hooks/useMovieCatalog";
 import { readMovieCatalog } from "@/functions/readMovieCatalog";
 import { LeaderboardItem } from "@/components/leaderboardItem";
-import { Box } from "@/styles/Box";
-import { Flex } from "@/styles/Flex";
 import { Loader } from "@/styles/Loader";
 import { getYearsList } from "@/utils";
 import {
@@ -358,8 +356,8 @@ export default function Leaderboard({
   }
 
   return (
-    <Box $maxWidth="980px" $marginLeft="auto" $marginRight="auto">
-      <Flex $marginBottom="4" $alignItems="flex-start">
+    <div className="ml-auto mr-auto max-w-5xl">
+      <div className="flex flex-row justify-between items-start mb-4">
         <div>
           <h1 className="heading text-3xl !mb-2">
             Leaderboard
@@ -392,12 +390,12 @@ export default function Leaderboard({
             ))}
           </select>
         </div>
-      </Flex>
+      </div>
       {invitations.length > 0 && (
-        <Box id="invitations" $marginBottom="8">
+        <div className="mb-8" id="invitations">
           <h3 className="heading text-lg !mb-4">Group invitations ({invitations.length})</h3>
           {invitations.map((invitation) => (
-            <Flex key={invitation.id} $alignItems="center" $gap="4" $marginBottom="4">
+            <div className="flex flex-row justify-between items-center gap-4 mb-4" key={invitation.id}>
               {invitation.alreadyMember ? (
                 <>
                   <p className="">You have been invited to {invitation.groupName}. It is already in your groups.</p>
@@ -411,11 +409,11 @@ export default function Leaderboard({
                   <Button label="Reject" size="sm" variant="secondary" onClick={() => respondToInvitation(invitation, "reject")} />
                 </>
               )}
-            </Flex>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
-      <Box $marginBottom="8">
+      <div className="mb-8">
         <div className="flex items-end gap-2 max-[600px]:flex-col max-[600px]:items-stretch">
           <div className="mb-4 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto border-b border-neutral-300 max-[600px]:mb-0 max-[600px]:w-full" role="tablist" aria-label="Choose a leaderboard">
             {groups.map((group) => (
@@ -456,23 +454,23 @@ export default function Leaderboard({
         </div>
         {groupsError && <p className="">{groupsError}</p>}
         {(groupStatus || (groupsLoading && !groupsError)) && <p className="">{groupStatus || "Loading groups…"}</p>}
-      </Box>
+      </div>
       <Modal isOpen={isGroupModalOpen} onClose={() => setIsGroupModalOpen(false)} maxWidth="520px">
         <h2 className="heading text-2xl !mb-6">
           {groupModalMode === "create" ? "Add a new group" : selectedGroup?.name || ''}
         </h2>
-        <Flex $direction="column" $alignItems="flex-start" $gap="6">
+        <div className="flex flex-col justify-between items-start gap-6">
           {groupModalMode === "create" && (
-            <Flex $alignItems="flex-end" $gap="4" style={{ width: "100%" }}>
+            <div className="flex flex-row justify-between items-end gap-4" style={{ width: "100%" }}>
               <TextInput label="New group name" value={newGroupName} setValue={setNewGroupName} />
               <Button label="Create" onClick={createGroup} disabled={!newGroupName.trim()} />
-            </Flex>
+            </div>
           )}
           {groupModalMode === "edit" && selectedGroup && (
-            <Box $width="100%">
+            <div className="w-full">
               <h5 className="heading text-lg !mb-2">Members:</h5>
               {selectedGroup.members.map((member) => (
-                <Flex key={member.id} $alignItems="center" $justifyContent="space-between" $marginBottom="6">
+                <div className="flex flex-row justify-between items-center mb-6" key={member.id}>
                   <p className="">
                     {member.username}{member.status === "pending" ? " · Pending invitation" : ""}
                   </p>
@@ -484,7 +482,7 @@ export default function Leaderboard({
                       onClick={() => removeGroupMember(member.id, member.username)}
                     />
                   )}
-                </Flex>
+                </div>
               ))}
               {selectedGroup.isOwner ? (
                 <div className="relative w-full">
@@ -518,22 +516,22 @@ export default function Leaderboard({
                 </>
               )}
               {selectedGroup.isOwner && (
-                <Box $marginTop="6">
+                <div className="mt-6">
                   <button className={redLinkClasses} onClick={deleteGroup}>
                     Delete group
                   </button>
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
           )}
           {groupStatus && <p className="">{groupStatus}</p>}
           <Button label="Done" variant="secondary" onClick={() => setIsGroupModalOpen(false)} />
-        </Flex>
+        </div>
       </Modal>
       {loading || isYearLoading ? (
-        <Flex $justifyContent="center" $marginTop="8">
+        <div className="flex flex-row justify-center items-center mt-8">
           <Loader />
-        </Flex>
+        </div>
       ) : leaderboardError ? (
         <p className="">{leaderboardError}</p>
       ) : (
@@ -557,7 +555,7 @@ export default function Leaderboard({
         </div>
       )}
       {!groupsLoading && !showAllUsers && selectedGroup && (
-        <Box $marginTop="8">
+        <div className="mt-8">
           {selectedGroup.isOwner ? (
             <Button
               label="Manage group"
@@ -574,8 +572,8 @@ export default function Leaderboard({
               Leave group
             </button>
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

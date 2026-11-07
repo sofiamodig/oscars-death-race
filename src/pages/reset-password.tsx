@@ -4,7 +4,6 @@ import { InfoIcon } from "@/assets/icons/InfoIcon";
 import { Button } from "@/components/button";
 import { TextInput } from "@/components/textInput";
 import { supabase } from "@/supabase";
-import { Box } from "@/styles/Box";
 import { ErrorMessage, InfoMessage } from "@/styles/Message";
 
 const ResetPassword = () => {
@@ -41,17 +40,12 @@ const ResetPassword = () => {
   };
 
   return (
-    <Box
-      $maxWidth="400px"
-      $marginLeft="auto"
-      $marginRight="auto"
-      $marginTop="6"
-    >
+    <div className="mt-6 ml-auto mr-auto max-w-sm">
       <h1 className="heading text-3xl !mb-8 text-center">
         Reset password
       </h1>
       <form onSubmit={handleForm}>
-        <Box $marginBottom="6">
+        <div className="mb-6">
           <TextInput
             value={email}
             setValue={setEmail}
@@ -60,22 +54,22 @@ const ResetPassword = () => {
             placeholder="E-mail"
             errorMessage={emailError}
           />
-        </Box>
+        </div>
 
         {requestSent && (
-          <Box $marginBottom="6" $marginTop="6">
+          <div className="mt-6 mb-6">
             <InfoMessage>
               <InfoIcon />
               If an account exists for {email.trim()}, password reset
               instructions have been sent.
             </InfoMessage>
-          </Box>
+          </div>
         )}
 
         {generalError && (
-          <Box $marginBottom="6" $marginTop="6">
+          <div className="mt-6 mb-6">
             <ErrorMessage>{generalError}</ErrorMessage>
-          </Box>
+          </div>
         )}
 
         <Button
@@ -85,7 +79,7 @@ const ResetPassword = () => {
           width="100%"
         />
       </form>
-    </Box>
+    </div>
   );
 };
 

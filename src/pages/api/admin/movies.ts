@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const duration = body.duration == null || body.duration === "" ? null : Number(body.duration);
     const { data: existingMovie, error: existingMovieError } = await client
       .from("movies")
-      .select("tmdb_id, letterboxd_id, simkl_id")
+      .select("tmdb_id, letterboxd_id, simkl_id, genres")
       .eq("year", year)
       .eq("imdb_id", imdbId)
       .maybeSingle();
@@ -33,10 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (providedSimklId && (!/^\d+$/.test(providedSimklId) || Number(providedSimklId) <= 0)) {
       return res.status(400).json({ error: "Simkl ID must be a positive integer." });
     }
-    const hasManualIds = Boolean(providedSimklId && body.tmdbId && body.letterboxdId);
-    const simklResult = hasManualIds
-      ? { simklId: Number(providedSimklId), tmdbId: null, letterboxdId: null, warnings: [] as string[] }
-      : await fetchSimklMovie(imdbId);
+    const simklResult = await fetchSimklMovie(
+      imdbId,
+      providedSimklId ? Number(providedSimklId) : undefined
+    );
     const simklId = Number.isSafeInteger(simklResult.simklId) && Number(simklResult.simklId) > 0
       ? Number(simklResult.simklId)
       : existingMovie?.simkl_id ?? null;
@@ -58,6 +58,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         poster_url: body.posterUrl || null,
         categories: asStringArray(body.categories),
         won_categories: asStringArray(body.wonCategories),
+        genres: simklResult.genres.length > 0
+          ? simklResult.genres
+          : asStringArray(existingMovie?.genres),
       },
       { onConflict: "year,imdb_id" }
     );

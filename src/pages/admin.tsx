@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import EditMovie from "@/components/editMovie";
 import AddMovie from "@/components/addMovie";
 import { useAuth } from "@/hooks/useAuth";
-import { Box } from "@/styles/Box";
-import { Flex } from "@/styles/Flex";
 import { getYearsList } from "@/utils";
 import Dropdown from "react-dropdown";
 import NotFound from "./404";
@@ -233,7 +231,7 @@ export default function Admin() {
 
   return (
     <div>
-      <Box $marginBottom="10">
+      <div className="mb-10">
         <Button
           type="button"
           label="Trigger deploy"
@@ -243,14 +241,10 @@ export default function Admin() {
           size="md"
         />
         {<p className="">{status}</p>}
-      </Box>
+      </div>
       <AddMovie />
 
-      <Flex
-        $marginTop="10"
-        $justifyContent="space-between"
-        $alignItems="center"
-      >
+      <div className="flex flex-row justify-between items-center mt-10">
         <h2 className="heading text-2xl">Edit movies</h2>
         <Dropdown
           options={yearsList}
@@ -260,7 +254,7 @@ export default function Admin() {
           value={selectedYear}
           placeholder="Year"
         />
-      </Flex>
+      </div>
 
       <label className="mt-4 inline-flex cursor-pointer items-center gap-2">
         <input
@@ -307,7 +301,7 @@ export default function Admin() {
         </div>
       )}
 
-      <Box>
+      <div>
         {selectedYear && showBrokenPostersOnly
           ? brokenMovies.length > 0
             ? brokenMovies.map((movie) => (
@@ -336,7 +330,7 @@ export default function Admin() {
               initialPosterUrl={movie.posterUrl}
             />
           ))}
-      </Box>
+      </div>
     </div>
   );
 }

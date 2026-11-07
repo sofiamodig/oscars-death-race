@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "A valid IMDb ID is required." });
   }
 
-  const apiKey = process.env.OMDB_API_KEY ?? process.env.NEXT_PUBLIC_OMDB_API_KEY;
+  const apiKey = process.env.OMDB_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "The OMDb API key is not configured." });
 
   try {

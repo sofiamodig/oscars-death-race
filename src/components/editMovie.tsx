@@ -1,7 +1,5 @@
 import React, { FC, useState } from "react";
 import { useSnackbarContext } from "@/contexts/snackbarContext";
-import { Box } from "@/styles/Box";
-import { Chip } from "@/styles/Chip";
 import { CATEGORIES } from "@/utils";
 import { adminRequest } from "@/functions/adminRequest";
 import { Button } from "./button";
@@ -111,18 +109,18 @@ const EditMovie: FC<Props> = ({
 
         <form onSubmit={handleSubmit} className="flex flex-row flex-wrap gap-2">
           {showEdit && (
-            <Box $marginTop="4">
+            <div className="mt-4">
               <TextInput
                 label="Poster URL"
                 value={posterUrl}
                 setValue={(value) => setPosterUrl(value)}
                 placeholder="Poster URL"
               />
-            </Box>
+            </div>
           )}
 
           {showEdit && (
-            <Box $marginTop="4">
+            <div className="mt-4">
               <Button
                 type="button"
                 label="Remove"
@@ -132,45 +130,45 @@ const EditMovie: FC<Props> = ({
                 size="md"
                 isLoading={isSubmitting}
               />
-            </Box>
+            </div>
           )}
 
           {showNominations && (
-            <Box $marginTop="4">
+            <div className="mt-4">
               <p>Nominated Categories</p>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((category) => (
-                  <Chip
+                  <button
+                    className={`flex w-fit items-center rounded-lg border-2 border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-black transition-all duration-200 ease-in-out hover:border-yellow-700 dark:border-neutral-700 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:border-yellow-500 ${nominatedCategories.includes(category) ? "!border-yellow-700 dark:!border-yellow-500" : ""}`}
                     key={category}
                     type="button"
-                    $isSelected={nominatedCategories.includes(category)}
                     onClick={() => handleNominationClick(category)}
                   >
                     {category.replace("Best", "")}
-                  </Chip>
+                  </button>
                 ))}
               </div>
-            </Box>
+            </div>
           )}
 
           {(nominatedCategories.length > 0 || wonCategories.length > 0) && (
-            <Box $marginTop="6">
+            <div className="mt-6">
               <p>Won Categories</p>
               <div className="flex flex-wrap gap-2">
                 {nominatedCategories.map((category) => (
-                  <Chip
+                  <button
+                    className={`flex w-fit items-center rounded-lg border-2 border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-black transition-all duration-200 ease-in-out hover:border-yellow-700 dark:border-neutral-700 dark:bg-neutral-700 dark:text-neutral-100 dark:hover:border-yellow-500 ${wonCategories.includes(category) ? "!border-yellow-700 dark:!border-yellow-500" : ""}`}
                     key={category}
                     type="button"
-                    $isSelected={wonCategories.includes(category)}
                     onClick={() => handleWonClick(category)}
                   >
                     {category.replace("Best", "")}
-                  </Chip>
+                  </button>
                 ))}
               </div>
-            </Box>
+            </div>
           )}
-          <Box $marginTop="6" $width="100%">
+          <div className="mt-6 w-full">
             <Button
               type="submit"
               label="Save"
@@ -180,7 +178,7 @@ const EditMovie: FC<Props> = ({
               size="md"
               isLoading={isSubmitting}
             />
-          </Box>
+          </div>
         </form>
       </div>
     </div>

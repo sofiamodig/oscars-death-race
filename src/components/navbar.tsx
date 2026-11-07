@@ -53,7 +53,7 @@ const Navbar: React.FC = () => {
       </Link>
       <div className="flex items-center gap-4 [-webkit-tap-highlight-color:rgba(255,255,255,0)] md:gap-6 [&_svg]:mt-[3px] [&_svg]:h-8 [&_svg]:w-8 [&_svg]:fill-[#b39930] [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-[#897b2c] dark:[&_svg]:fill-white dark:hover:[&_svg]:fill-neutral-300">
         {isAdmin && <Link className="text-sm text-[#b39930] transition-colors hover:text-[#897b2c] dark:text-neutral-200 dark:hover:text-neutral-300 md:text-base" href="/admin">Admin</Link>}
-        <Link className="text-sm text-[#b39930] transition-colors hover:text-[#897b2c] dark:text-neutral-200 dark:hover:text-neutral-300 md:text-base" href="/all-time">All time</Link>
+        <Link className="text-sm text-[#b39930] transition-colors hover:text-[#897b2c] dark:text-neutral-200 dark:hover:text-neutral-300 md:text-base" href="/all-time/years">All time</Link>
         <Link className="text-sm text-[#b39930] transition-colors hover:text-[#897b2c] dark:text-neutral-200 dark:hover:text-neutral-300 md:text-base" href="/statistics">Statistics</Link>
         {isSignedIn && (
           <Link className="relative text-sm text-[#b39930] transition-colors hover:text-[#897b2c] dark:text-neutral-200 dark:hover:text-neutral-300 md:text-base" href="/leaderboard#invitations" aria-label={`Leaderboard${invitationCount ? `, ${invitationCount} invitations` : ""}`}>

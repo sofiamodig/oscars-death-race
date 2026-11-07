@@ -23,7 +23,7 @@ const rows = [];
 for (let offset = 0; ; offset += pageSize) {
   const { data, error } = await supabase
     .from("movies")
-    .select("year, imdb_id, tmdb_id, letterboxd_id, simkl_id, title, director, duration, poster_url, categories, won_categories, cast_members")
+    .select("year, imdb_id, tmdb_id, letterboxd_id, simkl_id, title, director, duration, poster_url, categories, genres, won_categories, cast_members")
     .order("year", { ascending: true })
     .order("title", { ascending: true })
     .order("imdb_id", { ascending: true })
@@ -52,6 +52,7 @@ for (const row of rows) {
     director: row.director ?? "",
     cast: (row.cast_members ?? []).join(", "),
     categories: row.categories ?? [],
+    genres: row.genres ?? [],
     wonCategories: row.won_categories ?? [],
     posterUrl: row.poster_url ?? "",
     ...(typeof row.duration === "number" ? { duration: row.duration } : {}),

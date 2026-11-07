@@ -1,6 +1,5 @@
 import SkeletonLoader from "./skeletonLoader";
 import { Content, Wrapper } from "./movieCard";
-import { Flex } from "@/styles/Flex";
 
 export const MovieCardSkeleton = () => {
   const showMultiTitleRows = true;
@@ -15,21 +14,16 @@ export const MovieCardSkeleton = () => {
       </div>
       <SkeletonLoader width="37%" height="100%" />
       <Content>
-        <Flex $gap="2" $direction="column" $alignItems="flex-start">
+        <div className="flex flex-col justify-between items-start gap-2">
           <SkeletonLoader width={randomTitleWidth + "%"} height="20px" />
           {showMultiTitleRows && <SkeletonLoader width="40%" height="20px" />}
           <SkeletonLoader width="40px" height="10px" />
-        </Flex>
-        <Flex
-          $gap="4"
-          $marginTop="4"
-          $direction="column"
-          $alignItems="flex-start"
-        >
+        </div>
+        <div className="flex flex-col justify-between items-start gap-4 mt-4">
           <SkeletonLoader width="60%" height="15px" />
           <SkeletonLoader width="80%" height="15px" />
           <SkeletonLoader width="50%" height="15px" />
-        </Flex>
+        </div>
       </Content>
       <div className="absolute bottom-4 right-4 h-5 w-[114px]">
         <SkeletonLoader width="100%" height="100%" />

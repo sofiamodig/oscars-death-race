@@ -43,14 +43,14 @@ export const NominationsPage = () => {
   return (
     <AllTimeTabLayout tab="nominations">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="mt-6 mb-8">
+        <div className="">
           <h1 className="heading text-3xl !mb-4">Movies by nominations</h1>
           {allSeenMovies.length > 0 && <p>You have seen {Math.round((allSeenMovies.length / allMovieIds.length) * 100)}% ({allSeenMovies.length}/{allMovieIds.length})</p>}
         </div>
-        <div className="w-full max-w-[300px]"><TextInput setValue={setSearch} value={search} type="text" placeholder="Search for title, director or cast" /></div>
+        <div className="w-full md:max-w-[300px]"><TextInput setValue={setSearch} value={search} type="text" placeholder="Search for title, director or cast" /></div>
       </div>
 
-      {isSignedIn && <div className="mb-6"><Toggle label="Hide seen movies" value={hideSeen} onToggle={toggleHideSeen} /></div>}
+      {isSignedIn && <div className="mb-6 mt-4 md:mt-2 flex md:justify-end"><Toggle label="Hide seen movies" value={hideSeen} onToggle={toggleHideSeen} /></div>}
       {groups.map(({ count, movies: nominatedMovies }) => {
         const allWereSeen = nominatedMovies.every((movie) => allSeenMovieIds.includes(movie.imdbId));
         if (allWereSeen && hideSeen) {

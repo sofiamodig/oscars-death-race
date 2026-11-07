@@ -34,6 +34,7 @@ export const SuggestionPage = () => {
   } = useAllTimeData();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categoriesOptionsOpen, setCategoriesOptionsOpen] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState("");
   const [yearSpan, setYearSpan] = useState<[number, number]>([0, 0]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<AllTimeMovie>();
   const [suggestionInfo, setSuggestionInfo] = useState<OmdbMovieInfo>();
@@ -53,12 +54,50 @@ export const SuggestionPage = () => {
   const yearRangeStartPercent = ((selectedYearSpan[0] - yearRangeMin) / yearRangeWidth) * 100;
   const yearRangeEndPercent = ((selectedYearSpan[1] - yearRangeMin) / yearRangeWidth) * 100;
   const categoryOptions = useMemo(() => {
-    const uniqueCategories = Array.from(new Set(allMovies.flatMap((movie) => movie.categories ?? [])));
-    return sortCategories(uniqueCategories).map((category) => ({
-      value: cleanupCategory(category),
-      label: formatCategory(category) || prettifyCategory(cleanupCategory(category)),
-    }));
-  }, [allMovies]);
+    const categoryLabels = new Map<string, string>();
+    const categoryCounts = new Map<string, number>();
+    allMovies.forEach((movie) => {
+      const year = Number(movie.year);
+      const movieGenres = movie.genres?.map((genre) => genre.trim().toLocaleLowerCase()) ?? [];
+      const matchesOtherFilters = year >= selectedYearSpan[0]
+        && year <= selectedYearSpan[1]
+        && (!selectedGenre || movieGenres.includes(selectedGenre))
+        && (showShortMovies || (!isShortMovie(movie) && movie.duration !== undefined && movie.duration > 40));
+      if (!matchesOtherFilters) return;
+
+      new Set(movie.categories ?? []).forEach((category) => {
+        const value = cleanupCategory(category);
+        if (!value) return;
+        categoryLabels.set(value, formatCategory(category) || prettifyCategory(value));
+        categoryCounts.set(value, (categoryCounts.get(value) ?? 0) + 1);
+      });
+    });
+
+    return sortCategories(Array.from(categoryLabels.keys()).filter((category) => (categoryCounts.get(category) ?? 0) >= 10))
+      .map((value) => ({ value, label: categoryLabels.get(value) ?? prettifyCategory(value) }));
+  }, [allMovies, selectedYearSpan[0], selectedYearSpan[1], selectedGenre, showShortMovies]);
+  const genreOptions = useMemo(() => {
+    const genreLabels = new Map<string, string>();
+    const genreCounts = new Map<string, number>();
+    allMovies.forEach((movie) => {
+      const year = Number(movie.year);
+      const matchesOtherFilters = year >= selectedYearSpan[0]
+        && year <= selectedYearSpan[1]
+        && (selectedCategories.length === 0 || movie.categories?.some((category) => selectedCategories.includes(cleanupCategory(category))))
+        && (showShortMovies || (!isShortMovie(movie) && movie.duration !== undefined && movie.duration > 40));
+      if (!matchesOtherFilters) return;
+
+      new Set((movie.genres ?? []).map((genre) => genre.trim()).filter((genre) => genre && genre.toLocaleLowerCase() !== "erotica"))
+        .forEach((genre) => {
+          const value = genre.toLocaleLowerCase();
+          genreLabels.set(value, genre);
+          genreCounts.set(value, (genreCounts.get(value) ?? 0) + 1);
+        });
+    });
+    return Array.from(genreLabels, ([value, label]) => ({ value, label, count: genreCounts.get(value) ?? 0 }))
+      .filter((genre) => genre.count >= 5)
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [allMovies, selectedYearSpan[0], selectedYearSpan[1], selectedCategories, showShortMovies]);
   const suggestionIsSeen = Boolean(selectedSuggestion && allSeenMovieIds.includes(selectedSuggestion.imdbId));
   const destination = userSettings.movieLinkDestination ?? "imdb";
   const suggestionMovieLink = suggestionInfo?.source === "Simkl" && suggestionInfo.simklId
@@ -80,7 +119,13 @@ export const SuggestionPage = () => {
     setSelectedSuggestion(undefined);
     setSuggestionInfo(undefined);
     setNoSuggestionFound(false);
-  }, [selectedCategories, yearSpan[0], yearSpan[1]]);
+  }, [selectedCategories, selectedGenre, yearSpan[0], yearSpan[1]]);
+  useEffect(() => {
+    setSelectedCategories((current) => current.filter((category) => categoryOptions.some((option) => option.value === category)));
+  }, [categoryOptions]);
+  useEffect(() => {
+    if (selectedGenre && !genreOptions.some((genre) => genre.value === selectedGenre)) setSelectedGenre("");
+  }, [genreOptions, selectedGenre]);
   useEffect(() => {
     const imdbId = selectedSuggestion?.imdbId;
     if (!imdbId) {
@@ -118,9 +163,11 @@ export const SuggestionPage = () => {
       const year = Number(movie.year);
       const inYearSpan = year >= selectedYearSpan[0] && year <= selectedYearSpan[1];
       const inCategory = selectedCategories.length === 0 || movie.categories?.some((category) => selectedCategories.includes(cleanupCategory(category)));
+      const movieGenres = movie.genres?.map((genre) => genre.trim().toLocaleLowerCase()) ?? [];
+      const inGenre = !selectedGenre || movieGenres.includes(selectedGenre);
       const includesShort = showShortMovies || !isShortMovie(movie);
       const meetsRuntime = showShortMovies || (movie.duration !== undefined && movie.duration > 40);
-      return inYearSpan && inCategory && includesShort && meetsRuntime && !allSeenMovieIds.includes(movie.imdbId);
+      return inYearSpan && inCategory && inGenre && includesShort && meetsRuntime && !allSeenMovieIds.includes(movie.imdbId);
     });
     if (!unseen.length) {
       setSelectedSuggestion(undefined);
@@ -140,7 +187,7 @@ export const SuggestionPage = () => {
   return (
     <AllTimeTabLayout tab="suggestion">
       <section>
-        <div className="mb-8 flex flex-wrap items-center gap-6">
+        <div className="mb-8 flex flex-wrap items-center gap-4">
           <div
             className={`custom-multiselect ${categoriesOptionsOpen ? "open" : ""}`}
             style={{ width: "200px" }}
@@ -182,6 +229,12 @@ export const SuggestionPage = () => {
               </div>
             )}
           </div>
+          <div className="custom-select-wrapper" style={{ width: "200px" }}>
+            <select aria-label="Genre" value={selectedGenre} onChange={(event) => setSelectedGenre(event.target.value)}>
+              <option value="">All genres</option>
+              {genreOptions.map((genre) => <option key={genre.value} value={genre.value}>{genre.label}</option>)}
+            </select>
+          </div>
           <Toggle label="Include shorts" value={showShortMovies} onToggle={toggleShortMovies} />
           <div className="md:flex gap-4 md:ml-auto w-full md:w-auto">
             <fieldset className="min-w-[280px] border-0 p-0 md:ml-auto">
@@ -209,7 +262,7 @@ export const SuggestionPage = () => {
             <h2 className="mb-3 text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">Your next movie night pick is waiting.</h2>
             <p className="mb-6 max-w-md text-sm text-neutral-600 dark:text-neutral-300">We&apos;ll find an unseen Oscar movie for your next movie night.</p>
             <Button label="🎲 Pick a movie" variant="primary" onClick={chooseSuggestion} isLoading={suggestionInfoLoading} disabled={suggestionInfoLoading} />
-            {noSuggestionFound && <div className="mt-5"><InfoMessage>No unseen movies match this category and year span.</InfoMessage></div>}
+            {noSuggestionFound && <div className="mt-5"><InfoMessage>No unseen movies match the selected filters.</InfoMessage></div>}
           </div>
         )}
 

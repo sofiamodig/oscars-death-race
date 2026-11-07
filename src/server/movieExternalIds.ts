@@ -2,6 +2,7 @@ interface ExternalMovieIds {
   simklId: number | null;
   tmdbId: string | null;
   letterboxdId: string | null;
+  genres: string[];
   warnings: string[];
 }
 
@@ -65,24 +66,28 @@ const fetchSimklMovieById = async (simklId: number, clientId: string) => {
   return result?.movie ?? result;
 };
 
-export const fetchSimklMovie = async (imdbId: string): Promise<ExternalMovieIds> => {
+export const fetchSimklMovie = async (imdbId: string, knownSimklId?: number): Promise<ExternalMovieIds> => {
   const clientId = process.env.SIMKL_CLIENT_ID;
   if (!clientId) {
     return {
       simklId: null,
       tmdbId: null,
       letterboxdId: null,
+      genres: [],
       warnings: ["SIMKL_CLIENT_ID is not configured."],
     };
   }
 
   try {
-    const simklId = await resolveSimklMovie(imdbId, clientId);
+    const simklId = Number.isSafeInteger(knownSimklId) && Number(knownSimklId) > 0
+      ? Number(knownSimklId)
+      : await resolveSimklMovie(imdbId, clientId);
     if (!simklId) {
       return {
         simklId: null,
         tmdbId: null,
         letterboxdId: null,
+        genres: [],
         warnings: ["Simkl did not find a movie for this IMDb ID."],
       };
     }
@@ -96,6 +101,9 @@ export const fetchSimklMovie = async (imdbId: string): Promise<ExternalMovieIds>
       letterboxdId: typeof apiMovie?.ids?.letterboxd === "string"
         ? apiMovie.ids.letterboxd
         : null,
+      genres: Array.isArray(apiMovie?.genres)
+        ? [...new Set(apiMovie.genres.filter((genre: unknown): genre is string => typeof genre === "string").map((genre: string) => genre.trim()).filter(Boolean))]
+        : [],
       warnings: [],
     };
   } catch (error) {
@@ -103,16 +111,19 @@ export const fetchSimklMovie = async (imdbId: string): Promise<ExternalMovieIds>
       simklId: null,
       tmdbId: null,
       letterboxdId: null,
+      genres: [],
       warnings: [error instanceof Error ? error.message : "Simkl lookup failed."],
     };
   }
 };
 
-export const fetchSimklMovieDetails = async (imdbId: string): Promise<SimklMovieDetails> => {
+export const fetchSimklMovieDetails = async (imdbId: string, knownSimklId?: number): Promise<SimklMovieDetails> => {
   const clientId = process.env.SIMKL_CLIENT_ID;
   if (!clientId) throw new Error("SIMKL_CLIENT_ID is not configured.");
 
-  const simklId = await resolveSimklMovie(imdbId, clientId);
+  const simklId = Number.isSafeInteger(knownSimklId) && Number(knownSimklId) > 0
+    ? Number(knownSimklId)
+    : await resolveSimklMovie(imdbId, clientId);
   if (!simklId) throw new Error("Simkl did not find this movie.");
 
   const movie = await fetchSimklMovieById(simklId, clientId);

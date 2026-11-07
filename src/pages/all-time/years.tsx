@@ -51,7 +51,7 @@ export const YearsPage = () => {
   return (
     <AllTimeTabLayout tab="years">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="mt-6 mb-8">
+        <div>
           <h1 className="heading text-3xl !mb-4">Nominations through the years</h1>
           {allSeenMovies.length > 0 && (
             <p>You have seen {Math.round((allSeenMovies.length / allMovieIds.length) * 100)}% ({allSeenMovies.length}/{allMovieIds.length})</p>
@@ -62,7 +62,7 @@ export const YearsPage = () => {
         </div>
       </div>
 
-      <div className="mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
+      <div className="mt-4 mb-6 flex flex-row flex-wrap items-center justify-start gap-2 md:[&>div:last-child]:ml-auto">
         <div className="custom-select-wrapper" style={{ width: "230px" }}>
           <select onChange={(event) => setSelectedCategory(event.target.value)}>
             <option value="all">All categories</option>

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { readFileSync } from "fs";
 import { join } from "path";
-import type { MoviesYearsListType } from "@/types";
+import type { MovieType, MoviesYearsListType } from "@/types";
 import { fetchSimklMovieDetails } from "@/server/movieExternalIds";
 
 type OmdbMovie = {
@@ -26,14 +26,12 @@ const cacheMovieInfo = (res: NextApiResponse) => {
 
 let movieCatalog: MoviesYearsListType | undefined;
 
-const isCatalogMovie = (imdbId: string) => {
+const getCatalogMovie = (imdbId: string): MovieType | undefined => {
   if (!movieCatalog) {
     const catalogPath = join(process.cwd(), "public", "movies.json");
     movieCatalog = JSON.parse(readFileSync(catalogPath, "utf8")) as MoviesYearsListType;
   }
-  return movieCatalog.some((year) =>
-    year.movies.some((movie) => movie.imdbId === imdbId)
-  );
+  return movieCatalog.flatMap((year) => year.movies).find((movie) => movie.imdbId === imdbId);
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -47,10 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "A valid IMDb ID is required." });
   }
 
+  let catalogMovie: MovieType | undefined;
   try {
-    if (!isCatalogMovie(imdbId)) {
-      return res.status(404).json({ error: "Movie not found in this catalog." });
-    }
+    catalogMovie = getCatalogMovie(imdbId);
+    if (!catalogMovie) return res.status(404).json({ error: "Movie not found in this catalog." });
   } catch {
     return res.status(500).json({ error: "Could not load the movie catalog." });
   }
@@ -91,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const movie = await fetchSimklMovieDetails(imdbId);
+    const movie = await fetchSimklMovieDetails(imdbId, catalogMovie?.simklId);
     const hasImdbRating = movie.imdbRating !== undefined && movie.imdbRating !== null;
     const rating = hasImdbRating ? movie.imdbRating : movie.simklRating;
     const ratingVotes = hasImdbRating ? movie.imdbVotes : movie.simklVotes;

@@ -27,7 +27,7 @@ export const AllTimeTabLayout = ({ tab, children }: { tab: AllTimeTab; children:
             href={`/all-time/${tabName}`}
             role="tab"
             aria-selected={tab === tabName}
-            className={`border-b-2 px-3 py-2 font-semibold capitalize ${tab === tabName ? "border-[#b39930] text-[#897b2c] dark:border-[#968242] dark:text-[#968242]" : "border-transparent bg-transparent text-neutral-600 hover:text-[#897b2c] dark:text-neutral-300 dark:hover:text-[#605227]"}`}
+            className={`border-b-2 px-3 py-2 font-semibold capitalize hover:text-[#897b2c] dark:hover:text-[#968242] ${tab === tabName ? "border-[#b39930] text-[#897b2c] dark:border-[#968242] dark:text-[#968242]" : "border-transparent bg-transparent text-neutral-600 dark:text-neutral-300"}`}
           >
             {tabName === "suggestion" ? "Suggestion" : tabName}
           </Link>

@@ -8,6 +8,7 @@ export type MovieType = {
   cast: string;
   director: string;
   categories?: string[];
+  genres?: string[];
   wonCategories?: string[];
   posterUrl: string;
   duration?: number;

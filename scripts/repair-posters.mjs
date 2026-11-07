@@ -33,7 +33,7 @@ async function getMovies() {
     const url = new URL("/rest/v1/movies", supabaseUrl);
     url.search = new URLSearchParams({
       select: "year,imdb_id,title,poster_url",
-      order: "year.asc,title.asc",
+      order: "year.desc,title.asc",
       limit: String(pageSize),
       offset: String(offset),
     }).toString();

@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "repair-posters": "node scripts/repair-posters.mjs",
+    "repair-posters-simkl": "node scripts/repair-posters-simkl.mjs",
     "repair-letterboxd-ids": "node scripts/repair-letterboxd-ids.mjs"
   },
   "dependencies": {

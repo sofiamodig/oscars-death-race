@@ -70,8 +70,8 @@ export const YearsPage = () => {
           </select>
         </div>
         <Toggle label="Only show winners" value={onlyShowWinners} onToggle={() => setOnlyShowWinners(!onlyShowWinners)} />
-        {isSignedIn && <Toggle label="Hide seen movies" value={hideSeen} onToggle={toggleHideSeen} />}
         <Toggle label="Show short movies" value={showShortMovies} onToggle={toggleShortMovies} />
+        {isSignedIn && <Toggle label="Hide seen movies" value={hideSeen} onToggle={toggleHideSeen} />}
       </div>
 
       {search.length > 2 ? (

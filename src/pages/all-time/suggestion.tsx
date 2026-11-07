@@ -138,7 +138,7 @@ export const SuggestionPage = () => {
         <div className="mb-8 flex flex-wrap items-center gap-6">
           <div
             className={`custom-multiselect ${categoriesOptionsOpen ? "open" : ""}`}
-            style={{ width: "230px" }}
+            style={{ width: "200px" }}
             tabIndex={0}
             onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget)) setCategoriesOptionsOpen(false);
@@ -178,7 +178,7 @@ export const SuggestionPage = () => {
             )}
           </div>
           <Toggle label="Include shorts" value={showShortMovies} onToggle={toggleShortMovies} />
-          <div className="md:flex gap-4 md:ml-auto">
+          <div className="md:flex gap-4 md:ml-auto w-full">
             <fieldset className="min-w-[280px] border-0 p-0 md:ml-auto">
               <div className="year-range-slider">
                 <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
@@ -209,9 +209,9 @@ export const SuggestionPage = () => {
         )}
 
         {selectedSuggestion && (
-          <section className="mx-auto max-w-5xl text-left mt-16">
-            <div className="grid items-start gap-8 md:grid-cols-[minmax(220px,320px)_minmax(0,1fr)]">
-              <div className="relative mb-2 aspect-[2/3] w-full max-w-[320px] rounded-md bg-neutral-200 bg-cover bg-center shadow-xl dark:bg-neutral-700">
+          <section className="mx-auto max-w-5xl text-left mt-4 lg:mt-16">
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(220px,320px)_minmax(0,1fr)]">
+              <div className="hidden lg:block relative mb-2 aspect-[2/3] w-full max-w-[320px] rounded-md bg-neutral-200 bg-cover bg-center shadow-xl dark:bg-neutral-700">
                 <div className="absolute inset-0 rounded-md bg-cover bg-center" role="img" aria-label={`${selectedSuggestion.title} poster`} style={{ backgroundImage: `url(${selectedSuggestion.posterUrl && selectedSuggestion.posterUrl !== "N/A" ? selectedSuggestion.posterUrl : "https://www.oscarsdeathrace.com/no-poster.png"})` }} />
                 <button className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer rounded-tr-lg items-center justify-center border-0 p-0 transition-colors duration-200 ${suggestionIsSeen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"}`} type="button" aria-label={suggestionIsSeen ? "Mark as unseen" : "Mark as seen"} aria-pressed={suggestionIsSeen} onClick={() => {
                   if (!isSignedIn) setSignInModalOpen(true);
@@ -220,17 +220,26 @@ export const SuggestionPage = () => {
                 }}><CheckIcon /></button>
               </div>
               <div>
-                <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#897b2c] dark:text-[#968242]">Oscars year {selectedSuggestion.year}</p>
-                <h2 className="heading mb-5 text-3xl sm:text-4xl mb-1">{selectedSuggestion.title}</h2>
-                {suggestionInfoLoading ? <p className="mb-5 text-neutral-600 dark:text-neutral-300">Loading IMDb details…</p> : suggestionInfoError ? <p className="mb-5 text-neutral-600 dark:text-neutral-300" role="status">{suggestionInfoError}</p> : suggestionInfo ? <>
-                  <p className="mb-5 flex flex-wrap items-center gap-2 text-lg">
-                    <svg className="h-6 w-6 shrink-0 fill-yellow-500" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.7.9-4.9 4.8 1.2 6.7-5.9-3.2-5.9 3.2 1.2-6.7-4.9-4.8 6.7-.9L12 2z" /></svg>
-                    <strong className="text-2xl">{suggestionInfo.imdbRating && suggestionInfo.imdbRating !== "N/A" ? `${suggestionInfo.imdbRating}/10` : "Not rated"}</strong>
-                    <span className="ml-2 text-neutral-600 dark:text-neutral-300">IMDb rating</span>
-                    {suggestionInfo.imdbVotes && suggestionInfo.imdbVotes !== "N/A" && <span className="ml-2 text-sm text-neutral-600 dark:text-neutral-300">{suggestionInfo.imdbVotes} votes</span>}
-                  </p>
-                  {suggestionInfo.Plot && suggestionInfo.Plot !== "N/A" && <p className="mb-3 text-base leading-7">{suggestionInfo.Plot}</p>}
-                </> : null}
+                <div className="flex gap-4">
+                  <div className="aspect-[2/3] self-start w-[100px] shrink-0 lg:hidden rounded-md bg-cover bg-center bg-gray-600" role="img" aria-label={`${selectedSuggestion.title} poster`} style={{ backgroundImage: `url(${selectedSuggestion.posterUrl && selectedSuggestion.posterUrl !== "N/A" ? selectedSuggestion.posterUrl : "https://www.oscarsdeathrace.com/no-poster.png"})` }} />
+
+                  <div>
+                    <p className="mb-1 lg:mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#897b2c] dark:text-[#968242]">Oscars year {selectedSuggestion.year}</p>
+                    <h2 className="heading text-2xl lg:text-4xl mb-1">{selectedSuggestion.title}</h2>
+
+                    {suggestionInfoLoading ? <p className="mb-5 text-neutral-600 dark:text-neutral-300">Loading IMDb details…</p> : suggestionInfoError ? <p className="mb-5 text-neutral-600 dark:text-neutral-300" role="status">{suggestionInfoError}</p> : suggestionInfo ? <>
+                      <div className="mb-5 flex flex-wrap items-center gap-x-2 text-lg">
+                        <p className="flex items-center gap-1">
+                          <svg className="h-6 w-6 shrink-0 fill-yellow-500" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.7.9-4.9 4.8 1.2 6.7-5.9-3.2-5.9 3.2 1.2-6.7-4.9-4.8 6.7-.9L12 2z" /></svg>
+                          <strong className="text-lg lg:text-2xl">{suggestionInfo.imdbRating && suggestionInfo.imdbRating !== "N/A" ? `${suggestionInfo.imdbRating}` : "Not rated"}</strong>
+                        </p>
+                        {suggestionInfo.imdbVotes && suggestionInfo.imdbVotes !== "N/A" && <p className="text-sm text-neutral-600 dark:text-neutral-300">{suggestionInfo.imdbVotes} votes</p>}
+                      </div>
+                    </> : null}
+                  </div>
+                </div>
+                {suggestionInfo?.Plot && suggestionInfo.Plot !== "N/A" && <p className="mt-2 mb-3 text-base leading-7">{suggestionInfo.Plot}</p>}
+
                 <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                   <div className="min-w-0">
                     {suggestionInfo && (
@@ -244,7 +253,7 @@ export const SuggestionPage = () => {
                             { label: "Nominations", value: selectedSuggestion.categories?.length ? <span>{sortCategories([...selectedSuggestion.categories]).map((category, index) => <span key={category} className={selectedSuggestion.wonCategories?.includes(category) ? "font-medium text-[#b39930] dark:text-[#968242]" : undefined}>{formatCategory(category)}{index < selectedSuggestion.categories!.length - 1 ? ", " : ""}</span>)}</span> : "No nominations" },
                           ].map(({ label, value }) => value && value !== "N/A" ? <div className="contents" key={label}><dt className="font-semibold">{label}</dt><dd className="m-0 text-neutral-700 dark:text-neutral-200">{value}</dd></div> : null)}
                         </dl>
-                        <p className="mt-3 text-xs text-neutral-600 dark:text-neutral-500">Movie details and IMDb rating provided by OMDb.</p>
+                        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">Movie details and IMDb rating provided by OMDb.</p>
                       </>
                     )}
                   </div>

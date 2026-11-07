@@ -219,6 +219,10 @@ select:focus {
   z-index: 3;
 }
 
+.year-range-slider__input:focus {
+  z-index: 4;
+}
+
 .year-range-slider__input::-webkit-slider-runnable-track {
   height: 4px;
   background: transparent;

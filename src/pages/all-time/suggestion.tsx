@@ -178,15 +178,15 @@ export const SuggestionPage = () => {
             )}
           </div>
           <Toggle label="Include shorts" value={showShortMovies} onToggle={toggleShortMovies} />
-          <div className="md:flex gap-4 md:ml-auto w-full">
+          <div className="md:flex gap-4 md:ml-auto w-full md:w-auto">
             <fieldset className="min-w-[280px] border-0 p-0 md:ml-auto">
               <div className="year-range-slider">
                 <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
                 <div className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#b39930] dark:bg-[#968242]" style={{ left: `${yearRangeStartPercent}%`, width: `${Math.max(0, yearRangeEndPercent - yearRangeStartPercent)}%` }} />
-                <input type="range" min={yearRangeMin} max={selectedYearSpan[1]} step="1" value={selectedYearSpan[0]} onChange={(event) => setYearSpan([Number(event.target.value), selectedYearSpan[1]])} className="year-range-slider__input year-range-slider__input--start" aria-label="First year in suggestion range" />
-                <input type="range" min={selectedYearSpan[0]} max={yearRangeMax} step="1" value={selectedYearSpan[1]} onChange={(event) => setYearSpan([selectedYearSpan[0], Number(event.target.value)])} className="year-range-slider__input year-range-slider__input--end" aria-label="Last year in suggestion range" />
+                <input type="range" min={yearRangeMin} max={yearRangeMax} step="1" value={selectedYearSpan[0]} onChange={(event) => setYearSpan([Math.min(Number(event.target.value), selectedYearSpan[1]), selectedYearSpan[1]])} className="year-range-slider__input year-range-slider__input--start" aria-label="First year in suggestion range" />
+                <input type="range" min={yearRangeMin} max={yearRangeMax} step="1" value={selectedYearSpan[1]} onChange={(event) => setYearSpan([selectedYearSpan[0], Math.max(Number(event.target.value), selectedYearSpan[0])])} className="year-range-slider__input year-range-slider__input--end" aria-label="Last year in suggestion range" />
               </div>
-              <div className="mt-1 flex justify-between text-xs text-neutral-600 dark:text-neutral-300"><span>{yearRangeMin}</span><span>{yearRangeMax}</span></div>
+              <div className="mt-1 flex justify-between text-xs text-neutral-600 dark:text-neutral-300"><span>{selectedYearSpan[0]}</span><span>{selectedYearSpan[1]}</span></div>
             </fieldset>
           </div>
         </div>
@@ -213,7 +213,7 @@ export const SuggestionPage = () => {
             <div className="grid items-start gap-8 lg:grid-cols-[minmax(220px,320px)_minmax(0,1fr)]">
               <div className="hidden lg:block relative mb-2 aspect-[2/3] w-full max-w-[320px] rounded-md bg-neutral-200 bg-cover bg-center shadow-xl dark:bg-neutral-700">
                 <div className="absolute inset-0 rounded-md bg-cover bg-center" role="img" aria-label={`${selectedSuggestion.title} poster`} style={{ backgroundImage: `url(${selectedSuggestion.posterUrl && selectedSuggestion.posterUrl !== "N/A" ? selectedSuggestion.posterUrl : "https://www.oscarsdeathrace.com/no-poster.png"})` }} />
-                <button className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer rounded-tr-lg items-center justify-center border-0 p-0 transition-colors duration-200 ${suggestionIsSeen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"}`} type="button" aria-label={suggestionIsSeen ? "Mark as unseen" : "Mark as seen"} aria-pressed={suggestionIsSeen} onClick={() => {
+                <button className={`absolute right-0 top-0 flex h-12 w-12 cursor-pointer rounded-tr items-center justify-center border-0 p-0 transition-colors duration-200 ${suggestionIsSeen ? "bg-green-600 hover:bg-green-300 dark:hover:bg-green-700 [&_svg]:fill-white" : "bg-neutral-300 hover:bg-neutral-400 dark:bg-neutral-600 dark:hover:bg-neutral-500 [&_svg]:fill-neutral-700 dark:[&_svg]:fill-neutral-200"}`} type="button" aria-label={suggestionIsSeen ? "Mark as unseen" : "Mark as seen"} aria-pressed={suggestionIsSeen} onClick={() => {
                   if (!isSignedIn) setSignInModalOpen(true);
                   else if (suggestionIsSeen) removeMovieFromSeen(selectedSuggestion.imdbId, selectedSuggestion.year);
                   else addMovieToSeen(selectedSuggestion.imdbId, selectedSuggestion.year, movies);
@@ -227,8 +227,8 @@ export const SuggestionPage = () => {
                     <p className="mb-1 lg:mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#897b2c] dark:text-[#968242]">Oscars year {selectedSuggestion.year}</p>
                     <h2 className="heading text-2xl lg:text-4xl mb-1">{selectedSuggestion.title}</h2>
 
-                    {suggestionInfoLoading ? <p className="mb-5 text-neutral-600 dark:text-neutral-300">Loading IMDb details…</p> : suggestionInfoError ? <p className="mb-5 text-neutral-600 dark:text-neutral-300" role="status">{suggestionInfoError}</p> : suggestionInfo ? <>
-                      <div className="mb-5 flex flex-wrap items-center gap-x-2 text-lg">
+                    {suggestionInfoLoading ? <p className="mt-2 text-neutral-600 dark:text-neutral-300">Loading IMDb details…</p> : suggestionInfoError ? <p className="mb-5 text-neutral-600 dark:text-neutral-300" role="status">{suggestionInfoError}</p> : suggestionInfo ? <>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 text-lg">
                         <p className="flex items-center gap-1">
                           <svg className="h-6 w-6 shrink-0 fill-yellow-500" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.1 6.7.9-4.9 4.8 1.2 6.7-5.9-3.2-5.9 3.2 1.2-6.7-4.9-4.8 6.7-.9L12 2z" /></svg>
                           <strong className="text-lg lg:text-2xl">{suggestionInfo.imdbRating && suggestionInfo.imdbRating !== "N/A" ? `${suggestionInfo.imdbRating}` : "Not rated"}</strong>
@@ -257,7 +257,7 @@ export const SuggestionPage = () => {
                       </>
                     )}
                   </div>
-                  <a className="flex shrink-0 items-center self-start text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline md:self-end" href={suggestionMovieLink.href} target="_blank" rel="noreferrer"><span>{suggestionMovieLink.label}</span><ChevronRightIcon /></a>
+                  <a className="mb-[-4px] flex shrink-0 items-center self-start text-[13px] font-semibold tracking-[0.4px] text-indigo-700 transition-colors duration-200 hover:text-indigo-900 [&_svg]:fill-indigo-700 dark:[&_svg]:fill-white [&_svg]:transition-colors [&_svg]:duration-200 hover:[&_svg]:fill-indigo-900 dark:hover:[&_svg]:fill-white dark:text-neutral-100 dark:hover:text-white dark:hover:underline md:self-end" href={suggestionMovieLink.href} target="_blank" rel="noreferrer"><span>{suggestionMovieLink.label}</span><ChevronRightIcon /></a>
                 </div>
                 <div className="mt-4"><Button label="🎲 Pick another movie" variant="primary" onClick={chooseSuggestion} isLoading={suggestionInfoLoading} disabled={suggestionInfoLoading} /></div>
               </div>

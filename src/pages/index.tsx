@@ -62,10 +62,10 @@ export default function Home() {
       setOnlyShowWinners(false);
     }
 
-    if (isLatestYear && predictions) {
+    if (isLatestYear && predictions && selectedCategories.length > 0) {
       setSelectedCategories([]);
     }
-  }, [selectedYear, latestYear, predictions, yearHasWinners, isLatestYear]);
+  }, [selectedYear, latestYear?.value, predictions, yearHasWinners, isLatestYear, selectedCategories.length]);
 
   const seenEntriesForYear = seenMovies.find(
     (list) => list.year === selectedYear

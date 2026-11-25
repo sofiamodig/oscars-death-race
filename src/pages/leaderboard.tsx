@@ -5,7 +5,7 @@ import { useSeenContext } from "@/contexts/seenContext";
 import { useMovieCatalog } from "@/hooks/useMovieCatalog";
 import { readMovieCatalog } from "@/functions/readMovieCatalog";
 import { LeaderboardItem } from "@/components/leaderboardItem";
-import { Loader } from "@/styles/Loader";
+import { SpinnerIcon } from "@/assets/icons/Spinner";
 import { getYearsList } from "@/utils";
 import {
   LeaderboardType,
@@ -27,6 +27,15 @@ import {
 
 const groupTabClasses = (active: boolean) => `flex-[0_0_auto] cursor-pointer whitespace-nowrap border-0 border-b-[3px] px-[14px] py-[10px] mb-[-1px] bg-transparent font-[inherit] hover:text-nautral-800 dark:text-neutral-300 dark:hover:text-neutral-30 font-semibold ${active ? "border-[#b39930] text-[#897b2c]" : "border-transparent"}`;
 const redLinkClasses = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-red-600 underline hover:text-red-800 focus-visible:text-red-800 dark:text-red-400 dark:hover:text-red-300 dark:focus-visible:text-red-300";
+
+const LeaderboardSpinner = () => (
+  <div className="flex items-center justify-center py-8" role="status" aria-label="Loading leaderboard">
+    <span className="h-8 w-8 animate-spin fill-[#b39930] dark:fill-neutral-200 [&_svg]:h-full [&_svg]:w-full" aria-hidden="true">
+      <SpinnerIcon />
+    </span>
+    <span className="sr-only">Loading leaderboard…</span>
+  </div>
+);
 
 export const getStaticProps = (async () => {
   const movies = await readMovieCatalog();
@@ -352,7 +361,7 @@ export default function Leaderboard({
   const selectedGroup = groups.find((group) => group.id === selectedGroupId);
 
   if (!movies) {
-    return movieCatalogError ? <p role="alert">{movieCatalogError}</p> : <Loader />;
+    return movieCatalogError ? <p role="alert">{movieCatalogError}</p> : <LeaderboardSpinner />;
   }
 
   return (
@@ -529,9 +538,7 @@ export default function Leaderboard({
         </div>
       </Modal>
       {loading || isYearLoading ? (
-        <div className="flex flex-row justify-center items-center mt-8">
-          <Loader />
-        </div>
+        <LeaderboardSpinner />
       ) : leaderboardError ? (
         <p className="">{leaderboardError}</p>
       ) : (

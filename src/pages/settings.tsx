@@ -18,7 +18,7 @@ import { useMovieCatalog } from "@/hooks/useMovieCatalog";
 import { trackAnalyticsEvent } from "@/utils/analytics";
 
 type ButtonLoadingType = "email" | "password" | "username" | "delete";
-type ImportSource = "imdb" | "letterboxd";
+type ImportSource = "imdb" | "letterboxd" | "simkl";
 
 export default function Settings() {
   const { movies: catalog = [] } = useMovieCatalog();
@@ -166,8 +166,12 @@ export default function Settings() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Please sign in again to import watched movies.");
-      const isLetterboxd = importSource === "letterboxd";
-      const response = await fetch(isLetterboxd ? "/api/import/letterboxd" : "/api/import/imdb-ratings", {
+      const importEndpoint = {
+        imdb: "/api/import/imdb-ratings",
+        letterboxd: "/api/import/letterboxd",
+        simkl: "/api/import/simkl",
+      }[importSource];
+      const response = await fetch(importEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -314,9 +318,9 @@ export default function Settings() {
 
           <div className="mt-12 mb-8">
             <h2 className="heading text-2xl !mb-4">Import watched movies</h2>
-            <p className="!mb-4">Import watched movies from IMDb or Letterboxd. Already checked movies on this site will not be affected.</p>
+            <p className="!mb-4">Import watched movies from IMDb, Letterboxd, or Simkl. Already checked movies on this site will not be affected.</p>
             <div className="mb-4 flex gap-2 border-b border-neutral-300 dark:border-neutral-700" role="tablist" aria-label="Choose import source">
-              {(["imdb", "letterboxd"] as const).map((source) => (
+              {(["imdb", "letterboxd", "simkl"] as const).map((source) => (
                 <button
                   key={source}
                   type="button"
@@ -329,7 +333,7 @@ export default function Settings() {
                     setImportStatus("");
                   }}
                 >
-                  {source === "imdb" ? "IMDb" : "Letterboxd"}
+                  {source === "imdb" ? "IMDb" : source === "letterboxd" ? "Letterboxd" : "Simkl"}
                 </button>
               ))}
             </div>
@@ -344,7 +348,7 @@ export default function Settings() {
                   </ol>
                   <p className="mt-2">The <strong>date rated</strong> is used as the watched date.</p>
                 </div>
-              ) : (
+              ) : importSource === "letterboxd" ? (
                 <div>
                   <ol className="list-decimal ml-8 mt-1">
                     <li>Log into Letterboxd and then go to <a href="https://letterboxd.com/user/exportdata/" target="_BLANK">https://letterboxd.com/user/exportdata/</a> OR <strong>Settings → Data → Export your data</strong></li>
@@ -352,6 +356,14 @@ export default function Settings() {
                     <li>Upload the exported watched.csv file here</li>
                   </ol>
                   <p className="mt-2">The <strong>Date</strong> column is used as the watched date.</p>
+                </div>
+              ) : (
+                <div>
+                  <ol className="list-decimal ml-8 mt-1">
+                    <li>Go to <a href="https://simkl.com/apps/backup/" target="_blank" rel="noreferrer">Simkl Backup</a> and click the <strong>DOWNLOAD BACKUP</strong> button.</li>
+                    <li>Upload the SimklBackup.csv file here.</li>
+                  </ol>
+                  <p className="mt-2">Completed entries with an IMDb ID use <strong>WatchedDate</strong> as the watched date.</p>
                 </div>
               )}
             </div>
@@ -363,12 +375,12 @@ export default function Settings() {
                   setImportFile(event.currentTarget.files?.[0]);
                   setImportStatus("");
                 }}
-                aria-label={`Choose ${importSource === "imdb" ? "IMDb ratings" : "Letterboxd watched"} CSV`}
+                aria-label={`Choose ${importSource === "imdb" ? "IMDb ratings" : importSource === "letterboxd" ? "Letterboxd watched" : "Simkl backup"} CSV`}
               />
               <Button
                 type="button"
                 onClick={importWatchedMovies}
-                label={`Import ${importSource === "imdb" ? "IMDb ratings" : "Letterboxd watched movies"}`}
+                label={`Import ${importSource === "imdb" ? "IMDb ratings" : importSource === "letterboxd" ? "Letterboxd watched movies" : "Simkl watched movies"}`}
                 isLoading={isImporting}
                 disabled={!importFile || isImporting}
               />

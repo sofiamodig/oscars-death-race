@@ -80,7 +80,7 @@ export const YearsPage = () => {
           setOnlyShowWinners(next);
           trackAnalyticsEvent("years_filter_changed", { filter: "winners_only", enabled: next });
         }} />
-        <Toggle label="Show short movies" value={showShortMovies} onToggle={toggleShortMovies} />
+        {selectedCategory === "all" && <Toggle label="Show short movies" value={showShortMovies} onToggle={toggleShortMovies} />}
         {isSignedIn && <Toggle label="Hide seen movies" value={hideSeen} onToggle={toggleHideSeen} />}
       </div>
 
